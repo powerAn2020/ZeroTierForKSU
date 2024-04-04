@@ -1,0 +1,7 @@
+ZeroTierOneForMagisk.zip
+ui-src/node_modules
+ui-src/dist
+.vscode
+.bin/curl
+ui-src/package-lock.json
+webroot/

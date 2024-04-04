@@ -1,0 +1,30 @@
+name: release
+# description:
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 0 * * 0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: run build.sh
+        run: sh build.sh
+
+      - name: Upload Release Asset
+        uses: actions/upload-artifact@v2
+        with:
+          name: yq for Magisk
+          path: YQ-FOR-MAGISK-v*.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: YQ-FOR-MAGISK-v*.zip
+          generate_release_notes: true
+          token: ${{ secrets.RELEASE_TOKEN }}
+
