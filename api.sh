@@ -42,10 +42,28 @@ leaveNetwork(){
 joinOrUpdateNetwork() {
   $CurlBIN -X POST -H "X-ZT1-Auth: $TOKEN" -d $2 http://localhost:9993/network/$1 
 }
-# A 和 D
+# $1 :A 和 D
 firewall(){
+  if [ "$1" != "A" || "$1" != "D" ];then
+    echo "only [A,D]"
+    exit 1
+  fi
   iptables -$1 INPUT -p udp --dport 9993 -j ACCEPT
-  # iptables6 -$1 INPUT -p udp --dport 9993 -j ACCEPT
+  ip6tables -$1 INPUT -p udp --dport 9993 -j ACCEPT
+}
+router() {
+  if [ "$1" == "0" ];then
+    echo "Unrealized"
+    # Reference https://yotam.net/posts/network-management-in-android-routing/
+    # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
+    # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
+
+    # ip route add table $your_selected_table_id $cide/$prefix dev $zt_iface_name proto kernel scope link
+  else
+    # Reference https://blog.csdn.net/G_Rookie/article/details/109679262
+    ip rule add from all lookup main pref 9000
+    # ip rule del from all lookup main pref 9000
+  fi
 }
 case $1 in
   status)

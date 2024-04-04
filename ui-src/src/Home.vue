@@ -39,7 +39,7 @@
       </van-collapse-item>
     </van-collapse>
   </van-pull-refresh>
-  <van-floating-bubble icon="chat" @click="loadRouter" />
+  <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" />
   <van-dialog v-model:show="show" title="标题" show-cancel-button :before-close="addOrUpdateBtn">
     <van-row :gutter="[20, 20]">
       <van-col span="24">
@@ -74,94 +74,6 @@ const readonly = ref(false);
 const show = ref(false);
 const activeNames = ref(null);
 const ready = ref(false);
-// const items = reactive([
-//   {
-//     "allowDNS": false,
-//     "allowDefault": true,
-//     "allowManaged": true,
-//     "allowGlobal": false,
-//     "assignedAddresses": [
-//       "string"
-//     ],
-//     "bridge": true,
-//     "broadcastEnabled": true,
-//     "dns": {
-//       "domain": "example.com",
-//       "servers": [
-//         "192.168.0.1"
-//       ]
-//     },
-//     "id": "networkid",
-//     "mac": "string",
-//     "mtu": 1280,
-//     "multicastSubscriptions": [
-//       {
-//         "adi": 0,
-//         "mac": "string"
-//       }
-//     ],
-//     "authenticationURL": "http://example.com",
-//     "authenticationExpiryTime": 0,
-//     "name": "string",
-//     "netconfRevision": 0,
-//     "portDeviceName": "string",
-//     "portError": 0,
-//     "routes": [
-//       {
-//         "flags": 0,
-//         "metric": 0,
-//         "target": "string",
-//         "via": "192.168.0.1"
-//       }
-//     ],
-//     "status": "REQUESTING_CONFIGURATION",
-//     "type": "PUBLIC",
-//     "property1": null,
-//     "property2": null
-//   }, {
-//     "allowDNS": true,
-//     "allowDefault": true,
-//     "allowManaged": true,
-//     "allowGlobal": true,
-//     "assignedAddresses": [
-//       "string"
-//     ],
-//     "bridge": true,
-//     "broadcastEnabled": true,
-//     "dns": {
-//       "domain": "example.com",
-//       "servers": [
-//         "192.168.0.1"
-//       ]
-//     },
-//     "id": "-------------",
-//     "mac": "string",
-//     "mtu": 1280,
-//     "multicastSubscriptions": [
-//       {
-//         "adi": 0,
-//         "mac": "string"
-//       }
-//     ],
-//     "authenticationURL": "http://example.com",
-//     "authenticationExpiryTime": 0,
-//     "name": "string",
-//     "netconfRevision": 0,
-//     "portDeviceName": "string",
-//     "portError": 0,
-//     "routes": [
-//       {
-//         "flags": 0,
-//         "metric": 0,
-//         "target": "string",
-//         "via": "192.168.0.1"
-//       }
-//     ],
-//     "status": "OK",
-//     "type": "PUBLIC",
-//     "property1": null,
-//     "property2": null
-//   }])
 const items = reactive([]);
 const addOrUpdate = ref(source());
 function source() {
@@ -174,7 +86,7 @@ function source() {
   };
 }
 let leaveNetwork = localStorage.getItem("leaveNetwork");
-if (typeof leaveNetwork == "undefined" || leaveNetwork == null) {
+if (typeof leaveNetwork == "undefined" && leaveNetwork == null) {
   leaveNetwork = [];
   localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
 } else {
@@ -187,6 +99,7 @@ const reset = () => {
 }
 let info = addOrUpdate.value // Js里操作只操作 info 就可以不用 infoRef.value 了
 const onRefresh = () => {
+  getList();
   setTimeout(() => {
     showToast('刷新成功');
     loading.value = false;
@@ -195,7 +108,7 @@ const onRefresh = () => {
 //新增或修改
 const newAdd = (index) => {
   if (ready.value != true) {
-    showConfirmDialog({
+    showDialog({
       title: 'zerotier服务尚未启动，是否需要开启？',
     })
       .then(() => {
@@ -207,9 +120,6 @@ const newAdd = (index) => {
           }, 2000);
         })
       })
-      .catch(() => {
-        return true;
-      });
     return;
   }
   show.value = true;
@@ -304,6 +214,21 @@ const leaveApi = (info) => {
     }
   });
 }
+const getList=()=>{
+  execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
+      items.length == 0;
+      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
+      items.push(...leaveNetwork)
+      if (v !== "") {
+        const statusObj = JSON.parse(v);
+        if (statusObj.length > 0) {
+          items.push(...statusObj)
+        } else if(items.length==0){
+          showDialog({ message: '暂未加入任何节点，先去加入一个吧' });
+        }
+      }
+    });
+}
 const addOrUpdateBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
@@ -350,25 +275,13 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
       });
   } else {
     ready.value = true;
-    execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
-      items.length == 0;
-      items.push(...leaveNetwork)
-      if (v !== "") {
-        const statusObj = JSON.parse(v);
-        if (statusObj.length > 0) {
-          items.push(...statusObj)
-        } else if(items.length==0){
-          showDialog({ message: '暂未加入任何节点，先去加入一个吧' });
-        }
-      }
-      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
-    });
+    getList();
   }
 });
   //加载路由并配置防火墙
   const loadRouter=()=>{
     const defaultRoterMode=localStorage.getItem('defaultRoterMode')
-    execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh router defaultRoterMode ').then(v => {
+    execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh router ${defaultRoterMode} `).then(v => {
 
     })
 

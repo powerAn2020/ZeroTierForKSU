@@ -36,6 +36,7 @@ stop_service() {
   else
     kill $zpid
   fi
+  sh ${MODDIR}/api.sh firewall D
   echo done.
 }
 status_service() {
@@ -54,10 +55,11 @@ status_service() {
 start_service() {
   zpid=$(pgrep -f "zerotier-one")
   if [ -z $zpid ];then
+    # set firewall
+    sh ${MODDIR}/api.sh firewall A
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
-    $ZEROTIERD -d $ZTPATH
-    sh ${MODDIR}/api.sh firewall A
+    nohup $ZEROTIERD -d $ZTPATH > /dev/null 2> $ZTPATH/error.log &
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."

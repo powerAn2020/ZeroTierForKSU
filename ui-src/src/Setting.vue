@@ -7,8 +7,8 @@
     </van-cell>
     <van-cell center title="清理iptables">
       <template #right-icon>
-        <van-tag type="warning">未实现</van-tag>
-        <van-switch v-model="checked" disabled />
+        <van-button icon="replay" type="primary" disabled>重载</van-button>
+        <!-- <van-switch v-model="checked" disabled /> -->
       </template>
     </van-cell>
     <van-cell center title="切换路由模式">
@@ -51,10 +51,10 @@ export default {
 
     // 通过 actions 属性来定义菜单选项
     const actions = [
-      { text: '按需路由模式',value:'0' },
+      { text: '按需路由模式',value:'0',disabled:true },
       { text: 'main表优先模式',value:'1'},
     ];
-    const defaultRoterMode = ref(actions[0].text);
+    const defaultRoterMode = ref(actions[1].text);
     const onSelect = (action) => {
       defaultRoterMode.value=action.text;
       showToast(action.text)
