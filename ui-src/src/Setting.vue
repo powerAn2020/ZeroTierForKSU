@@ -7,15 +7,15 @@
     </van-cell>
     <van-cell center title="清理iptables">
       <template #right-icon>
+        <van-tag size="large" type="warning">未实现</van-tag>
         <van-button icon="replay" type="primary" disabled>重载</van-button>
-        <!-- <van-switch v-model="checked" disabled /> -->
       </template>
     </van-cell>
-    <van-cell center title="切换路由模式">
+    <van-cell center title="路由模式">
       <template #right-icon>
         <van-popover v-model:show="showPopover" :actions="actions" @select="onSelect">
           <template #reference>
-            <van-button type="primary">{{defaultRoterMode}}</van-button>
+            <van-button plain hairline type="primary">{{defaultRoterMode}}</van-button>
           </template>
         </van-popover>
       </template>
@@ -51,7 +51,7 @@ export default {
 
     // 通过 actions 属性来定义菜单选项
     const actions = [
-      { text: '按需路由模式',value:'0',disabled:true },
+      { text: '自建路由模式',value:'0',disabled:true },
       { text: 'main表优先模式',value:'1'},
     ];
     const defaultRoterMode = ref(actions[1].text);

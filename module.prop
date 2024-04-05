@@ -3,4 +3,4 @@ name=ZeroTier For KernelSU
 version=v1.0
 versionCode=20240403
 author=powerAn
-description=带UI界面的zerotier组网模块
+description=ZeroTier network tool with UI interface

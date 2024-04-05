@@ -109,7 +109,7 @@ const onRefresh = () => {
 const newAdd = (index) => {
   if (ready.value != true) {
     showDialog({
-      title: 'zerotier服务尚未启动，是否需要开启？',
+      title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
         execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start').then(v => {
@@ -256,8 +256,8 @@ const execCmd = async (cmd) => {
 execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   const statusObj = JSON.parse(v);
   if (statusObj.enable == "") {
-    showConfirmDialog({
-      title: 'zerotier服务尚未启动，是否需要开启？',
+    showDialog({
+      title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
         execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start').then(v => {
@@ -269,10 +269,6 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
           }, 2000);
         })
       })
-      .catch(() => {
-        window.close();
-        return true;
-      });
   } else {
     ready.value = true;
     getList();

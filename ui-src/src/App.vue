@@ -36,22 +36,22 @@ const light="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvM
 const iconName = ref(light);
 const cacheTheme=localStorage.getItem('theme');
 if(typeof cacheTheme !="undefined" && cacheTheme != null){
-  theme.value = cacheTheme;
+  theme.value = JSON.parse(cacheTheme);
 }else{
   localStorage.setItem('theme',true)
 }
 const switchTheme =()=>{
   theme.value=!theme.value;
-  localStorage.setItem('theme',!theme)
+  localStorage.setItem('theme',theme.value)
 };
 const newAdd = (index) => {
   routerViewRef.value.newAdd(index);
 }
 watch(theme, (theme, prevtheme) => {
-  if(prevtheme){
-    iconName.value=light;
-  }else{
+  if(JSON.parse(theme)){
     iconName.value=night;
+  }else{
+    iconName.value=light;
   }
 },{
   immediate:true

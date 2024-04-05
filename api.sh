@@ -54,6 +54,7 @@ firewall(){
 router() {
   if [ "$1" == "0" ];then
     echo "Unrealized"
+    #TODO android默认ip rule不走main表 除了提升main表优先级怎么解决?
     # Reference https://yotam.net/posts/network-management-in-android-routing/
     # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
     # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
