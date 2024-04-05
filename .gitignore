@@ -1,7 +1,4 @@
-ui-src/node_modules
-ui-src/dist
 .vscode
-.bin/curl
-ui-src/package-lock.json
+bin/curl
 webroot/
 ZeroTierForKSU.zip
