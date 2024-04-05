@@ -9,15 +9,14 @@
       <el-icon><icon-ep-moon /></el-icon> -->
         <!-- <v-icon name="bi-music-player" /> -->
         <van-icon size="1.2rem" @click="switchTheme" :name="iconName" style="background-color: #1989fa;border-radius: 50%;"/>
-        <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" name="add" size="1.2rem"
-          @click="newAdd(undefined)" />
+        <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" name="add" size="1.2rem" @click="newAdd(undefined)" />
       </template>
     </van-nav-bar>
     <router-view v-slot="{ Component }">
       <component ref="routerViewRef" :is="Component" />
     </router-view> <van-tabbar route>
       <van-tabbar-item replace to="/" icon="home-o">首页</van-tabbar-item>
-      <van-tabbar-item replace to="/plant" icon="fire-o">私有plant</van-tabbar-item>
+      <van-tabbar-item replace to="/peers" icon="fire-o">成员</van-tabbar-item>
       <van-tabbar-item replace to="/setting" icon="setting-o">设置</van-tabbar-item>
     </van-tabbar>
   </van-config-provider>

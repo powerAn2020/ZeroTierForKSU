@@ -4,7 +4,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 const routes = [
   { path: '/', component: ()=>  import('../Home.vue') },
   { path: '/setting', component: ()=>  import('../Setting.vue') },
-  { path: '/plant', component: ()=>  import('../Plant.vue') },
+  { path: '/peers', component: ()=>  import('../Peers.vue') },
 ]
 
 const router = createRouter({

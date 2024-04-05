@@ -36,7 +36,11 @@ stop_service() {
   else
     kill $zpid
   fi
+  # set firewall
   sh ${MODDIR}/api.sh firewall D
+  if [ "$1" = "1" ];then
+    sh ${MODDIR}/api.sh router del
+  fi
   echo done.
 }
 status_service() {
@@ -65,6 +69,9 @@ start_service() {
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
       exit $sshd_rc
     fi
+    if [ "$1" = "1" ];then
+      sh ${MODDIR}/api.sh router add
+    fi
   else
     echo "service is running,pid:$zpid"
   fi
@@ -76,7 +83,7 @@ get_token() {
 
 case $1 in
   start)
-    start_service
+    start_service $2
     ;;
   stop)
     stop_service

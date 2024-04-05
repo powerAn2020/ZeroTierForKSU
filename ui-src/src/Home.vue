@@ -1,12 +1,12 @@
 <template>
   <!-- 表头 -->
-  <van-notice-bar
+  <!-- <van-notice-bar
   left-icon="volume-o"
-  text="暂时没有好办法，所以组网成功完成后需要点击悬浮按钮加载路由"
-/>
+  text="暂时没有好办法，所以组网成功完成后需要点击悬浮按钮加载路由" />-->
+
   <!-- 主体列表 -->
-  <van-pull-refresh v-model="loading" @refresh="onRefresh" style="min-height: 100vh;">
-    <van-collapse v-model="activeNames" accordion>
+  <van-pull-refresh v-model="loading" @refresh="onRefresh" >
+    <van-collapse v-model="activeNames" accordion style="min-height: 90vh;">
       <van-collapse-item v-for="(item, index) in items" :key="index" :name="index">
         <template #title>
           <van-swipe-cell :name="index">
@@ -39,7 +39,7 @@
       </van-collapse-item>
     </van-collapse>
   </van-pull-refresh>
-  <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" />
+  <!-- <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" /> -->
   <van-dialog v-model:show="show" title="标题" show-cancel-button :before-close="addOrUpdateBtn">
     <van-row :gutter="[20, 20]">
       <van-col span="24">
@@ -68,7 +68,7 @@ import { ref, reactive, defineExpose } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { exec } from 'kernelsu';
 const chosenAddressId = ref('1');
-const text = ref('禁用')
+// const text = ref('禁用')
 const loading = ref(false);
 const readonly = ref(false);
 const show = ref(false);
@@ -216,7 +216,7 @@ const leaveApi = (info) => {
 }
 const getList=()=>{
   execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
-      items.length == 0;
+      items.length = 0;
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       items.push(...leaveNetwork)
       if (v !== "") {
@@ -275,13 +275,11 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   }
 });
   //加载路由并配置防火墙
-  const loadRouter=()=>{
-    const defaultRoterMode=localStorage.getItem('defaultRoterMode')
-    execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh router ${defaultRoterMode} `).then(v => {
-
-    })
-
-  }
+  // const loadRouter=()=>{
+  //   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
+  //   execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh router ${defaultRoterMode} `).then(v => {
+  //   })
+  // }
 defineExpose({ newAdd });
 
 </script>

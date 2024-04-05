@@ -51,10 +51,14 @@ firewall(){
   iptables -$1 INPUT -p udp --dport 9993 -j ACCEPT
   ip6tables -$1 INPUT -p udp --dport 9993 -j ACCEPT
 }
+# join moon
+orbit(){
+  sh ${MODDIR}/zerotier-cli orbit $1 $1
+}
 router() {
-  if [ "$1" == "0" ];then
+  if [ "$1" = "0" ];then
     echo "Unrealized"
-    #TODO android默认ip rule不走main表 除了提升main表优先级怎么解决?
+    #TODO android默认ip rule不走main表 除了提升main表优先级,是否还有其它解决方案？
     # Reference https://yotam.net/posts/network-management-in-android-routing/
     # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
     # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
@@ -62,8 +66,11 @@ router() {
     # ip route add table $your_selected_table_id $cide/$prefix dev $zt_iface_name proto kernel scope link
   else
     # Reference https://blog.csdn.net/G_Rookie/article/details/109679262
-    ip rule add from all lookup main pref 9000
-    # ip rule del from all lookup main pref 9000
+    if [ "$2" = "add" ];then
+      ip rule add from all lookup main pref 9000
+    else 
+      ip rule del from all lookup main pref 9000
+    fi
   fi
 }
 case $1 in
@@ -81,6 +88,12 @@ case $1 in
     ;;
   firewall)
     firewall $2 
+    ;;
+  router)
+    router $@
+    ;;
+  orbit)
+    orbit $@
     ;;
   *)
     echo "Unsupported operation"
