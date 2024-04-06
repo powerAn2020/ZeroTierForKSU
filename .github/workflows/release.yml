@@ -22,13 +22,12 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt install -y curl xz-utils make git wget
+          sudo apt install -y curl xz-utils make git wget zip 
           echo "dir:$PWD"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
-          ls $PWD/
           tar -xJf curl.tar.xz -C $PWD/bin
           mkdir $PWD/toolchain 
           wget -O arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
@@ -43,19 +42,25 @@ jobs:
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${zerotier_latest_version}
           cd ZeroTierOne
           make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
+          cp -rf zerotier-one ../
           ls
 
-      # - name: Upload Release Asset
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: yq for Magisk
-      #     path: YQ-FOR-MAGISK-v*.zip
+      - name: package ui
+        run: |
+          cd ../ui-src
+          npm install
+          npm run build
+          mv dist/* ../webroot/
 
-      # - name: Create GitHub Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: ${{ github.ref_name }}
-      #     files: YQ-FOR-MAGISK-v*.zip
-      #     generate_release_notes: true
-      #     token: ${{ secrets.RELEASE_TOKEN }}
+      - name: generate_modules
+        run: |
+          cd ..
+          ls 
+          zip -r -o -X -ll ZeroTierForKSU-$(cat module.prop | grep 'version=' | awk -F '=' '{print $2}').zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
+
+      - name: Kernel REL
+        uses: actions/upload-artifact@v3
+        with:
+          name: ZeroTierForKSU
+          path: ./*.zip
 
