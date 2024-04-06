@@ -24,7 +24,7 @@ jobs:
           sudo apt install -y curl xz-utils make git wget
           echo "dir:$PWD"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
+          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-arm64-${latest_version}.tar.xz"
           echo ${download_link}
           curl -L -o $PWD/toolchain/curl.tar.xz "${download_link}"
           tar -xJf "$PWD/toolchain/curl.tar.xz" -C $PWD/bin
