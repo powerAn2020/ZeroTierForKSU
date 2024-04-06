@@ -30,12 +30,11 @@ jobs:
           wget -O curl.tar.xz ${download_link}
           ls $PWD/
           tar -xJf curl.tar.xz -C $PWD/bin
-          mkdir $PWD/toolchain && \
-          curl -L -o $PWD/toolchain/arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" && \
-          cd $PWD/toolchain && \
-          xz -d arm64.tar.xz && \
-          tar -xvf $PWD/toolchain/arm64.tar -C $PWD/toolchain && \
-          rm $PWD/toolchain/arm64.tar
+          mkdir $PWD/toolchain 
+          wget -O arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
+          xz -d arm64.tar.xz
+          tar -xvf arm64.tar -C $PWD/toolchain 
+          rm -f arm64.tar curl.tar.xz
           
       - name: build zerotier
         run: |
