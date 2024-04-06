@@ -21,23 +21,23 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          apt install -y curl xz-utils make git 
+          apt install -y curl xz-utils make git wget
           echo "dir:$PWD"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
           echo ${download_link}
-          curl -L -o /toolchain/curl.tar.xz "${download_link}"
-          tar -xJf "/toolchain/curl.tar.xz" -C $PWD/bin
-          mkdir /toolchain && \
-          curl -L -o /toolchain/arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" && \
-          cd /toolchain && \
+          curl -L -o $PWD/toolchain/curl.tar.xz "${download_link}"
+          tar -xJf "$PWD/toolchain/curl.tar.xz" -C $PWD/bin
+          mkdir $PWD/toolchain && \
+          curl -L -o $PWD/toolchain/arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" && \
+          cd $PWD/toolchain && \
           xz -d arm64.tar.xz && \
-          tar -xvf /toolchain/arm64.tar -C /toolchain && \
-          rm /toolchain/arm64.tar
+          tar -xvf $PWD/toolchain/arm64.tar -C $PWD/toolchain && \
+          rm $PWD/toolchain/arm64.tar
           
       - name: build zerotier
         run: |
-          export PATH="/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
+          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${zerotier_latest_version}
           cd ZeroTierOne
