@@ -1,4 +1,5 @@
 <template>
+  <van-notice-bar wrapable :scrollable="false" :text="cliStatusText" />
   <div>
     <van-cell center title="启用服务">
       <template #right-icon>
@@ -7,7 +8,7 @@
     </van-cell>
     <van-cell center title="放行9993端口">
       <template #right-icon>
-        <van-switch v-model="checked" disabled />
+        <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="autoStartLoading" />
       </template>
     </van-cell>
     <van-cell center title="路由模式">
@@ -37,14 +38,15 @@
 import { ref } from 'vue';
 import { exec } from 'kernelsu';
 const enable = ref(true);
-const checked = ref(true);
+const firewall = ref(true);
 const autoStart = ref(true);
 const uninstallKeep = ref(false);
 const enableLoading = ref(false);
-const checkedLoading = ref(false);
+const firewallLoading = ref(false);
 const autoStartLoading = ref(false);
 const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
+const cliStatusText = ref();
 
 // 通过 actions 属性来定义菜单选项
 const actions = [
@@ -70,13 +72,22 @@ const execCmd = async (cmd) => {
     console.info(stderr)
   }
 }
-
+cliStatusText.value = "启动服务查看节点信息";
 execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   const statusObj = JSON.parse(v);
   enable.value = statusObj.enable == "" ? false : true;
-  checked.value = statusObj.checked;
+  firewall.value = statusObj.firewall;
   autoStart.value = statusObj.autoStart;
   uninstallKeep.value = statusObj.uninstallKeep;
+  const cliStatus = statusObj.cliStatus;
+  if (typeof (cliStatus) != 'undefined') {
+    const cliStatusArr = cliStatus.split(' ');
+    const nodeId = cliStatusArr[2];
+    const zerotierVersion = cliStatusArr[3];
+    const serviceStatus = cliStatusArr[4];
+    cliStatusText.value = `本机节点:${nodeId} 服务状态:${serviceStatus} 版本：${zerotierVersion}`
+  }
+
 });
 
 const autoStartSwitch = (newValue) => {
@@ -104,6 +115,34 @@ const uninstallKeepSwitch = (newValue) => {
     console.info('关闭卸载保留数据')
     execCmd('rm /data/adb/zerotier/KEEP_ON_UNINSTALL').then(v => {
       uninstallKeepLoading.value = false;
+    })
+  }
+};
+const firewallSwitch = (newValue) => {
+  firewallLoading.value = true;
+  if (newValue === true) {
+    console.info('允许防火墙放行9993')
+    execCmd('touch /data/adb/zerotier/ALLOW_9993').then(v => {
+      execCmd(`sh /data/adb/zerotier/api.sh firewall A`).then(v2 => {
+        if (typeof (v2) != 'undefined' && v2 != '') {
+          showDialog({
+            title: v2,
+          })
+        }
+        firewallLoading.value = false;
+      })
+    })
+  } else {
+    console.info('禁止防火墙放行9993')
+    execCmd('rm /data/adb/zerotier/ALLOW_9993').then(v => {
+      execCmd(`sh /data/adb/zerotier/api.sh firewall D`).then(v2 => {
+        if (typeof (v2) != 'undefined' && v2 != '') {
+          showDialog({
+            title: v2,
+          })
+        }
+        firewallLoading.value = false;
+      })
     })
   }
 };

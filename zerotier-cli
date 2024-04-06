@@ -4,4 +4,4 @@ MODDIR=${0%/*}
 ZTPATH=/data/adb/zerotier
 ZEROTIERD=$MODDIR/zerotier-one
 
-$ZEROTIERD -i -D${ZTPATH} $@
+$ZEROTIERD -q -D${ZTPATH} $@

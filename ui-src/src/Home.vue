@@ -1,9 +1,4 @@
 <template>
-  <!-- 表头 -->
-  <!-- <van-notice-bar
-  left-icon="volume-o"
-  text="暂时没有好办法，所以组网成功完成后需要点击悬浮按钮加载路由" />-->
-
   <!-- 主体列表 -->
   <van-pull-refresh v-model="loading" @refresh="onRefresh" >
     <van-collapse v-model="activeNames" accordion style="min-height: 90vh;">
@@ -13,9 +8,14 @@
             <template #left>
               <van-button square :type="item.enable === 'false' ? 'primary' : 'danger'" size="small"
                 :text="item.enable === 'false' ? '启用' : '禁用'" @click="changeStatus(index)" />
-              <!-- <van-button square v-else type="primary" text="禁用" size="small" @click="leaveNode(index)"/> -->
             </template>
-            <van-cell :title="item.id">
+            <van-cell >
+              <template #title>
+                id:{{item.id}}
+              </template>
+              <template #label>
+                name:{{item.name}}
+              </template>
               <!-- 使用 title 插槽来自定义标题 -->
               <template #value>
                 <van-tag v-if="item.enable === 'false'" type="danger">已禁用</van-tag>
@@ -40,7 +40,7 @@
     </van-collapse>
   </van-pull-refresh>
   <!-- <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" /> -->
-  <van-dialog v-model:show="show" title="标题" show-cancel-button :before-close="addOrUpdateBtn">
+  <van-dialog v-model:show="show" title="配置节点" show-cancel-button :before-close="addOrUpdateBtn">
     <van-row :gutter="[20, 20]">
       <van-col span="24">
         <van-field v-model="addOrUpdate.id" label="组网ID" required placeholder="请输入组网id" :readonly="readonly" />
@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, defineExpose } from 'vue';
+import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { exec } from 'kernelsu';
 const chosenAddressId = ref('1');
@@ -82,6 +82,7 @@ function source() {
     "allowDefault": false,
     "allowManaged": true,
     "allowGlobal": false,
+    "name": '',
     "id": ''
   };
 }

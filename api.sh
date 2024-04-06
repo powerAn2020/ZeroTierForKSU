@@ -42,9 +42,16 @@ leaveNetwork(){
 joinOrUpdateNetwork() {
   $CurlBIN -X POST -H "X-ZT1-Auth: $TOKEN" -d $2 http://localhost:9993/network/$1 
 }
+joinOrUpdateNetwork() {
+  $CurlBIN -X POST -H "X-ZT1-Auth: $TOKEN" -d $2 http://localhost:9993/network/$1 
+}
+
+peer(){
+  $CurlBIN -H "X-ZT1-Auth: $TOKEN" http://localhost:9993/peer
+}
 # $1 :A 和 D
 firewall(){
-  if [ "$1" != "A" || "$1" != "D" ];then
+  if [ "$1" != "A" -a "$1" != "D" ];then
     echo "only [A,D]"
     exit 1
   fi
@@ -55,6 +62,7 @@ firewall(){
 orbit(){
   sh ${MODDIR}/zerotier-cli orbit $1 $1
 }
+
 router() {
   if [ "$1" = "0" ];then
     echo "Unrealized"
@@ -85,6 +93,9 @@ case $1 in
     ;;
   joinOrUpdateNetwork)
     joinOrUpdateNetwork $2 ''$3''
+    ;;
+  peer)
+    peer
     ;;
   firewall)
     firewall $2 
