@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '30 0 * * 0'
-  push:
+  # push:
   
 
 jobs:
@@ -55,11 +55,11 @@ jobs:
 
       - name: generate_modules
         run: |
-          rm -rf ZeroTierOne toolchain
+          rm -rf ZeroTierOne toolchain ui-src
           ls -la
           zip -r -o -X -ll ZeroTierForKSU.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
 
-      - name: Kernel REL
+      - name: ZeroTierForKSU
         uses: actions/upload-artifact@v3
         with:
           name: ZeroTierForKSU

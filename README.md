@@ -1,50 +1,80 @@
 # ZeroTier for KSU
 
-ZeroTierOne安卓客户端使用不太方便，无法设置自建planet和moon，并且需要开启vpn。编译的二进制目前Mi13Pro测试使用正常。
+用了各位大佬的模块，但是吧，老用命令行，不是很方便。正好赶上想学学vue，所有就做了这个给自己用。
 
-思路参考链接：[是否有可能 Zerotier-One 直接在 Android 设备上运行？ - V2EX](https://v2ex.com/t/863131)
+感谢以下连接提供的帮助，顺序不分先后
+
+- [是否有可能 Zerotier-One 直接在 Android 设备上运行？ - V2EX](https://v2ex.com/t/863131)
+- [Android以太网和WIFI完美共存](https://blog.csdn.net/G_Rookie/article/details/109679262)
+- [Network Management in Android: Routing](https://yotam.net/posts/network-management-in-android-routing/)
+- [vant-ui/vant-demo](https://github.com/vant-ui/vant-demo/tree/master/vant/vite)
+- [zfdx123/build-k40-ksu](https://github.com/zfdx123/build-k40-ksu)
+- [eventlOwOp/zerotier-magisk](https://github.com/eventlOwOp/zerotier-magisk/tree/master/zerotier)
+- [linuxscreen/ZeroTierOneForMagisk](https://github.com/linuxscreen/ZeroTierOneForMagisk)
+- [taamarin/box_for_magisk](https://github.com/taamarin/box_for_magisk/blob/master/box/scripts/box.inotify)
 
 # 免责声明
+
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
 
 # 使用方法
-安装模块之后会在系统后台运行，创建文件`/data/adb/zerotier/MANUAL` 可禁用开机启动服务
 
-```bash
-zerotier status
-# ● zerotier-one is running
+用UI界面
+
+# 一些可选操作说明
+
+## 文件说明
+
+### Zerotier数据目录:`/data/adb/zerotier`；虽然UI都实现了，但是还是说明下，给自己备忘下；在该目录下创建以下文件可以做到
+
+    创建文件`/data/adb/zerotier/KEEP_ON_UNINSTALL`，卸载模块可保留数据目录
+    创建文件`/data/adb/zerotier/MANMANUAL`，关闭开机自启
+    创建文件`/data/adb/zerotier/ALLOW_9993`，iptables放行UDP 9993入端口
+
+## 执行脚本说明
+
+### 执行所有脚本都需要带全路径
+
+    `sh /data/adb/modules/ZeroTierForKSU/zerotier.sh`
+
+```shell
+
+ # 通过webapi接口调用zerotier服务
+sh /data/adb/modules/ZeroTierForKSU/api.sh $1 other(可选参数如下)
+  status)
+    status
+    return 自定义的状态接口，放回给页面用的参数
+    ;;
+  networks)
+    return 查询网络详情，如果传入具体的网络id，则返回单个详情，不传就返回所有已加入的节点详情
+    networks $2
+    ;;
+  leaveNetwork)
+    离开网络，传具体的网络ID
+    leaveNetwork $2
+    ;;
+  joinOrUpdateNetwork)
+    加入网络或者更新网络，第一个参数是网络ID，第二个参数json对象，{    "allowDNS": false,    "allowDefault": false,    "allowManaged": true,   "allowGlobal": false,    "name": '',    "id": ''  }
+    joinOrUpdateNetwork $2 ''$3''
+    ;;
+  peer)
+    返回成员列表
+    peer
+    ;;
+  firewall)
+    防火墙规则,能传 A(增加) 和 D(删除)
+    firewall $2 
+    ;;
+  router)
+    zerotier路由模式 ，能传两个参数， 第一个参数 0 （没实现）新建zerotier ip rule 表，1提升main表优先级，第二个参数 add 新增，del 删除
+    router $@
+    ;;
+  orbit)
+    加入自建的moon，需要一个参数，自建moon的网络id
+    orbit $@
+    ;;
 ```
 
-启动、重启、停止zerotier-one服务
-
-```
-zerotier start
-zerotier restart
-zerotier stop
-```
-
-加入网络
-
-```
-zerotier-cli join <network id>
-```
-
-zerotier-one数据存储在/data/zerotier-one
-
-如果自建planet直接替换/data/zerotier-one/planet即可
-
-```
-mv /data/zerotier-one/planet /data/zerotier-one/planet.back
-cp /path/planet /data/zerotier-one/planet
-```
-
-添加moon
-
-```bash
-zerotier-cli orbit <id> <id>
-```
-
-自建planet参考教程：[一分钟自建zerotier-plant - Jonnyan的原创笔记 - 亖亖亖 (mrdoc.fun)](https://www.mrdoc.fun/doc/443/)
-
-# 卸载
-- 创建文件`/data/adb/zerotier/KEEP_ON_UNINSTALL`，可保留数据目录
+    `sh /data/adb/modules/ZeroTierForKSU/zerotier-cli` #同官方
+    `sh /data/adb/modules/ZeroTierForKSU/zerotier-idtool` #同官方
+    `sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify` # 没弄，本来想弄快速开关的
