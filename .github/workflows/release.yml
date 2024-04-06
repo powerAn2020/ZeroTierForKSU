@@ -5,26 +5,58 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '30 0 * * 0'
+  
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: run build.sh
-        run: sh build.sh
-
-      - name: Upload Release Asset
-        uses: actions/upload-artifact@v2
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          name: yq for Magisk
-          path: YQ-FOR-MAGISK-v*.zip
+          ref: master
+          fetch-depth: 0
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: YQ-FOR-MAGISK-v*.zip
-          generate_release_notes: true
-          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: download curl
+        run: |
+          echo "dir:$PWD"
+          local latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          local download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
+          curl -L -o /toolchain/curl.tar.xz "${download_link}"
+          tar -xJf "/toolchain/curl.tar.xz" -C $PWD/bin
+        
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt install -y curl xz-utils make git  && \
+          mkdir /toolchain && \
+          curl -L -o /toolchain/arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" && \
+          cd /toolchain && \
+          xz -d arm64.tar.xz && \
+          tar -xvf /toolchain/arm64.tar -C /toolchain && \
+          rm /toolchain/arm64.tar
+          
+      - name: build zerotier
+        run: |
+          export PATH="/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
+          local zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${zerotier_latest_version}
+          cd ZeroTierOne
+          make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
+          ls
+
+      # - name: Upload Release Asset
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: yq for Magisk
+      #     path: YQ-FOR-MAGISK-v*.zip
+
+      # - name: Create GitHub Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: ${{ github.ref_name }}
+      #     files: YQ-FOR-MAGISK-v*.zip
+      #     generate_release_notes: true
+      #     token: ${{ secrets.RELEASE_TOKEN }}
 
