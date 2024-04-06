@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '30 0 * * 0'
+  push:
   
 
 jobs:
@@ -26,8 +27,9 @@ jobs:
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
-          wget -P $PWD/toolchain/ -O curl.tar.xz ${download_link}
-          tar -xJf "$PWD/toolchain/curl.tar.xz" -C $PWD/bin
+          curl -L -o $PWD/toolchain/curl.tar.xz "${download_link}"
+          ls $PWD/toolchain/ 
+          tar -xJf $PWD/toolchain/curl.tar.xz -C $PWD/bin
           mkdir $PWD/toolchain && \
           curl -L -o $PWD/toolchain/arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" && \
           cd $PWD/toolchain && \
