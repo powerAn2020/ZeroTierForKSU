@@ -24,6 +24,7 @@ jobs:
         run: |
           sudo apt install -y curl xz-utils make git wget zip 
           echo "dir:$PWD"
+          echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
@@ -47,14 +48,14 @@ jobs:
 
       - name: package ui
         run: |
-          cd ../ui-src
+          cd ${{ github.action_path }}/ui-src
           npm install
           npm run build
-          mv dist/* ../webroot/
+          mv dist/* ${{ github.action_path }}/webroot/
 
       - name: generate_modules
         run: |
-          cd ..
+          cd ${{ github.action_path }}
           ls 
           zip -r -o -X -ll ZeroTierForKSU-$(cat module.prop | grep 'version=' | awk -F '=' '{print $2}').zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
 
