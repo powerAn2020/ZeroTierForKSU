@@ -21,7 +21,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          apt install -y curl xz-utils make git wget
+          sudo apt install -y curl xz-utils make git wget
           echo "dir:$PWD"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
