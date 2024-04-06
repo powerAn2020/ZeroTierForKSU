@@ -55,12 +55,13 @@ jobs:
 
       - name: generate_modules
         run: |
-          ls 
-          zip -r -o -X -ll ZeroTierForKSU-$(cat module.prop | grep 'version=' | awk -F '=' '{print $2}').zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
+          rm -rf ZeroTierOne toolchain
+          ls -la
+          zip -r -o -X -ll ZeroTierForKSU.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
 
       - name: Kernel REL
         uses: actions/upload-artifact@v3
         with:
           name: ZeroTierForKSU
-          path: ./*.zip
+          path: ./ZeroTierForKSU.zip
 
