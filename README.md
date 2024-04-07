@@ -14,6 +14,9 @@
 - [taamarin/box_for_magisk](https://github.com/taamarin/box_for_magisk/blob/master/box/scripts/box.inotify)
 - [stunnel/static-curl](https://github.com/stunnel/static-curl)
 
+# TODO
+  - [ ] 新建zerotier路由规则表，因为提升main表优先级导致无法与box_for_magisk共存。。
+
 # 免责声明
 
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
