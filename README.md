@@ -36,7 +36,27 @@
 
 ### 执行所有脚本都需要带全路径
 
-    `sh /data/adb/modules/ZeroTierForKSU/zerotier.sh`
+```shell
+  sh /data/adb/modules/ZeroTierForKSU/zerotier.sh $1 ...
+  start)
+    start_service 1
+    启动服务
+    ;;
+  stop)
+    stop_service 1
+    停止服务
+    ;;
+  restart)
+    重启服务
+    ;;
+  status)
+    return 模块页面用的状态信息
+    ;;
+  token)
+    获取webapi token
+    ;;
+  
+```
 
 ```shell
 
