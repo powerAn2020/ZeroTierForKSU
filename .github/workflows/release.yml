@@ -35,7 +35,7 @@ jobs:
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
-          tar -xJf curl.tar.xz -C $PWD/bin
+          tar -xJf curl.tar.xz curl -C $PWD/bin
           mkdir $PWD/toolchain 
           wget -O arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
           wget -O arm.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
@@ -105,7 +105,7 @@ jobs:
           ls -la
           zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm'
           mv zerotier-one-arm zerotier-one
-          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
+          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'ZeroTierForKSU-arm64-${{ env.VERSION }}.zip'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
