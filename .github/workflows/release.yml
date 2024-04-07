@@ -86,14 +86,14 @@ jobs:
             git config --global user.name "github action"
             git add module.prop update.json
             git commit -m "update Zerotier version:${{env.VERSION}}"
-            echo "COMMIT=true" >> $GITHUB_ENV
+            echo "COMMIT=1" >> $GITHUB_ENV
           # else
           #   echo "Event triggered is not Scheduled"
           # fi
 
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if:  ${{env.COMMIT == true }}
+        if:  ${{ env.COMMIT == '1' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main 
