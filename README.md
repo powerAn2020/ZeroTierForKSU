@@ -34,6 +34,7 @@
     创建文件`/data/adb/zerotier/KEEP_ON_UNINSTALL`，卸载模块可保留数据目录
     创建文件`/data/adb/zerotier/MANMANUAL`，关闭开机自启
     创建文件`/data/adb/zerotier/ALLOW_9993`，iptables放行UDP 9993入端口
+    创建文件`/data/adb/zerotier/ROUTER_RULE_NEW`，zerotier流量路由模式改为新建路由规则表，删除该文件则是提升main表优先级模式
 
 ## 执行脚本说明
 

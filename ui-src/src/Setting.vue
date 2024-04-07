@@ -58,8 +58,19 @@ const onSelect = (action) => {
   defaultRoterMode.value = action.text;
   showToast(action.text)
   console.info(action)
+  if (action.text === '1') {
+    console.info('开启开机自启服务')
+    execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
+      console.info(v)
+    })
+  } else {
+    console.info('关闭开机自启服务')
+    execCmd('touch /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
+      console.info(v)
+    })
+  }
   localStorage.setItem('defaultRoterMode', action.value)
-};
+}
 
 const execCmd = async (cmd) => {
   console.info(cmd)
