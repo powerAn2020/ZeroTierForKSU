@@ -28,25 +28,40 @@ jobs:
           echo "dir:$PWD"
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          if [ "$latest_version" = "$module_latest_version" ]; then
+            exit 1
+          fi
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
           tar -xJf curl.tar.xz -C $PWD/bin
           mkdir $PWD/toolchain 
           wget -O arm64.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
+          wget -O arm.tar.xz "https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
           xz -d arm64.tar.xz
+          xz -d arm.tar.xz
           tar -xvf arm64.tar -C $PWD/toolchain 
-          rm -f arm64.tar curl.tar.xz
-          
-      - name: Build Zerotier
+          tar -xvf arm.tar -C $PWD/toolchain 
+          rm -f arm64.tar curl.tar.xz arm.tar
+
+      - name: Build Zerotier for arm64
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${zerotier_latest_version}
+          cp -rf ZeroTierOne ZeroTierOne_ARM
           cd ZeroTierOne
           make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
-          cp -rf zerotier-one ../
+          cp -rf zerotier-one ../zerotier-one-arm64
+          ls
+      - name: Build Zerotier for arm
+        run: |
+          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
+          cd ZeroTierOne_ARM
+          make ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
+          cp -rf zerotier-one ../zerotier-one-arm
           ls
 
       - name: Build UI
@@ -56,17 +71,49 @@ jobs:
           npm run build
           mv dist/* ../webroot/
 
-      - name: Generate module
+      - name: Update versionCode
         run: |
-          rm -rf ZeroTierOne toolchain ui-src
+          # if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "Scheduled event triggered this workflow"
+            echo {"version":"${{ env.VERSION }}","versionCode":"$(date +%Y%m%d)","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU.zip","changelog":"update Zerotier Version:${{env.VERSION}}"} >update.json
+            echo 'id=ZeroTierForKSU' >module.prop
+            echo 'name=ZeroTier For KernelSU' >>module.prop
+            echo "version=${{ env.VERSION }}" >>module.prop
+            echo "versionCode=$(date +%Y%m%d)" >>module.prop
+            echo 'author=powerAn' >>module.prop
+            echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
+            git config --global user.email "action@example.com"
+            git config --global user.name "github action"
+            git add module.prop update.json
+            git commit -m "update Zerotier version:${{env.VERSION}}"
+            echo "COMMIT=true" >> $GITHUB_ENV
+          # else
+          #   echo "Event triggered is not Scheduled"
+          # fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        if:  env.COMMIT == true 
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main 
+
+      - name: Generate module for arm64
+        run: |
+          rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src 
+          mv zerotier-one-arm64 zerotier-one
           ls -la
-          zip -r -o -X -ll ZeroTierForKSU.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
+          zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm'
+          mv zerotier-one-arm zerotier-one
+          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ZeroTierForKSU
-          path: ./ZeroTierForKSU.zip
+          path: |
+            ./ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+            ./ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -74,4 +121,6 @@ jobs:
           generate_release_notes: true
           tag_name: ${{ env.VERSION }}
           name: ZeroTierForKSU-${{ env.VERSION }}
-          files: ZeroTierForKSU.zip
+          files: |
+            ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+            ZeroTierForKSU-arm-${{ env.VERSION }}.zip
