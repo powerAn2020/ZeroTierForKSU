@@ -101,9 +101,11 @@ case $1 in
     firewall $2 
     ;;
   router)
+    shift
     router $@
     ;;
   orbit)
+    shift
     orbit $@
     ;;
   *)
