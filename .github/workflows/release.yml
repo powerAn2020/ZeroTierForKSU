@@ -68,6 +68,7 @@ jobs:
         run: |
           cd ui-src
           npm install
+          npm audit fix
           npm run build
           mv dist/* ../webroot/
 
@@ -76,7 +77,7 @@ jobs:
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           if [[ "${{ env.VERSION }}" != "${module_version}" ]]; then
             echo "Scheduled event triggered this workflow"
-            echo {"version":"${{ env.VERSION }}","versionCode":"$(date +%Y%m%d)","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU.zip","changelog":"update Zerotier Version:${{env.VERSION}}"} >update.json
+            echo '{"version":"${{ env.VERSION }}","versionCode":"'$(date +%Y%m%d)'","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm64-${{ env.VERSION }}.zip","changelog":"update Zerotier Version:${{env.VERSION}}"}' >update.json
             echo 'id=ZeroTierForKSU' >module.prop
             echo 'name=ZeroTier For KernelSU' >>module.prop
             echo "version=${{ env.VERSION }}" >>module.prop
