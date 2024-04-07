@@ -93,7 +93,7 @@ jobs:
 
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if:  env.COMMIT == true 
+        if:  ${{env.COMMIT == true }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main 
@@ -105,7 +105,7 @@ jobs:
           ls -la
           zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm'
           mv zerotier-one-arm zerotier-one
-          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x
+          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
