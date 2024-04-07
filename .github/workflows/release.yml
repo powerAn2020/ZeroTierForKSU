@@ -73,7 +73,7 @@ jobs:
 
       - name: Update versionCode
         run: |
-          if [ "${{ env.VERSION }}" != "$(grep "version" module.prop |awk -F'=' '{print $2}')" ]; then
+          if [[ "${{ env.VERSION }}" != "$(grep 'version' module.prop |awk -F'=' '{print $2}')" ]]; then
             echo "Scheduled event triggered this workflow"
             echo {"version":"${{ env.VERSION }}","versionCode":"$(date +%Y%m%d)","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU.zip","changelog":"update Zerotier Version:${{env.VERSION}}"} >update.json
             echo 'id=ZeroTierForKSU' >module.prop
@@ -98,7 +98,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main 
 
-      - name: Generate module for arm64
+      - name: Generate module for arm64/arm
         run: |
           rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src 
           mv zerotier-one-arm64 zerotier-one
