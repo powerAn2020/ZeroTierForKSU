@@ -6,7 +6,9 @@ on:
   schedule:
     - cron: '30 0 * * 0'
   # push:
-  
+
+permissions:
+  contents: write  
 
 jobs:
   build:
@@ -36,7 +38,7 @@ jobs:
           tar -xvf arm64.tar -C $PWD/toolchain 
           rm -f arm64.tar curl.tar.xz
           
-      - name: build zerotier
+      - name: Build Zerotier
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
@@ -47,20 +49,20 @@ jobs:
           cp -rf zerotier-one ../
           ls
 
-      - name: package ui
+      - name: Build UI
         run: |
           cd ui-src
           npm install
           npm run build
           mv dist/* ../webroot/
 
-      - name: generate_modules
+      - name: Generate module
         run: |
           rm -rf ZeroTierOne toolchain ui-src
           ls -la
           zip -r -o -X -ll ZeroTierForKSU.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*'
 
-      - name: ZeroTierForKSU
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ZeroTierForKSU
@@ -73,10 +75,3 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ZeroTierForKSU-${{ env.VERSION }}
           files: ZeroTierForKSU.zip
-      # - name: Create GitHub Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: ${{ github.ref_name }}
-      #     files: ./ZeroTierForKSU.zip
-      #     generate_release_notes: true
-      #     token: ${{ secrets.GITHUB_TOKEN  }}
