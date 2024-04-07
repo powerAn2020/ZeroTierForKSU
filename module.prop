@@ -1,6 +1,6 @@
 id=ZeroTierForKSU
 name=ZeroTier For KernelSU
-version=v1.0
-versionCode=20240403
+version=1.12.2
+versionCode=20240407
 author=powerAn
-description=ZeroTier network tool with UI interface
+description=ZeroTier(1.12.2) with UI interface
