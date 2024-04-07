@@ -88,7 +88,7 @@ jobs:
             git commit -m "update Zerotier version:${{env.VERSION}}"
             echo "COMMIT=1" >> $GITHUB_ENV
           else
-            echo "Event triggered is not Scheduled"
+            echo "no need commit"
           fi
 
       - name: Push changes
