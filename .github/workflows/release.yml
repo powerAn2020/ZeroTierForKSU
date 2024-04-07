@@ -73,7 +73,7 @@ jobs:
 
       - name: Update versionCode
         run: |
-          # if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ env.VERSION }}" != "$(grep "version" module.prop |awk -F'=' '{print $2}')" ]; then
             echo "Scheduled event triggered this workflow"
             echo {"version":"${{ env.VERSION }}","versionCode":"$(date +%Y%m%d)","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU.zip","changelog":"update Zerotier Version:${{env.VERSION}}"} >update.json
             echo 'id=ZeroTierForKSU' >module.prop
@@ -87,9 +87,9 @@ jobs:
             git add module.prop update.json
             git commit -m "update Zerotier version:${{env.VERSION}}"
             echo "COMMIT=1" >> $GITHUB_ENV
-          # else
-          #   echo "Event triggered is not Scheduled"
-          # fi
+          else
+            echo "Event triggered is not Scheduled"
+          fi
 
       - name: Push changes
         uses: ad-m/github-push-action@master
