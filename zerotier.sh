@@ -18,16 +18,16 @@ PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 
-start_inotifyd() {
-  PIDs=($(pgrep -f inotifyd))
-  for PID in "${PIDs[@]}"; do
-    if grep -q "zerotier.inotify" "/proc/$PID/cmdline"; then
-      kill -9 "$PID"
-    fi
-  done
-  echo "inotifyd ${MODDIR}"
-  inotifyd "${MODDIR}/zerotier.inotify" "${MODDIR}" >> "/dev/null" 2>&1 &
-}
+# start_inotifyd() {
+#   PIDs=($(pgrep -f inotifyd))
+#   for PID in "${PIDs[@]}"; do
+#     if grep -q "zerotier.inotify" "/proc/$PID/cmdline"; then
+#       kill -9 "$PID"
+#     fi
+#   done
+#   echo "inotifyd ${MODDIR}"
+#   inotifyd "${MODDIR}/zerotier.inotify" "${MODDIR}" >> "/dev/null" 2>&1 &
+# }
 
 stop_service() {
   zpid=$(pgrep -f "zerotier-one")
@@ -72,7 +72,7 @@ start_service() {
     fi
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
-    nohup $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log 2>&1 &
+    $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
