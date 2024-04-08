@@ -17,6 +17,7 @@ MANUAL=/data/adb/zerotier/MANUAL
 PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
+current_time=$(date +"%I:%M %P")
 
 # start_inotifyd() {
 #   PIDs=($(pgrep -f inotifyd))
@@ -40,6 +41,8 @@ stop_service() {
     # set firewall
     sh ${MODDIR}/api.sh firewall D
   fi
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ☹ service is stop ] /g" $MODDIR/module.prop
+
   if [ "$1" = "1" ];then
     sh ${MODDIR}/api.sh router 1 del
   fi
@@ -72,12 +75,14 @@ start_service() {
     fi
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
+    # ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh 
     $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
       exit $sshd_rc
     fi
+    sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | 😊 service is running ] /g" $MODDIR/module.prop
     if [ "$1" = "1" ];then
       sh ${MODDIR}/api.sh router 1 add
     fi

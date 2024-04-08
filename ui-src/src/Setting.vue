@@ -162,7 +162,7 @@ const enableSwitch = (newValue) => {
   if (newValue === true) {
     console.info('启动zerotier')
     const cacheRoterMode = localStorage.getItem('defaultRoterMode');
-    execCmd(`sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start ${cacheRoterMode}`).then(v => {
+    execCmd(`ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start ${cacheRoterMode}`).then(v => {
       enableLoading.value = false;
     })
   } else {
