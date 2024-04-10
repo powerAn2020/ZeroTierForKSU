@@ -13,7 +13,7 @@ else
 fi
 
 ZTPATH=/data/adb/zerotier
-MANUAL=/data/adb/zerotier/MANUAL
+MANUAL=${ZTPATH}/MANUAL
 PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
@@ -22,5 +22,5 @@ SECRETFILE=$ZTPATH/authtoken.secret
         sleep 10
     done
     sh ${MODDIR}/zerotier.sh start 1
-    ${MODDIR}/zerotier.sh inotifyd
+    sh ${MODDIR}/zerotier.sh inotifyd
 )&

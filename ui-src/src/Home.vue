@@ -113,12 +113,12 @@ const newAdd = (index) => {
       title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
-        execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start').then(v => {
-          showToast('启动完成');
+        execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+          execCmd(`/data/adb/ksu/bin/ksud enable ZeroTierForKSU`)
           setTimeout(() => {
-            ready.value = true;
+            showToast('启动完成');
             return true;
-          }, 2000);
+          }, 2000);          
         })
       })
     return;
@@ -187,9 +187,10 @@ const joinApi = (info) => {
       showDialog({
         title: '操作失败',
         message: v
-      }).then(() => {
-        // on close
-      });
+      }).
+      // then(() => {
+      //   // on close
+      // });
       console.info(v);
     }
 

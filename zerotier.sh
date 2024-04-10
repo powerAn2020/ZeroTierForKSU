@@ -13,7 +13,7 @@ else
 fi
 
 ZTPATH=/data/adb/zerotier
-MANUAL=/data/adb/zerotier/MANUAL
+MANUAL=${ZTPATH}/MANUAL
 PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
@@ -27,7 +27,7 @@ start_inotifyd() {
     fi
   done
   echo "inotifyd ${MODDIR}"
-  inotifyd "${MODDIR}/zerotier.inotify" "${MODDIR}" >> "/dev/null" 2>&1 &
+  inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> "/dev/null" 2>&1 &
 }
 
 stop_service() {
@@ -37,7 +37,7 @@ stop_service() {
   else
     kill $zpid
   fi
-  if [ ! -f "/data/adb/zerotier/ALLOW_9993" ]; then
+  if [ ! -f "${ZTPATH}/ALLOW_9993" ]; then
     # set firewall
     sh ${MODDIR}/api.sh firewall D
   fi
@@ -51,15 +51,15 @@ stop_service() {
 status_service() {
   zpid=$(pgrep -f "zerotier-one")
   uninstallKeep=true
-  if [ ! -f "/data/adb/zerotier/KEEP_ON_UNINSTALL" ]; then
+  if [ ! -f "${ZTPATH}/KEEP_ON_UNINSTALL" ]; then
     uninstallKeep=false
   fi
   autoStart=false
-  if [ ! -f "/data/adb/zerotier/MANUAL" ]; then
+  if [ ! -f "${ZTPATH}/MANUAL" ]; then
     autoStart=true
   fi
   firewall=true
-  if [ ! -f "/data/adb/zerotier/ALLOW_9993" ]; then
+  if [ ! -f "${ZTPATH}/ALLOW_9993" ]; then
     firewall=false
   fi
   cliStatus=$(sh ${MODDIR}/zerotier-cli status);
@@ -69,7 +69,7 @@ status_service() {
 start_service() {
   zpid=$(pgrep -f "zerotier-one")
   if [ -z $zpid ];then
-    if [ -f "/data/adb/zerotier/ALLOW_9993" ]; then
+    if [ -f "${ZTPATH}/ALLOW_9993" ]; then
       # set firewall
       sh ${MODDIR}/api.sh firewall A
     fi

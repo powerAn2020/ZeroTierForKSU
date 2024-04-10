@@ -13,7 +13,7 @@ else
 fi
 
 ZTPATH=/data/adb/zerotier
-MANUAL=/data/adb/zerotier/MANUAL
+MANUAL=${ZTPATH}/MANUAL
 
 PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one

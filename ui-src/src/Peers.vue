@@ -51,14 +51,15 @@ const newAdd = (index) => {
 }
 const getContent = (arr) => {
   let showText = '';
-  for (const path of arr) {
-    if (path.active) {
-      showText += path.address;
-      showText += '\n';
+  if ( typeof arr !='undefined' && arr!=null ){
+    for (const path of Array.from(new Set(arr))) {
+      if (path.active) {
+        showText += path.address;
+        showText += '\n';
+      }
     }
   }
   return showText;
-
 }
 const addBtn = (action) =>
   new Promise((resolve) => {
