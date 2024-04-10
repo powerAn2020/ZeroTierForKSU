@@ -75,6 +75,7 @@ jobs:
       - name: Update versionCode
         run: |
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
+          module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
           if [[ "${{ env.VERSION }}" != "${module_version}" ]]; then
             echo "Scheduled event triggered this workflow"
             echo '{"version":"${{ env.VERSION }}","versionCode":"'$(date +%Y%m%d)'","zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm64-${{ env.VERSION }}.zip","changelog":"update Zerotier Version:${{env.VERSION}}"}' >update_arm64.json
@@ -92,6 +93,7 @@ jobs:
             echo "COMMIT=1" >> $GITHUB_ENV
           else
             echo "no need commit"
+            exit 1
           fi
 
       - name: Push changes
