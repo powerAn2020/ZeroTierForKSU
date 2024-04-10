@@ -1,6 +1,6 @@
 id=ZeroTierForKSU
 name=ZeroTier For KernelSU
 version=1.12.2
-versionCode=20240408
+versionCode=20240410
 author=powerAn
 description=ZeroTier(1.12.2) with UI interface
