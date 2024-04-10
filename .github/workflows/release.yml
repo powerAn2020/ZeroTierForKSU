@@ -24,14 +24,15 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt install -y curl xz-utils make git wget zip 
-          echo "dir:$PWD"
+          sudo apt install -y xz-utils make git wget zip 
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           if [ "$latest_version" = "$module_latest_version" ]; then
             exit 1
           fi
+          zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
@@ -44,33 +45,6 @@ jobs:
           tar -xvf arm64.tar -C $PWD/toolchain 
           tar -xvf arm.tar -C $PWD/toolchain 
           rm -f arm64.tar curl.tar.xz arm.tar
-
-      - name: Build Zerotier for arm64
-        run: |
-          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
-          zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-          git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${zerotier_latest_version}
-          cp -rf ZeroTierOne ZeroTierOne_ARM
-          cd ZeroTierOne
-          make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
-          cp -rf zerotier-one ../zerotier-one-arm64
-          ls
-      - name: Build Zerotier for arm
-        run: |
-          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
-          cd ZeroTierOne_ARM
-          make ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
-          cp -rf zerotier-one ../zerotier-one-arm
-          ls
-
-      - name: Build UI
-        run: |
-          cd ui-src
-          npm install
-          npm audit fix
-          npm run build
-          mv dist/* ../webroot/
 
       - name: Update versionCode
         run: |
@@ -95,6 +69,31 @@ jobs:
             echo "no need commit"
             exit 1
           fi
+
+      - name: Build Zerotier for arm64
+        run: |
+          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
+          git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
+          cp -rf ZeroTierOne ZeroTierOne_ARM
+          cd ZeroTierOne
+          make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
+          cp -rf zerotier-one ../zerotier-one-arm64
+          ls
+      - name: Build Zerotier for arm
+        run: |
+          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
+          cd ZeroTierOne_ARM
+          make ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
+          cp -rf zerotier-one ../zerotier-one-arm
+          ls
+
+      - name: Build UI
+        run: |
+          cd ui-src
+          npm install
+          npm audit fix
+          npm run build
+          mv dist/* ../webroot/
 
       - name: Push changes
         uses: ad-m/github-push-action@master
