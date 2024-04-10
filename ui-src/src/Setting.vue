@@ -163,14 +163,18 @@ const enableSwitch = (newValue) => {
     console.info('启动zerotier')
     // const cacheRoterMode = localStorage.getItem('defaultRoterMode');
     execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
-      enableLoading.value = false;
       execCmd(`/data/adb/ksu/bin/ksud enable ZeroTierForKSU`)
+      setTimeout(() => {
+        enableLoading.value = false;
+      }, 1000);    
     })
   } else {
     console.info('关闭zerotier')
     execCmd('touch /data/adb/zerotier/state/disable').then(v => {
       execCmd(`/data/adb/ksu/bin/ksud disable ZeroTierForKSU`)
-      enableLoading.value = false;
+      setTimeout(() => {
+        enableLoading.value = false;
+      }, 1000);        
     })
   }
 };
