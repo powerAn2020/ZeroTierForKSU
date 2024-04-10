@@ -103,7 +103,7 @@ jobs:
 
       - name: Generate module for arm64/arm
         run: |
-          rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json
+          rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json build.sh
           mv zerotier-one-arm64 zerotier-one
           echo 'updateJson=https://github.com/powerAn2020/ZeroTierOneForKSU/raw/main/update_arm64.json' >>module.prop
           ls -la

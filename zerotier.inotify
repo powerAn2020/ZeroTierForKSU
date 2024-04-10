@@ -1,12 +1,8 @@
 #!/system/bin/sh
-
+MODDIR=${0%/*}
 now=$(date +"%I:%M %p")
 
 ZTPATH=/data/adb/zerotier
-MANUAL=/data/adb/zerotier/MANUAL
-PIDFILE=$ZTPATH/zerotier-one.pid
-ZEROTIERD=$MODDIR/zerotier-one
-SECRETFILE=$ZTPATH/authtoken.secret
 
 events="$1"
 monitor_dir="$2"
@@ -14,10 +10,11 @@ monitor_file="$3"
 
 service_control() {
   if [ "${monitor_file}" = "disable" ]; then
+    echo "${events} - ${monitor_dir} - ${monitor_file}" >>${ZTPATH}/inotify.log
     if [ "${events}" = "d" ]; then
-      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh start 1
+      ${MODDIR}/zerotier.sh start 1 >>${ZTPATH}/inotify.log
     elif [ "${events}" = "n" ]; then
-      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh stop 1
+      ${MODDIR}/zerotier.sh stop 1 >>${ZTPATH}/inotify.log
     fi
   fi
 }
