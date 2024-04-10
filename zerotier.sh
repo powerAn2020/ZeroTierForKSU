@@ -19,16 +19,16 @@ ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 current_time=$(date +"%I:%M %P")
 
-# start_inotifyd() {
-#   PIDs=($(pgrep -f inotifyd))
-#   for PID in "${PIDs[@]}"; do
-#     if grep -q "zerotier.inotify" "/proc/$PID/cmdline"; then
-#       kill -9 "$PID"
-#     fi
-#   done
-#   echo "inotifyd ${MODDIR}"
-#   inotifyd "${MODDIR}/zerotier.inotify" "${MODDIR}" >> "/dev/null" 2>&1 &
-# }
+start_inotifyd() {
+  PIDs=$(pgrep -f inotifyd)
+  for PID in "${PIDs[@]}"; do
+    if grep -q "zerotier.inotify" "/proc/$PID/cmdline"; then
+      kill -9 "$PID"
+    fi
+  done
+  echo "inotifyd ${MODDIR}"
+  inotifyd "${MODDIR}/zerotier.inotify" "${MODDIR}" >> "/dev/null" 2>&1 &
+}
 
 stop_service() {
   zpid=$(pgrep -f "zerotier-one")
@@ -115,6 +115,9 @@ case $1 in
   token)
     get_token
     ;;
+  inotifyd)
+    start_inotifyd
+    ;;
   *)
-    echo "Unsupported operation [start,stop,restart,status,token]"
+    echo "Unsupported operation [start,stop,restart,status,token,inotifyd]"
 esac

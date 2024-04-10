@@ -15,9 +15,9 @@ monitor_file="$3"
 service_control() {
   if [ "${monitor_file}" = "disable" ]; then
     if [ "${events}" = "d" ]; then
-      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh start
+      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh start 1
     elif [ "${events}" = "n" ]; then
-      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh stop
+      ASH_STANDALONE=1 ${MODDIR}/zerotier.sh stop 1
     fi
   fi
 }

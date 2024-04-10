@@ -22,4 +22,5 @@ SECRETFILE=$ZTPATH/authtoken.secret
         sleep 10
     done
     sh ${MODDIR}/zerotier.sh start 1
+    ${MODDIR}/zerotier.sh inotifyd
 )&
