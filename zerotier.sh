@@ -41,7 +41,7 @@ stop_service() {
     # set firewall
     sh ${MODDIR}/api.sh firewall D
   fi
-  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ☹ service is stop ] /g" $MODDIR/module.prop
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | 😢 service is stop ] /g" $MODDIR/module.prop
 
   if [ "$1" = "1" ];then
     sh ${MODDIR}/api.sh router 1 del
