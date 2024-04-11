@@ -35,7 +35,7 @@
             </template>
           </van-swipe-cell>
         </template>
-        <JsonViewer :expand-depth="1" :value="item" copyable sort />
+        <JsonViewer :expand-depth="1" :value="item" copyable sort :theme="theme?'light':'dark'"/>
       </van-collapse-item>
     </van-collapse>
   </van-pull-refresh>
@@ -64,6 +64,8 @@
 </template>
 
 <script setup>
+defineProps(["theme"]);//接收父组件传来的值
+
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { exec } from 'kernelsu';
