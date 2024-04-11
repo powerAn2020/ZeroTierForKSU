@@ -14,6 +14,9 @@ fi
 
 ZTPATH=/data/adb/zerotier
 MANUAL=${ZTPATH}/MANUAL
+ALLOW_9993=${ZTPATH}/ALLOW_9993
+KEEP_ON_UNINSTALL=${ZTPATH}/KEEP_ON_UNINSTALL
+ROUTER_RULE_NEW=${ZTPATH}/ROUTER_RULE_NEW
 PIDFILE=$ZTPATH/zerotier-one.pid
 ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
@@ -37,58 +40,67 @@ stop_service() {
   else
     kill $zpid
   fi
-  if [ ! -f "${ZTPATH}/ALLOW_9993" ]; then
+  if [ ! -f "${ALLOW_9993}" ]; then
     # set firewall
     sh ${MODDIR}/api.sh firewall D
   fi
-  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | 😢 service is stop ] /g" $MODDIR/module.prop
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ❎ service is stop ] /g" $MODDIR/module.prop
 
-  if [ "$1" = "1" ];then
+  if [ ! -f ${ROUTER_RULE_NEW} ];then
     sh ${MODDIR}/api.sh router 1 del
   fi
+  /data/adb/ksu/bin/ksud disable ZeroTierForKSU
   echo done.
 }
 status_service() {
   zpid=$(pgrep -f "zerotier-one")
   uninstallKeep=true
-  if [ ! -f "${ZTPATH}/KEEP_ON_UNINSTALL" ]; then
+  if [ ! -f "${KEEP_ON_UNINSTALL}" ]; then
     uninstallKeep=false
   fi
   autoStart=false
-  if [ ! -f "${ZTPATH}/MANUAL" ]; then
+  if [ ! -f "${MANUAL}" ]; then
     autoStart=true
   fi
+  
+  routerRuleNew=1
+  if [ -f ${ROUTER_RULE_NEW} ];then
+    routerRuleNew=0
+  fi
   firewall=true
-  if [ ! -f "${ZTPATH}/ALLOW_9993" ]; then
+  if [ ! -f "${ALLOW_9993}" ]; then
     firewall=false
   fi
   cliStatus=$(sh ${MODDIR}/zerotier-cli status);
-  data='{ "enable": "'${zpid}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "uninstallKeep": '${uninstallKeep}', "cliStatus": "'${cliStatus}'" }'
+  if [ $? != 0 ];then
+    cliStatus='';
+  fi
+  data='{ "enable": "'${zpid}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "uninstallKeep": '${uninstallKeep}',"routerRuleNew": '${routerRuleNew}', "cliStatus": "'${cliStatus}'" }'
   echo $data
 }
 start_service() {
   zpid=$(pgrep -f "zerotier-one")
   if [ -z $zpid ];then
-    if [ -f "${ZTPATH}/ALLOW_9993" ]; then
+    if [ -f "${ALLOW_9993}" ]; then
       # set firewall
       sh ${MODDIR}/api.sh firewall A
     fi
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
-    # ASH_STANDALONE=1 /data/adb/ksu/bin/busybox sh 
     $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
       exit $sshd_rc
     fi
-    sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | 😊 service is running ] /g" $MODDIR/module.prop
-    if [ "$1" = "1" ];then
+    sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✅ service is running ] /g" $MODDIR/module.prop
+    if [ ! -f ${ROUTER_RULE_NEW} ];then
       sh ${MODDIR}/api.sh router 1 add
     fi
   else
     echo "service is running,pid:$zpid"
   fi
+  /data/adb/ksu/bin/ksud enable ZeroTierForKSU
   echo done.
 }
 get_token() {

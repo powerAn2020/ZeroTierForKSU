@@ -54,17 +54,18 @@ const actions = [
   { text: 'main表优先模式', value: '1' },
 ];
 const defaultRoterMode = ref(actions[1].text);
+// 绑定路由选择事件
 const onSelect = (action) => {
   defaultRoterMode.value = action.text;
   showToast(action.text)
   console.info(action)
   if (action.text === '1') {
-    console.info('开启开机自启服务')
+    console.info('main表优先模式')
     execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
       console.info(v)
     })
   } else {
-    console.info('关闭开机自启服务')
+    console.info('自建路由模式')
     execCmd('touch /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
       console.info(v)
     })
@@ -90,8 +91,10 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   firewall.value = statusObj.firewall;
   autoStart.value = statusObj.autoStart;
   uninstallKeep.value = statusObj.uninstallKeep;
+  localStorage.setItem('defaultRoterMode', statusObj.routerRuleNew)
+  defaultRoterMode.value=actions[parseInt(statusObj.routerRuleNew)].text;
   const cliStatus = statusObj.cliStatus;
-  if (typeof (cliStatus) != 'undefined') {
+  if (typeof (cliStatus) != 'undefined' && cliStatus!='') {
     const cliStatusArr = cliStatus.split(' ');
     const nodeId = cliStatusArr[2];
     const zerotierVersion = cliStatusArr[3];
@@ -163,7 +166,6 @@ const enableSwitch = (newValue) => {
     console.info('启动zerotier')
     // const cacheRoterMode = localStorage.getItem('defaultRoterMode');
     execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
-      execCmd(`/data/adb/ksu/bin/ksud enable ZeroTierForKSU`)
       setTimeout(() => {
         enableLoading.value = false;
       }, 1000);    
@@ -171,7 +173,6 @@ const enableSwitch = (newValue) => {
   } else {
     console.info('关闭zerotier')
     execCmd('touch /data/adb/zerotier/state/disable').then(v => {
-      execCmd(`/data/adb/ksu/bin/ksud disable ZeroTierForKSU`)
       setTimeout(() => {
         enableLoading.value = false;
       }, 1000);        
