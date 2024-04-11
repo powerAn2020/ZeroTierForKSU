@@ -264,7 +264,7 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
       title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
-        execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh start').then(v => {
+    execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
           showToast('启动完成');
           setTimeout(() => {
             ready.value = true;
