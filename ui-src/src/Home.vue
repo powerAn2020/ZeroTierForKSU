@@ -65,10 +65,10 @@
 
 <script setup>
 defineProps(["theme"]);//接收父组件传来的值
-
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { exec } from 'kernelsu';
+
 const chosenAddressId = ref('1');
 // const text = ref('禁用')
 const loading = ref(false);
@@ -88,6 +88,7 @@ function source() {
     "id": ''
   };
 }
+
 let leaveNetwork = localStorage.getItem("leaveNetwork");
 if (typeof leaveNetwork == "undefined" && leaveNetwork == null) {
   leaveNetwork = [];
@@ -96,6 +97,7 @@ if (typeof leaveNetwork == "undefined" && leaveNetwork == null) {
   leaveNetwork = JSON.parse(leaveNetwork);
 }
 // ======== method=========
+
 const reset = () => {
   addOrUpdate.value = source()
   info = addOrUpdate.value;
@@ -190,9 +192,6 @@ const joinApi = (info) => {
         title: '操作失败',
         message: v
       }).
-      // then(() => {
-      //   // on close
-      // });
       console.info(v);
     }
 
