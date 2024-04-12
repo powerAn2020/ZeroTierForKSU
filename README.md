@@ -15,7 +15,7 @@
 - [stunnel/static-curl](https://github.com/stunnel/static-curl)
 
 # BUGS
-  - [ ] 通过UI启动的zerotier进程会随着KSU Manager的结束而退出
+  - [x] 通过UI启动的zerotier进程会随着KSU Manager的结束而退出
 
 
 # TODO
@@ -64,6 +64,8 @@
   token)
     获取webapi token
     ;;
+  inotifyd)
+    监听 /data/adb/zerotier/state,用于启动服务
   
 ```
 
@@ -84,7 +86,7 @@ sh /data/adb/modules/ZeroTierForKSU/api.sh $1 other(可选参数如下)
     leaveNetwork $2
     ;;
   joinOrUpdateNetwork)
-    加入网络或者更新网络，第一个参数是网络ID，第二个参数json对象，{    "allowDNS": false,    "allowDefault": false,    "allowManaged": true,   "allowGlobal": false,    "name": '',    "id": ''  }
+    加入网络或者更新网络，第一个参数是网络ID，第二个参数json对象，{"allowDNS": false,"allowDefault": false,"allowManaged": true,"allowGlobal": false,"id": ''  }
     joinOrUpdateNetwork $2 ''$3''
     ;;
   peer)
@@ -107,4 +109,4 @@ sh /data/adb/modules/ZeroTierForKSU/api.sh $1 other(可选参数如下)
 
     `sh /data/adb/modules/ZeroTierForKSU/zerotier-cli` #同官方
     `sh /data/adb/modules/ZeroTierForKSU/zerotier-idtool` #同官方
-    `sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify` # 没弄，本来想弄快速开关的
+    `sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify` # 监听/data/adb/zerotier/state目录，用于启动服务。
