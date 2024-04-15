@@ -29,7 +29,7 @@ jobs:
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           if [ "$latest_version" = "$module_latest_version" ]; then
-            exit 1
+            exit 0
           fi
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           
