@@ -1,1 +1,1 @@
-update Zerotier version:1.12.2
+首次安装，监听服务未启用，需要手动重启的bug
