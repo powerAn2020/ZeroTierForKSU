@@ -118,7 +118,6 @@ const newAdd = (index) => {
     })
       .then(() => {
         execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
-          execCmd(`/data/adb/ksu/bin/ksud enable ZeroTierForKSU`)
           setTimeout(() => {
             showToast('启动完成');
             return true;

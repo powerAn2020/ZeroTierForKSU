@@ -22,7 +22,7 @@ SECRETFILE=$ZTPATH/authtoken.secret
         sleep 10
     done
     if [ ! -f "${MANUAL}" ]; then
-      sh ${MODDIR}/zerotier.sh start 1
+      sh ${MODDIR}/zerotier.sh start
       ${MODDIR}/zerotier.sh inotifyd
     fi
 
