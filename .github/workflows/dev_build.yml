@@ -52,29 +52,23 @@ jobs:
         run: |
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
-          # if [[ "${{ env.VERSION }}" != "${module_version}" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "Scheduled event triggered this workflow"
-            versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
-            echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm64-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm64.json
-            echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm.json
-            echo 'id=ZeroTierForKSU' >module.prop
-            echo 'name=ZeroTier For KernelSU' >>module.prop
-            echo "version=${{ env.VERSION }}" >>module.prop
-            echo "versionCode=${versionCode}" >>module.prop
-            echo 'author=powerAn' >>module.prop
-            echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
-            git config --global user.email "action@example.com"
-            MESSAGE=$(git log -1 --pretty=%B)
-            echo "commit MESSAGE: $MESSAGE"
-            echo $MESSAGE > changelog.md
-            git config --global user.name "github action"
-            git add module.prop update_arm64.json update_arm.json changelog.md
-            git commit -m "update Zerotier version:${{env.VERSION}}"
-            echo "COMMIT=1" >> $GITHUB_ENV
-          # else
-          #   echo "no need commit"
-          #   exit 0
-          # fi
+          echo "Scheduled event triggered this workflow"
+          versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
+          echo "new_module_version=$versionCode" >> $GITHUB_ENV
+          echo 'id=ZeroTierForKSU' >module.prop
+          echo 'name=ZeroTier For KernelSU' >>module.prop
+          echo "version=${{ env.VERSION }}" >>module.prop
+          echo "versionCode=${versionCode}" >>module.prop
+          echo 'author=powerAn' >>module.prop
+          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
+          git config --global user.email "action@example.com"
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "commit MESSAGE: $MESSAGE"
+          echo $MESSAGE > changelog.md
+          git config --global user.name "github action"
+          git add module.prop update_arm64.json update_arm.json changelog.md
+          git commit -m "update Zerotier version:${{env.VERSION}}"
+          echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Build Zerotier for arm64
         run: |
@@ -92,7 +86,6 @@ jobs:
           make -j -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
 
-
       - name: Build UI
         run: |
           cd ui-src
@@ -100,13 +93,6 @@ jobs:
           npm audit fix
           npm run build
           mv dist/* ../webroot/
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        if:  ${{ env.COMMIT == '1' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev 
 
       - name: Generate module for arm64/arm
         run: |
@@ -123,17 +109,35 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ZeroTierForKSU-arm64
-          path: |
-            ./ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
-            
+          name: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          path: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+
+      - name: 输出 Artifact 下载地址
+        run: |
+          echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm64.json
+          
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ZeroTierForKSU-arm
-          path: |
-            ./ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          name: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          path: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+
       - name: 输出 Artifact 下载地址
         run: |
-          echo "Artifact1 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm.json
+      - name: update json
+        run: |
+          git add update_arm64.json update_arm.json
+          git commit -m "update Zerotier version:${{env.VERSION}}"
+          echo "COMMIT=1" >> $GITHUB_ENV
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        if:  ${{ env.COMMIT == '1' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: dev 
+  
