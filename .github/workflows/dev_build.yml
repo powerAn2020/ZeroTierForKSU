@@ -4,6 +4,8 @@ name: dev build
 on:
   workflow_dispatch:
   push:
+    branches:
+      - dev
 
 permissions:
   contents: write  

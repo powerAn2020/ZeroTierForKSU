@@ -1,1 +1,1 @@
-Merge pull request #3 from powerAn2020/dev 修复bug
+首次安装，监听服务未启用，需要手动重启的bug
