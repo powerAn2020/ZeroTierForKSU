@@ -20,13 +20,7 @@ ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 TOKEN=$(cat ${SECRETFILE})
 CurlBIN=${MODDIR}/bin/curl
-#TODO 构建阶段需要下载二进制curl到bin目录
-# local latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | busybox grep -oE "[0-9.]*" | head -1)
-# local download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
-# if ! busybox tar -xJf "${bin_dir}/curl.tar.xz" -C "${bin_dir}" >&2; then
-#     log Error "Failed to extract ${bin_dir}/curl.tar.xz" >&2
-#     cp "${bin_dir}/backup/curl.bak" "${bin_dir}/curl" >/dev/null 2>&1 && log Info "Restored curl" || return 1
-#   fi
+
 status(){
   $CurlBIN -H "X-ZT1-Auth: $TOKEN" http://localhost:9993/status
 }
@@ -40,10 +34,7 @@ leaveNetwork(){
 }
 
 joinOrUpdateNetwork() {
-  $CurlBIN -X POST -H "X-ZT1-Auth: $TOKEN" -d $2 http://localhost:9993/network/$1 
-}
-joinOrUpdateNetwork() {
-  $CurlBIN -X POST -H "X-ZT1-Auth: $TOKEN" -d $2 http://localhost:9993/network/$1 
+  $CurlBIN -X POST -H "Content-Type:application/json" -H "X-ZT1-Auth: $TOKEN" -d "$2" http://localhost:9993/network/$1 
 }
 
 peer(){
@@ -92,7 +83,7 @@ case $1 in
     leaveNetwork $2
     ;;
   joinOrUpdateNetwork)
-    joinOrUpdateNetwork $2 ''$3''
+    joinOrUpdateNetwork $2 "$3"
     ;;
   peer)
     peer

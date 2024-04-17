@@ -86,8 +86,8 @@ sh /data/adb/modules/ZeroTierForKSU/api.sh $1 other(可选参数如下)
     leaveNetwork $2
     ;;
   joinOrUpdateNetwork)
-    加入网络或者更新网络，第一个参数是网络ID，第二个参数json对象，{"allowDNS": false,"allowDefault": false,"allowManaged": true,"allowGlobal": false,"id": ''  }
-    joinOrUpdateNetwork $2 ''$3''
+    加入网络或者更新网络，第一个参数是网络ID，第二个参数json对象，'{"allowDNS": false,"allowDefault": false,"allowManaged": true,"allowGlobal": false }'
+    joinOrUpdateNetwork $2 "$3"
     ;;
   peer)
     返回成员列表

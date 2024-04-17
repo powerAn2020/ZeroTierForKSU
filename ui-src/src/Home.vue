@@ -133,10 +133,11 @@ const newAdd = (index) => {
     readonly.value = true;
     const editObj = JSON.parse(JSON.stringify(items[index]));
     info.allowDNS = editObj.allowDNS,
-      info.allowDefault = editObj.allowDefault,
-      info.allowManaged = editObj.allowManaged,
-      info.allowGlobal = editObj.allowGlobal,
-      info.id = editObj.id
+    info.allowDefault = editObj.allowDefault,
+    info.allowManaged = editObj.allowManaged,
+    info.allowGlobal = editObj.allowGlobal,
+    info.name = editObj.name,
+    info.id = editObj.id
   } else {
     readonly.value = false;
     reset()
@@ -179,14 +180,14 @@ const delNode = (index) => {
 }
 const joinApi = (info) => {
   const postData = JSON.stringify(info)
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh joinOrUpdateNetwork ${info.id} ${postData}`).then(v => {
+  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh joinOrUpdateNetwork ${info.id} '${postData}'`).then(v => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
       showToast('完成,即将重载列表');
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 500);
     } catch (error) {
       showDialog({
         title: '操作失败',
