@@ -1,1 +1,1 @@
-fix:无法正确删除网络的bug
+Merge pull request #3 from powerAn2020/dev 修复bug
