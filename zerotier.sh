@@ -87,6 +87,9 @@ start_service() {
     fi
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
+    if [ -f ${ZTPATH}/state/disable ]; then
+      rm ${ZTPATH}/state/disable
+    fi
     $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
