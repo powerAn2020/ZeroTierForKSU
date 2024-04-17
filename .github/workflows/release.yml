@@ -84,14 +84,14 @@ jobs:
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
           cp -rf ZeroTierOne ZeroTierOne_ARM
           cd ZeroTierOne
-          make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
+          make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm64
 
       - name: Build Zerotier for arm
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
           cd ZeroTierOne_ARM
-          make ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
+          make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
 
 

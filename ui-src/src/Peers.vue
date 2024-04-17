@@ -61,6 +61,8 @@ const getContent = (arr) => {
         showText += '\n';
       }
     }
+  }else{
+    showText = '-'
   }
   return showText;
 }

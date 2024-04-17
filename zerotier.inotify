@@ -12,9 +12,9 @@ service_control() {
   if [ "${monitor_file}" = "disable" ]; then
     echo "${events} - ${monitor_dir} - ${monitor_file}" >>${ZTPATH}/inotify.log
     if [ "${events}" = "d" ]; then
-      ${MODDIR}/zerotier.sh start 1 >>${ZTPATH}/inotify.log
+      ${MODDIR}/zerotier.sh start >>${ZTPATH}/inotify.log
     elif [ "${events}" = "n" ]; then
-      ${MODDIR}/zerotier.sh stop 1 >>${ZTPATH}/inotify.log
+      ${MODDIR}/zerotier.sh stop >>${ZTPATH}/inotify.log
     fi
   fi
 }

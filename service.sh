@@ -21,6 +21,9 @@ SECRETFILE=$ZTPATH/authtoken.secret
     until [ $(getprop init.svc.bootanim) = "stopped" ]; do
         sleep 10
     done
-    sh ${MODDIR}/zerotier.sh start 1
-    ${MODDIR}/zerotier.sh inotifyd
+    if [ ! -f "${MANUAL}" ]; then
+      sh ${MODDIR}/zerotier.sh start
+      ${MODDIR}/zerotier.sh inotifyd
+    fi
+
 )&

@@ -118,7 +118,6 @@ const newAdd = (index) => {
     })
       .then(() => {
         execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
-          execCmd(`/data/adb/ksu/bin/ksud enable ZeroTierForKSU`)
           setTimeout(() => {
             showToast('启动完成');
             return true;
@@ -169,8 +168,8 @@ const delNode = (index) => {
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       let status = items[index];
       items.splice(index, 1)
+      leaveApi(status)
       if (leaveNetwork.length > 0) {
-        leaveApi(status)
         const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id);
         localStorage.setItem("leaveNetwork", JSON.stringify(nleaveNetwork));
       }
@@ -236,11 +235,11 @@ const getList=()=>{
 const addOrUpdateBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
-      items.push(info);
+      // items.push(info);
       joinApi(info)
       setTimeout(() => {
         resolve(true)
-      }, 2000);
+      }, 1500);
     } else if (action === 'cancel') {
       resolve(true);
       // reset();
