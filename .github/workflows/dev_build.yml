@@ -136,3 +136,4 @@ jobs:
       - name: 输出 Artifact 下载地址
         run: |
           echo "Artifact1 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
