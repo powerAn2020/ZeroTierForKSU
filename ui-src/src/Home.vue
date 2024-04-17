@@ -235,11 +235,11 @@ const getList=()=>{
 const addOrUpdateBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
-      items.push(info);
+      // items.push(info);
       joinApi(info)
       setTimeout(() => {
         resolve(true)
-      }, 2000);
+      }, 1500);
     } else if (action === 'cancel') {
       resolve(true);
       // reset();
