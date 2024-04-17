@@ -168,8 +168,8 @@ const delNode = (index) => {
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       let status = items[index];
       items.splice(index, 1)
+      leaveApi(status)
       if (leaveNetwork.length > 0) {
-        leaveApi(status)
         const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id);
         localStorage.setItem("leaveNetwork", JSON.stringify(nleaveNetwork));
       }

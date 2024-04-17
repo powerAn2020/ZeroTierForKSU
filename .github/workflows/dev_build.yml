@@ -109,25 +109,25 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          name: ZeroTierForKSU-arm64-${{ env.VERSION }}
           path: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
 
       - name: 输出 Artifact 下载地址
         run: |
           echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm64.json
-          
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          name: ZeroTierForKSU-arm-${{ env.VERSION }}
           path: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
       - name: 输出 Artifact 下载地址
         run: |
           echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm.json
+      
       - name: update json
         run: |
           git add update_arm64.json update_arm.json
