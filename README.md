@@ -13,6 +13,7 @@
 - [linuxscreen/ZeroTierOneForMagisk](https://github.com/linuxscreen/ZeroTierOneForMagisk)
 - [taamarin/box_for_magisk](https://github.com/taamarin/box_for_magisk/blob/master/box/scripts/box.inotify)
 - [stunnel/static-curl](https://github.com/stunnel/static-curl)
+- [tiann/KernelSU](https://github.com/tiann/KernelSU)
 
 # BUGS
   - [x] 通过UI启动的zerotier进程会随着KSU Manager的结束而退出
