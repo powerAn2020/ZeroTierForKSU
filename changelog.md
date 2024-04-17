@@ -1,1 +1,1 @@
-fix:无法正确删除网络的bug
+update Zerotier version:1.12.2
