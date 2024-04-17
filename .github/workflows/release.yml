@@ -83,14 +83,14 @@ jobs:
           cd ZeroTierOne
           make ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm64
-          ls
+
       - name: Build Zerotier for arm
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
           cd ZeroTierOne_ARM
           make ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
-          ls
+
 
       - name: Build UI
         run: |
@@ -111,7 +111,7 @@ jobs:
         run: |
           rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json build.sh
           mv zerotier-one-arm64 zerotier-one
-          echo 'updateJson=https://github.com/powerAn2020/ZeroTierOneForKSU/raw/main/update_arm64.json' >>module.prop
+          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/update_arm64.json' >>module.prop
           ls -la
           zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm' -x 'curl'
           mv -f zerotier-one-arm zerotier-one
