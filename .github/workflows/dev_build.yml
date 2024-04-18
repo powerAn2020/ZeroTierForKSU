@@ -99,12 +99,13 @@ jobs:
         run: |
           rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json update_arm64_dev.json update_arm_dev.json build.sh changelog_dev.md
           mv zerotier-one-arm64 zerotier-one
+          ls -la
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
-          ./build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          sh build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
-          ./build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          sh build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
       - name: Upload artifact
         id: arm64-zip
