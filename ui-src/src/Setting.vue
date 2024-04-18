@@ -30,6 +30,7 @@
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
+    <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
   </div>
 
 </template>
@@ -59,7 +60,7 @@ const onSelect = (action) => {
   defaultRoterMode.value = action.text;
   showToast(action.text)
   console.info(action)
-  if (action.text === '1') {
+  if (action.text == '1') {
     console.info('main表优先模式')
     execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
       console.info(v)

@@ -24,17 +24,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt install -y xz-utils make git wget zip 
+          sudo apt install -y xz-utils make git wget zip bash
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          if [ "$latest_version" = "$module_latest_version" ]; then
-            exit 0
-          fi
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
@@ -62,20 +56,19 @@ jobs:
           echo "version=${{ env.VERSION }}" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn' >>module.prop
-          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
+          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
           git config --global user.email "action@example.com"
           MESSAGE=$(git log -1 --pretty=%B)
           echo "commit MESSAGE: $MESSAGE"
-          echo $MESSAGE > changelog.md
+          echo $MESSAGE > changelog_dev.md
           git config --global user.name "github action"
-          git add module.prop update_arm64.json update_arm.json changelog.md
-          git commit -m "update Zerotier version:${{env.VERSION}}"
+          git add changelog_dev.md
           echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Build Zerotier for arm64
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
-          git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
+          git clone https://github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
           cp -rf ZeroTierOne ZeroTierOne_ARM
           cd ZeroTierOne
           make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
@@ -98,41 +91,46 @@ jobs:
 
       - name: Generate module for arm64/arm
         run: |
-          rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json build.sh
+          # rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json update_arm64_dev.json update_arm_dev.json build.sh changelog_dev.md
           mv zerotier-one-arm64 zerotier-one
-          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64.json' >>module.prop
           ls -la
-          zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm' -x 'curl'
+          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
+          bash build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          unzip -d ZeroTierForKSU-arm64-${{ env.VERSION }} ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
-          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'ZeroTierForKSU-arm64-${{ env.VERSION }}.zip'
+          bash build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          unzip -d ZeroTierForKSU-arm-${{ env.VERSION }} ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        id: arm64-zip
+        uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm64-${{ env.VERSION }}
-          path: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
-
-      - name: 输出 Artifact 下载地址
-        run: |
-          echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm64.json
+          path: ./ZeroTierForKSU-arm64-${{ env.VERSION }}/*
+          retention-days: 7
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        id: arm-zip
+          # v2版本好像不会压缩包套压缩包，还没试
+        uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm-${{ env.VERSION }}
-          path: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          path: ./ZeroTierForKSU-arm-${{ env.VERSION }}/*
+          retention-days: 7
 
       - name: 输出 Artifact 下载地址
         run: |
-          echo "Artifact2 下载地址: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog.md"}' >update_arm.json
+          echo "Artifact1 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
+          echo "Artifact2 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"${{ steps.arm64-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"${{ steps.arm-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
       
       - name: update json
         run: |
-          git add update_arm64.json update_arm.json
+          git add update_arm64_dev.json update_arm_dev.json changelog_dev.md module.prop
           git commit -m "update Zerotier version:${{env.VERSION}}"
           echo "COMMIT=1" >> $GITHUB_ENV
 
