@@ -30,6 +30,7 @@
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
+    <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
   </div>
 
 </template>

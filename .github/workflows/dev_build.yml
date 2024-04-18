@@ -27,10 +27,6 @@ jobs:
           sudo apt install -y xz-utils make git wget zip bash
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          if [ "$latest_version" = "$module_latest_version" ]; then
-            exit 0
-          fi
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
@@ -60,7 +56,7 @@ jobs:
           echo "version=${{ env.VERSION }}" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn' >>module.prop
-          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
+          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
           git config --global user.email "action@example.com"
           MESSAGE=$(git log -1 --pretty=%B)
           echo "commit MESSAGE: $MESSAGE"
@@ -115,9 +111,10 @@ jobs:
           name: ZeroTierForKSU-arm64-${{ env.VERSION }}
           path: ./ZeroTierForKSU-arm64-${{ env.VERSION }}/*
           retention-days: 7
-          
+
       - name: Upload artifact
         id: arm-zip
+          # v2版本好像不会压缩包套压缩包，还没试
         uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm-${{ env.VERSION }}
