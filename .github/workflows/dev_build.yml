@@ -24,7 +24,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt install -y xz-utils make git wget zip 
+          sudo apt install -y xz-utils make git wget zip bash
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
@@ -32,9 +32,7 @@ jobs:
             exit 0
           fi
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
@@ -101,11 +99,11 @@ jobs:
           mv zerotier-one-arm64 zerotier-one
           ls -la
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
-          sh build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          bash build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
-          sh build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          bash build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
       - name: Upload artifact
         id: arm64-zip
