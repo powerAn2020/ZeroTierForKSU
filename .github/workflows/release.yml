@@ -28,13 +28,11 @@ jobs:
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          if [ "$latest_version" = "$module_latest_version" ]; then
+          zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          if [ "$zerotier_latest_version" = "$module_latest_version" -a "${{github.event_name }}" = "schedule"]; then
             exit 0
           fi
-          zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}

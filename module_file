@@ -1,0 +1,16 @@
+bin
+META-INF
+webroot
+api.sh
+customize.sh
+module.prop
+README.md
+service.sh
+uninstall.sh
+zerotier.inotify
+zerotier.sh
+zerotier-cli
+zerotier-idtool
+zerotier-one
+LICENSE
+changelog.md
