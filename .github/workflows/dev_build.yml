@@ -111,13 +111,16 @@ jobs:
         with:
           name: ZeroTierForKSU-arm64-${{ env.VERSION }}
           path: ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
-
+          retention-days: 7
+          compression-level: 0
       - name: Upload artifact
         id: arm-zip
         uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm-${{ env.VERSION }}
           path: ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          retention-days: 7
+          compression-level: 0
 
       - name: 输出 Artifact 下载地址
         run: |
