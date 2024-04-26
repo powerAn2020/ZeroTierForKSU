@@ -29,7 +29,7 @@ start_inotifyd() {
       kill -9 "$PID"
     fi
   done
-  echo "inotifyd ${MODDIR}"
+  echo "inotifyd ${ZTPATH}/state"
   inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> "/dev/null" 2>&1 &
 }
 
