@@ -9,7 +9,7 @@ if [ "$BOOTMODE" != true ]; then
   ui_print "! Please install in Magisk Manager or KernelSU Manager"
   ui_print "! Install from recovery is NOT supported"
   abort "-----------------------------------------------------------"
-elif [ "$KSU" = true ] && [ "$KSU_VER_CODE" -lt 10670 ]; then
+elif [ "$KSU" = true ] && [ "$KSU_VER_CODE" -lt 11551 ]; then
   abort "ERROR: Please update your KernelSU and KernelSU Manager"
 fi
 
