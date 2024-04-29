@@ -9,7 +9,7 @@ if [ "$BOOTMODE" != true ]; then
   ui_print "! Please install in Magisk Manager or KernelSU Manager"
   ui_print "! Install from recovery is NOT supported"
   abort "-----------------------------------------------------------"
-elif [ "$KSU" = true ] && [ "$KSU_VER_CODE" -lt 10670 ]; then
+elif [ "$KSU" = true ] && [ "$KSU_VER_CODE" -lt 11551 ]; then
   abort "ERROR: Please update your KernelSU and KernelSU Manager"
 fi
 
@@ -33,7 +33,6 @@ fi
 ui_print "- Installing Zerotier for KSU"
 
 if [ ! -d "/data/adb/zerotier" ]; then
-  mkdir -p /data/adb/zerotier
   mkdir -p /data/adb/zerotier/state
   set_perm /data/adb/zerotier 0 0 0755
   set_perm /data/adb/zerotier/state 0 0 0755
@@ -51,5 +50,6 @@ set_perm $MODPATH/zerotier.sh 0  0  0755
 set_perm $MODPATH/zerotier.inotify 0  0  0755
 set_perm $MODPATH/api.sh 0  0  0755
 set_perm $MODPATH/bin/curl 0  0  0755
+set_perm $MODPATH/service.sh 0  0  0755
 
 ui_print "- Installation is complete, reboot your device"

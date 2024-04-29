@@ -29,7 +29,8 @@ start_inotifyd() {
       kill -9 "$PID"
     fi
   done
-  echo "inotifyd ${MODDIR}"
+  echo "inotifyd ${ZTPATH}/state"
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | inotifyd is running ] /g" $MODDIR/module.prop
   inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> "/dev/null" 2>&1 &
 }
 
@@ -49,7 +50,7 @@ stop_service() {
   if [ ! -f ${ROUTER_RULE_NEW} ];then
     sh ${MODDIR}/api.sh router 1 del
   fi
-  /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
+  # /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
   echo done.
 }
 status_service() {
@@ -103,7 +104,7 @@ start_service() {
   else
     echo "service is running,pid:$zpid"
   fi
-  /data/adb/ksu/bin/ksud module enable ZeroTierForKSU
+  # /data/adb/ksu/bin/ksud module enable ZeroTierForKSU
   echo done.
 }
 get_token() {
