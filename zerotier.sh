@@ -49,7 +49,7 @@ stop_service() {
   if [ ! -f ${ROUTER_RULE_NEW} ];then
     sh ${MODDIR}/api.sh router 1 del
   fi
-  /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
+  # /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
   echo done.
 }
 status_service() {
@@ -103,7 +103,7 @@ start_service() {
   else
     echo "service is running,pid:$zpid"
   fi
-  /data/adb/ksu/bin/ksud module enable ZeroTierForKSU
+  # /data/adb/ksu/bin/ksud module enable ZeroTierForKSU
   echo done.
 }
 get_token() {
