@@ -16,13 +16,18 @@
 - [tiann/KernelSU](https://github.com/tiann/KernelSU)
 
 # BUGS
-  - [x] 通过UI启动的zerotier进程会随着KSU Manager的结束而退出
 
+- [x] ~~通过UI启动的zerotier进程会随着KSU Manager的结束而退出~~
+
+# 已知问题
+- [zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)
 
 # TODO
 
-  - [ ] 新建zerotier路由规则表，因为提升main表优先级导致无法与box_for_magisk共存。。
-
+1. [ ] UI增加一个开发版和稳定版切换，现在测试好麻烦。
+2. [ ] 流水线增加自定义zerotier版本编译。[据说1.8.9版本没有zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)
+3. [ ] 新建zerotier路由规则表，~~因为提升main表优先级导致无法与box_for_magisk共存。。~~（没学会。先放着吧）
+  
 # 免责声明
 
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
@@ -108,6 +113,8 @@ sh /data/adb/modules/ZeroTierForKSU/api.sh $1 other(可选参数如下)
     ;;
 ```
 
-    `sh /data/adb/modules/ZeroTierForKSU/zerotier-cli` #同官方
-    `sh /data/adb/modules/ZeroTierForKSU/zerotier-idtool` #同官方
-    `sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify` # 监听/data/adb/zerotier/state目录，用于启动服务。
+```shell
+sh /data/adb/modules/ZeroTierForKSU/zerotier-cli #同官方
+sh /data/adb/modules/ZeroTierForKSU/zerotier-idtool#同官方
+sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify # 监听/data/adb/zerotier/state目录，用于启动服务。
+```

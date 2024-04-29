@@ -30,6 +30,7 @@ start_inotifyd() {
     fi
   done
   echo "inotifyd ${ZTPATH}/state"
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | inotifyd is running ] /g" $MODDIR/module.prop
   inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> "/dev/null" 2>&1 &
 }
 
