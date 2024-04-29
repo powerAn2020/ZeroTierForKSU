@@ -64,9 +64,9 @@ status_service() {
     autoStart=true
   fi
   
-  routerRuleNew=1
+  routerRuleNew=0
   if [ -f ${ROUTER_RULE_NEW} ];then
-    routerRuleNew=0
+    routerRuleNew=1
   fi
   firewall=true
   if [ ! -f "${ALLOW_9993}" ]; then
