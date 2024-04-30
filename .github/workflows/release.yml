@@ -110,15 +110,14 @@ jobs:
 
       - name: Generate module for arm64/arm
         run: |
-          rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json build.sh
           mv zerotier-one-arm64 zerotier-one
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/update_arm64.json' >>module.prop
           ls -la
-          zip -r -o -X -ll ZeroTierForKSU-arm64-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'zerotier-one-arm' -x 'curl'
+          bash build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
-          zip -r -o -X -ll ZeroTierForKSU-arm-${{ env.VERSION }}.zip ./ -x '.git/*' -x '.gitignore' -x '.github/*' -x 'ZeroTierForKSU-arm64-${{ env.VERSION }}.zip'
+          bash build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
