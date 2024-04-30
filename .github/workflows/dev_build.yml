@@ -3,6 +3,12 @@ name: dev build
 
 on:
   workflow_dispatch:
+    inputs:
+      zt_version:
+        description: 'zt标签/Tag'
+        required: false
+        type: string
+        default: ''
   push:
     branches:
       - dev
@@ -27,8 +33,13 @@ jobs:
           sudo apt install -y xz-utils make git wget zip bash
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          zerotier_latest_version=${{ inputs.zt_version }}
+          if [ -z ${zerotier_latest_version} ];then
+            zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          fi
+          # 将zt最新版写入到环境变量
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
+
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
