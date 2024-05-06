@@ -64,10 +64,21 @@ jobs:
             echo 'author=powerAn' >>module.prop
             echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
             git config --global user.email "action@example.com"
-            MESSAGE=$(git log -1 --pretty=%B)
-            echo "commit MESSAGE: $MESSAGE"
-            echo $MESSAGE > changelog.md
             git config --global user.name "github action"
+            if [[ "${{ github.event_name }}" == "schedule" ]]; then
+              wget -O RELEASE-NOTES.md https://github.com/zerotier/ZeroTierOne/raw/dev/RELEASE-NOTES.md
+              release_notes_line=$(grep -nPo '\d{4}-\d{2}-\d{2} -- Version [\d.]+' RELEASE-NOTES.md|head -2|awk -F ':' '{print $1}'|awk BEGIN{RS=EOF}'{gsub(/\n/," ");print}'|awk '{printf("start=%s; end=%s;",$1,$2)}')
+              eval $release_notes_line
+              end=$(expr ${end} - 1)
+              sed -n "${start},${end}p" RELEASE-NOTES.md >changelog.md
+              rm RELEASE-NOTES.md
+            else
+              MESSAGE=$(git log -1 --pretty=%B)
+              echo "commit MESSAGE: $MESSAGE"
+              echo $MESSAGE > changelog.md
+            fi
+            
+
             git add module.prop update_arm64.json update_arm.json changelog.md
             git commit -m "update Zerotier version:${{env.VERSION}}"
             echo "COMMIT=1" >> $GITHUB_ENV
@@ -127,8 +138,20 @@ jobs:
             ./ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
             ./ZeroTierForKSU-arm-${{ env.VERSION }}.zip
 
-      - name: Release
+      - name: Schedule Release
         uses: softprops/action-gh-release@v2
+        if: github.event_name == 'schedule'  
+        with:
+          body_path: changelog.md
+          tag_name: ${{ env.VERSION }}
+          name: ZeroTierForKSU-${{ env.VERSION }}
+          files: |
+            ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+            ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+
+      - name: Manual Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'workflow_dispatch'
         with:
           generate_release_notes: true
           tag_name: ${{ env.VERSION }}
