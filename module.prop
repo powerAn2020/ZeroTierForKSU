@@ -1,7 +1,6 @@
 id=ZeroTierForKSU
 name=ZeroTier For KernelSU
-version=1.8.9
-versionCode=10371
+version=1.14.0
+versionCode=10365
 author=powerAn
-description=ZeroTier(1.8.9) with UI interface (DEV)
-updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm_dev.json
+description=ZeroTier(1.14.0) with UI interface
