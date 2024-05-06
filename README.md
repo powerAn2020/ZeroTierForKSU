@@ -25,7 +25,7 @@
 # TODO
 
 1. [ ] UI增加一个开发版和稳定版切换，现在测试好麻烦。
-2. [ ] 流水线增加自定义zerotier版本编译。[据说1.8.9版本没有zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)
+2. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
 3. [ ] 新建zerotier路由规则表，~~因为提升main表优先级导致无法与box_for_magisk共存。。~~（没学会。先放着吧）
   
 # 免责声明
@@ -35,6 +35,10 @@
 # 使用方法
 
 用UI界面
+
+![List](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/a20e0eeb-2813-40dd-892c-c3f44fff77c2)
+![Peers](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/61040bcb-8b51-4521-a35a-a2e793df3bb1)
+![Setting](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/05f3e070-6fd7-48a3-9afb-22fb4cfff56a)
 
 # 一些可选操作说明
 
