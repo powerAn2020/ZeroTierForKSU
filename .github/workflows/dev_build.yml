@@ -73,7 +73,7 @@ jobs:
           echo "commit MESSAGE: $MESSAGE"
           echo $MESSAGE > changelog_dev.md
           git config --global user.name "github action"
-          git add changelog_dev.md
+          git add changelog_dev.md module.prop
           echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Build Zerotier for arm64
@@ -141,7 +141,7 @@ jobs:
       
       - name: update json
         run: |
-          git add update_arm64_dev.json update_arm_dev.json changelog_dev.md module.prop
+          git add update_arm64_dev.json update_arm_dev.json changelog_dev.md 
           git commit -m "update Zerotier version:${{env.VERSION}}"
           echo "COMMIT=1" >> $GITHUB_ENV
 
