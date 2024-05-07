@@ -20,7 +20,7 @@
 - [x] ~~通过UI启动的zerotier进程会随着KSU Manager的结束而退出~~
 
 # 已知问题
-- [zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)
+- ~~[zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)~~ ZerotierOne 1.14.0版本已修复
 
 # TODO
 
