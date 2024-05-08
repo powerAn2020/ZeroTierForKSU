@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
@@ -73,7 +73,7 @@ jobs:
           echo "commit MESSAGE: $MESSAGE"
           echo $MESSAGE > changelog_dev.md
           git config --global user.name "github action"
-          git add changelog_dev.md module.prop
+          git add changelog_dev.md 
           echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Build Zerotier for arm64
