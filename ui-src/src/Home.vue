@@ -221,7 +221,9 @@ const getList=()=>{
   execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
       items.length = 0;
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
-      items.push(...leaveNetwork)
+      if(leaveNetwork){
+        items.push(...leaveNetwork)
+      }
       if (v !== "") {
         const statusObj = JSON.parse(v);
         if (statusObj.length > 0) {
