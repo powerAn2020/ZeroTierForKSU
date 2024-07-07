@@ -54,10 +54,10 @@ const actions = [
   { text: '自建路由模式', value: '0', disabled: true },
   { text: 'main表优先模式', value: '1' },
 ];
-const defaultRoterMode = ref(actions[1].value);
+const defaultRoterMode = ref(actions[1].text);
 // 绑定路由选择事件
 const onSelect = (action) => {
-  defaultRoterMode.value = action.value;
+  defaultRoterMode.value = action.text;
   showToast(action.text)
   console.info(action)
   if (action.value == '1') {
