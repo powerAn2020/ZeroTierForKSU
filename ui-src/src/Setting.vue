@@ -54,13 +54,13 @@ const actions = [
   { text: '自建路由模式', value: '0', disabled: true },
   { text: 'main表优先模式', value: '1' },
 ];
-const defaultRoterMode = ref(actions[1].text);
+const defaultRoterMode = ref(actions[1].value);
 // 绑定路由选择事件
 const onSelect = (action) => {
-  defaultRoterMode.value = action.text;
+  defaultRoterMode.value = action.value;
   showToast(action.text)
   console.info(action)
-  if (action.text == '1') {
+  if (action.value == '1') {
     console.info('main表优先模式')
     execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
       console.info(v)
