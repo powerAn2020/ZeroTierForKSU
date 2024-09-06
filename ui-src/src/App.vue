@@ -52,6 +52,10 @@ execCmd('settings get secure ui_night_mode').then(v => {
   }else if(v=='2'){
     theme.value=false;
   }
+  // 返回值竟然有null
+  if(v==null){
+    theme.value=false;
+  }
   localStorage.setItem('theme',theme.value)
 });
 const cacheTheme=localStorage.getItem('theme');
