@@ -97,7 +97,7 @@ Usage:
   api.sh <api_type> [options]
 
 Options:
-  -h        Show this message.
+  -h                                            -- Show this message.
   <api_type>   local/central
     local
       status                                    -- Show Node Status
@@ -114,12 +114,12 @@ Options:
       orbit                                     -- Join Private Root Servers
         moonid     value:[ moonid ]
     central
-      network                                     -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", "networkid" and "bodydata" are required.
-        action     value:[ list | remove | add ]
+      network                                     -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", No parameters are required. When the action is "modify", "networkid" and "bodydata" are required.
+        action     value:[ list | remove | add | modify ]
         networkid  value:[ networkid ](optional)
         bodydata   value:[ JSON object ](optional)
-      member                                     -- When the action is "list", "bodydata" and "memberID" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", "networkid", "memberID" and "bodydata" are required.
-        action     value:[ list | remove | add ]
+      member                                     -- When the action is "list", "bodydata" and "memberID" are optional. When the action is "remove", "bodydata" is optional. When the action is "modify", "networkid", "memberID" and "bodydata" are required.
+        action     value:[ list | remove | modify ]
         networkid  value:[ networkid ] (optional)
         memberID   value:[ memberID ] (optional)
         bodydata   value:[ JSON object ] (optional)
@@ -148,10 +148,11 @@ Example:
   central
     sh api.sh central network list
     sh api.sh central network remove yourNetworkid
-    sh api.sh central network add yourNetworkid {}
+    sh api.sh central network add
+    sh api.sh central network modify yourNetworkid {}
     sh api.sh central member list
     sh api.sh central member remove yourNetworkid memberID
-    sh api.sh central member add yourNetworkid memberID {}
+    sh api.sh central member modify yourNetworkid memberID {}
   apikey
     sh api.sh apikey show
     sh api.sh apikey update xxxxxxxxx

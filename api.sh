@@ -24,12 +24,12 @@
 ###       orbit                                     -- Join Private Root Servers
 ###         moonid     value:[ moonid ]
 ###     central
-###       network                                     -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", "networkid" and "bodydata" are required.
-###         action     value:[ list | remove | add ]
+###       network                                     -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", No parameters are required. When the action is "modify", "networkid" and "bodydata" are required.
+###         action     value:[ list | remove | add | modify ]
 ###         networkid  value:[ networkid ](optional)
 ###         bodydata   value:[ JSON object ](optional)
-###       member                                     -- When the action is "list", "bodydata" and "memberID" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", "networkid", "memberID" and "bodydata" are required.
-###         action     value:[ list | remove | add ]
+###       member                                     -- When the action is "list", "bodydata" and "memberID" are optional. When the action is "remove", "bodydata" is optional. When the action is "modify", "networkid", "memberID" and "bodydata" are required.
+###         action     value:[ list | remove | modify ]
 ###         networkid  value:[ networkid ] (optional)
 ###         memberID   value:[ memberID ] (optional)
 ###         bodydata   value:[ JSON object ] (optional)
@@ -58,10 +58,11 @@
 ###   central
 ###     sh api.sh central network list
 ###     sh api.sh central network remove yourNetworkid
-###     sh api.sh central network add yourNetworkid {}
+###     sh api.sh central network add
+###     sh api.sh central network modify yourNetworkid {}
 ###     sh api.sh central member list
 ###     sh api.sh central member remove yourNetworkid memberID
-###     sh api.sh central member add yourNetworkid memberID {}
+###     sh api.sh central member modify yourNetworkid memberID {}
 ###   apikey
 ###     sh api.sh apikey show
 ###     sh api.sh apikey update xxxxxxxxx
@@ -183,10 +184,10 @@ local)
     action=$1
     networkid=$2
     bodydata=$3
-    if [ ! -z "${bodydata}"]; then
+    if [ ! -z "${bodydata}" ]; then
       bodydata="{}"
     fi
-    if [ ! -z "${networkid}"]; then
+    if [ ! -z "${networkid}" ]; then
       networkid='/'"${networkid}"
     fi
     case $action in
@@ -224,10 +225,10 @@ central)
     action=$1
     networkid=$2
     bodydata=$3
-    if [ ! -z "${bodydata}"]; then
+    if [ ! -z "${bodydata}" ]; then
       bodydata="{}"
     fi
-    if [ ! -z "${networkid}"]; then
+    if [ ! -z "${networkid}" ]; then
       networkid='/'"${networkid}"
     fi
     case $action in
@@ -238,6 +239,9 @@ central)
       api_networks "DELETE" ${bodydata} ${networkid}
       ;;
     add)
+      api_networks "POST" ${bodydata} ""
+      ;;
+    modify)
       api_networks "POST" ${bodydata} ${networkid}
       ;;
     esac
@@ -247,10 +251,10 @@ central)
     networkid=$2
     memberID=$3
     bodydata=$4
-    if [ ! -z "${bodydata}"]; then
+    if [ ! -z "${bodydata}" ]; then
       bodydata="{}"
     fi
-    if [ ! -z "${memberID}"]; then
+    if [ ! -z "${memberID}" ]; then
       memberID='/'"${memberID}"
     fi
     case $action in
@@ -260,7 +264,7 @@ central)
     remove)
       api_members "DELETE" ${networkid} ${memberID}
       ;;
-    add)
+    modify)
       api_members "POST" ${networkid} ${memberID} ''${bodydata}''
       ;;
     esac
@@ -273,10 +277,11 @@ apikey)
   key=$2
   case $action in
   show)
-    cat ${APIKEY}
+    echo "APIKEY:$(cat ${APIKEY})"
     ;;
   update)
     echo "${key}" >${TOKENAUTH}
+    echo "done"
     ;;
   esac
   ;;
