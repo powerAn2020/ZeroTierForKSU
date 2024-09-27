@@ -10,17 +10,17 @@
   "dependencies": {
     "kernelsu": "^1.0.6",
     "vant": "^4.8.5",
-    "vue": "^3.4.21",
+    "vue": "^3.5.9",
     "vue-router": "^4.3.0",
     "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
-    "@iconify-json/ep": "^1.1.15",
+    "@iconify-json/ep": "^1.2.0",
     "@vant/auto-import-resolver": "^1.1.0",
-    "@vitejs/plugin-vue": "^4.3.4",
+    "@vitejs/plugin-vue": "^5.1.4",
     "less": "^4.1.3",
     "unplugin-auto-import": "^0.17.5",
-    "unplugin-vue-components": "^0.26.0",
-    "vite": "^5.1.6"
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^5.4.8"
   }
 }
