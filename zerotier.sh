@@ -1,4 +1,33 @@
 #!/system/bin/sh
+
+###
+### ZeroTier for KSU - zerotier.sh
+###
+### Usage:
+###   zerotier.sh options
+###
+### Options:
+###   -h                                         -- Show this message.
+###   start                                      -- Start Zerotier Service
+###   restart                                    -- Retart Zerotier Service
+###   stop                                       -- Stop Zerotier Service
+###   status                                     -- Show Node Status
+###   token                                      -- Show Local Service Token
+###   apiKey                                     -- Show Remote Service APIKEY
+###   inotifyd                                   -- Start inotifyd Service
+###
+### Example:
+###   help
+###     sh zerotier.sh -h
+###     sh zerotier.sh start
+###     sh zerotier.sh restart
+###     sh zerotier.sh stop
+###     sh zerotier.sh status
+###     sh zerotier.sh token
+###     sh zerotier.sh apiKey
+###     sh zerotier.sh inotifyd
+###
+
 MODDIR=${0%/*}
 
 if [ -f "/data/adb/ksu/bin/busybox" ]; then
@@ -43,12 +72,12 @@ stop_service() {
   fi
   if [ ! -f "${ALLOW_9993}" ]; then
     # set firewall
-    sh ${MODDIR}/api.sh firewall D
+    sh ${MODDIR}/api.sh local firewall D
   fi
-  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ❎ service is stop ] /g" $MODDIR/module.prop
+  sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ❌ service is stop ] /g" $MODDIR/module.prop
 
   if [ ! -f ${ROUTER_RULE_NEW} ];then
-    sh ${MODDIR}/api.sh router 1 del
+    sh ${MODDIR}/api.sh local router main del
   fi
   # /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
   echo done.
@@ -84,22 +113,22 @@ start_service() {
   if [ -z $zpid ];then
     if [ -f "${ALLOW_9993}" ]; then
       # set firewall
-      sh ${MODDIR}/api.sh firewall A
+      sh ${MODDIR}/api.sh local firewall A
     fi
     # Start ZEROTIERD
     echo "starting $ZEROTIERD... \c"
     if [ -f ${ZTPATH}/state/disable ]; then
       rm ${ZTPATH}/state/disable
     fi
-    $ZEROTIERD -d $ZTPATH > $ZTPATH/error.log
+    $ZEROTIERD -d $ZTPATH 2>&1 > $ZTPATH/error.log
     sshd_rc=$?
     if [ $sshd_rc -ne 0 ]; then
       echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
       exit $sshd_rc
     fi
-    sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✅ service is running ] /g" $MODDIR/module.prop
+    sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✔︎ service is running ] /g" $MODDIR/module.prop
     if [ ! -f ${ROUTER_RULE_NEW} ];then
-      sh ${MODDIR}/api.sh router 1 add
+      sh ${MODDIR}/api.sh local router main add
     fi
   else
     echo "service is running,pid:$zpid"
@@ -110,20 +139,29 @@ start_service() {
 get_token() {
   echo "$(cat ${SECRETFILE})"
 }
-
+get_apiKey() {
+  if [ -f $ZTPATH/TOKENAUTH ];then
+    echo "The API key was not found. Use "api.sh update xxxx" to add it. "
+  else
+    cat $ZTPATH/TOKENAUTH
+  fi
+}
+help() {
+  sed -rn 's/^### ?//;T;p;' "$0"
+}
 case $1 in
   start)
     shift
-    start_service $@
+    start_service
     ;;
   stop)
     shift
-    stop_service $@
+    stop_service
     ;;
   restart)
     shift
-    stop_service $@
-    start_service $@
+    stop_service
+    start_service
     ;;
   status)
     status_service
@@ -131,9 +169,12 @@ case $1 in
   token)
     get_token
     ;;
+  apiKey)
+    get_apiKey
+    ;;
   inotifyd)
     start_inotifyd
     ;;
   *)
-    echo "Unsupported operation [start,stop,restart,status,token,inotifyd]"
+    help
 esac

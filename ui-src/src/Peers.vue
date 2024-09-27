@@ -69,7 +69,7 @@ const getContent = (arr) => {
 const addBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
-      execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh orbit ${moonId.value}`).then(v => {
+      execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh local orbit ${moonId.value}`).then(v => {
         showToast('完成');
         resolve(true);
       })
@@ -79,7 +79,7 @@ const addBtn = (action) =>
     }
   });
 const getList = () => {
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh peer`).then(v => {
+  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh local peer`).then(v => {
     items.length = 0;
     items.push(...JSON.parse(v));
   })

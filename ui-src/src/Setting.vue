@@ -54,7 +54,7 @@ const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
 const cliStatusText = ref();
 const apiToken = ref('');
-
+const ZTPATH='/data/adb/zerotier'
 // 通过 actions 属性来定义菜单选项
 const actions = [
   { text: '自建路由模式', value: '0', disabled: true },
@@ -68,12 +68,12 @@ const defaultRoterMode = ref(actions[1].text);
 //   console.info(action)
 //   if (action.value == '1') {
 //     console.info('main表优先模式')
-//     execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
+//     execCmd(`rm ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
 //       console.info(v)
 //     })
 //   } else {
 //     console.info('自建路由模式')
-//     execCmd('touch /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
+//     execCmd(`touch ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
 //       console.info(v)
 //     })
 //   }
@@ -94,7 +94,7 @@ const execCmd = async (cmd) => {
 const init = () => {
   cliStatusText.value = "启动服务查看节点信息";
   const lApiToken = localStorage.getItem('apiToken');
-  if (lApiToken.length != 0) {
+  if (lApiToken) {
     apiToken.value = lApiToken;
   }
   execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
@@ -118,6 +118,7 @@ const init = () => {
 const saveToken = () => {
   if (apiToken.value.length != 0) {
     localStorage.setItem('apiToken', apiToken.value)
+    execCmd(`echo ${apiToken.value} > ${ZTPATH}/tokenAuth`)
   } else {
     localStorage.removeItem('apiToken')
   }
@@ -126,12 +127,12 @@ const autoStartSwitch = (newValue) => {
   autoStartLoading.value = true;
   if (newValue === true) {
     console.info('开启开机自启服务')
-    execCmd('rm /data/adb/zerotier/MANUAL').then(v => {
+    execCmd(`rm ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
     })
   } else {
     console.info('关闭开机自启服务')
-    execCmd('touch /data/adb/zerotier/MANUAL').then(v => {
+    execCmd(`touch ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
     })
   }
@@ -140,12 +141,12 @@ const uninstallKeepSwitch = (newValue) => {
   uninstallKeepLoading.value = true;
   if (newValue === true) {
     console.info('开启卸载保留数据')
-    execCmd('touch /data/adb/zerotier/KEEP_ON_UNINSTALL').then(v => {
+    execCmd(`touch ${ZTPATH}/KEEP_ON_UNINSTALL`).then(v => {
       uninstallKeepLoading.value = false;
     })
   } else {
     console.info('关闭卸载保留数据')
-    execCmd('rm /data/adb/zerotier/KEEP_ON_UNINSTALL').then(v => {
+    execCmd(`rm ${ZTPATH}/KEEP_ON_UNINSTALL`).then(v => {
       uninstallKeepLoading.value = false;
     })
   }
@@ -154,8 +155,8 @@ const firewallSwitch = (newValue) => {
   firewallLoading.value = true;
   if (newValue === true) {
     console.info('允许防火墙放行9993')
-    execCmd('touch /data/adb/zerotier/ALLOW_9993').then(v => {
-      execCmd(`sh /data/adb/zerotier/api.sh firewall A`).then(v2 => {
+    execCmd(`touch ${ZTPATH}/ALLOW_9993`).then(v => {
+      execCmd(`sh ${ZTPATH}/api.sh local firewall A`).then(v2 => {
         if (typeof (v2) != 'undefined' && v2 != '') {
           showDialog({
             title: v2,
@@ -166,8 +167,8 @@ const firewallSwitch = (newValue) => {
     })
   } else {
     console.info('禁止防火墙放行9993')
-    execCmd('rm /data/adb/zerotier/ALLOW_9993').then(v => {
-      execCmd(`sh /data/adb/zerotier/api.sh firewall D`).then(v2 => {
+    execCmd(`rm ${ZTPATH}/ALLOW_9993`).then(v => {
+      execCmd(`sh ${ZTPATH}/api.sh local firewall D`).then(v2 => {
         if (typeof (v2) != 'undefined' && v2 != '') {
           showDialog({
             title: v2,
@@ -183,14 +184,14 @@ const enableSwitch = (newValue) => {
   if (newValue === true) {
     console.info('启动zerotier')
     // const cacheRoterMode = localStorage.getItem('defaultRoterMode');
-    execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
       }, 1000);
     })
   } else {
     console.info('关闭zerotier')
-    execCmd('touch /data/adb/zerotier/state/disable').then(v => {
+    execCmd(`touch ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
       }, 1000);

@@ -18,7 +18,8 @@
     </router-view>
     <van-tabbar route>
       <van-tabbar-item replace to="/" icon="home-o">首页</van-tabbar-item>
-      <van-tabbar-item replace to="/peers" icon="fire-o">成员</van-tabbar-item>
+      <van-tabbar-item replace to="/peers" icon="friends-o">成员</van-tabbar-item>
+      <van-tabbar-item replace to="/center" icon="setting-o">管理</van-tabbar-item>
       <van-tabbar-item replace to="/setting" icon="setting-o">设置</van-tabbar-item>
     </van-tabbar>
   </van-config-provider>

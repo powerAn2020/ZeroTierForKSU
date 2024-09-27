@@ -68,6 +68,7 @@ defineProps(["theme"]);//接收父组件传来的值
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { exec } from 'kernelsu';
+const ZTPATH='/data/adb/zerotier'
 
 const chosenAddressId = ref('1');
 // const text = ref('禁用')
@@ -117,7 +118,7 @@ const newAdd = (index) => {
       title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
-        execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+        execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
           setTimeout(() => {
             showToast('启动完成');
             return true;
@@ -179,7 +180,7 @@ const delNode = (index) => {
 }
 const joinApi = (info) => {
   const postData = JSON.stringify(info)
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh joinOrUpdateNetwork ${info.id} '${postData}'`).then(v => {
+  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh local network join ${info.id} '${postData}'`).then(v => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
@@ -198,7 +199,7 @@ const joinApi = (info) => {
   });
 }
 const leaveApi = (info) => {
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh leaveNetwork ${info.id}`).then(v => {
+  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh local network leave ${info.id}`).then(v => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
@@ -218,7 +219,7 @@ const leaveApi = (info) => {
   });
 }
 const getList=()=>{
-  execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
+  execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh local networks list').then(v => {
       items.length = 0;
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       if(leaveNetwork){
@@ -265,7 +266,7 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
       title: 'zerotier服务尚未启动，是否确认开启？',
     })
       .then(() => {
-    execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
           showToast('启动完成');
           setTimeout(() => {
             ready.value = true;
@@ -282,7 +283,7 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   //加载路由并配置防火墙
   // const loadRouter=()=>{
   //   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
-  //   execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh router ${defaultRoterMode} `).then(v => {
+  //   execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh local router ${defaultRoterMode} `).then(v => {
   //   })
   // }
 defineExpose({ newAdd });
