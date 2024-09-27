@@ -49,6 +49,7 @@ set_perm $MODPATH/zerotier-cli 0  0  0755
 set_perm $MODPATH/zerotier.sh 0  0  0755
 set_perm $MODPATH/zerotier.inotify 0  0  0755
 set_perm $MODPATH/api.sh 0  0  0755
+set_perm $MODPATH/uninstall.sh 0  0  0755
 set_perm $MODPATH/bin/curl 0  0  0755
 set_perm $MODPATH/service.sh 0  0  0755
 

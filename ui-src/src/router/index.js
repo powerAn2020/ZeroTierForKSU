@@ -9,17 +9,19 @@ const routes = [
     path: '/center', component: () => import('../Center.vue')
     , children: [
       {
-        // 当 /user/:id/posts 匹配成功
-        // UserPosts 将被渲染到 User 的 <router-view> 内部
         path: 'network',
         component: () => import('../Network.vue')
+      },
+      {
+        path: 'networkDetail/:id',
+        component: () => import('../NetworkDetail.vue')
       },
     ]
   }
 ]
 
 const router = createRouter({
-  // vueRouter@3版本的mode改成了history，hash模式配置createWebHashHistory，history模式配置createWebHistory
+  // vueRouter@3版本的mode改成了history?hash模式配置createWebHashHistory?history模式配置createWebHistory
   history: createWebHashHistory(),
   routes
 })

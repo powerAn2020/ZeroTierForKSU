@@ -1,5 +1,7 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
+ZTPATH=/data/adb/zerotier
+TOKENAUTH=$ZTPATH/TOKENAUTH
 
 if [ -f "/data/adb/ksu/bin/busybox" ]; then
   # busybox KSU
@@ -21,6 +23,9 @@ SECRETFILE=$ZTPATH/authtoken.secret
     until [ $(getprop init.svc.bootanim) = "stopped" ]; do
         sleep 10
     done
+    if [ ! -f "${TOKENAUTH}" ]; then
+      touch $TOKENAUTH
+    fi
     ${MODDIR}/zerotier.sh inotifyd
     if [ ! -f "${MANUAL}" ]; then
       sh ${MODDIR}/zerotier.sh start

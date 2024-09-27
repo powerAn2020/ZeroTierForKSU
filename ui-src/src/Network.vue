@@ -1,41 +1,108 @@
 <template>
-  <van-collapse v-model="activeNames">
-  <van-collapse-item title="标题1" name="1">
-    <template #value>
-      
-    </template>
-  </van-collapse-item>
-  <van-collapse-item title="标题2" name="2">
-    技术无非就是那些开发它的人的共同灵魂。
-  </van-collapse-item>
-  <van-collapse-item title="标题3" name="3">
-    在代码阅读过程中人们说脏话的频率是衡量代码质量的唯一标准。
-  </van-collapse-item>
-</van-collapse>
-
-  <!-- <van-pull-refresh v-model="loading" @refresh="onRefresh">
-    <van-cell-group>
-      <van-collapse v-model="activeNames" accordion style="min-height: 90vh;">
-        <van-collapse-item v-for="(item, index) in items" :key="index" :name="index">
-          <template #title>
-            <van-cell :title="item.address" :value="item.role" />
-          </template>
-          <van-text-ellipsis rows="2" :content="getContent(item.paths)" expand-text="展开" collapse-text="收起" />
-        </van-collapse-item>
-      </van-collapse>
-    </van-cell-group>
-
-  </van-pull-refresh> -->
-
-  <!-- <van-dialog v-model:show="show" title="加入自建moon" show-cancel-button :before-close="addBtn">
-    <van-col span="24">
-      <van-field v-model="moonId" label="world ID" required placeholder="请输入world ID" />
-    </van-col>
-  </van-dialog> -->
+  <van-notice-bar wrapable :scrollable="false">
+    {{ networkStatus }}
+  </van-notice-bar>
+  <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+    <van-list v-model:loading="loading" :finished="finished" style="min-height: 90vh;">
+      <van-cell center v-for="item in list" :key="item" :title="item" :to="'/center/networkDetail/' + item.config.id"
+        is-link>
+        <template #title>
+          networkid: {{ item.config.id }}
+        </template>
+        <template #label>
+          <van-space direction="vertical" fill>
+            name: {{ item.config.name ? item.config.name : 'Undefined' }}
+            <van-tag plain type="primary">{{ item.config.private ? 'Private' : 'Public' }}</van-tag>
+          </van-space>
+        </template>
+        <template #value>
+          {{ item.config.routes[0] ? item.config.routes[0].target : '' }}
+        </template>
+      </van-cell>
+    </van-list>
+  </van-pull-refresh>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-const activeNames = ref(['1']);
+import { MODDIR, execCmdWithCallback, execCmdWithErrno, spawnCmdWithCallback } from './tools'
+import { useRemoteNetworkStore } from './stores/remoteNetwork'
 
+const remoteNetwork = useRemoteNetworkStore();
+const list = ref([]);
+const loading = ref(false);
+const finished = ref(false);
+const refreshing = ref(false);
+const networkStatus = ref('');
+const onlineMemberCount = ref(0);
+const authorizedMemberCount = ref(0);
+const totalMemberCount = ref(0);
+const networkCount = ref(0);
+const routeCount = ref(0);
+const maxMembers = ref('');
+const maxNetworks = ref('');
+const maxRoutes = ref('');
+
+const onRefresh = () => {
+  networkStatus.value = '';
+  showLoadingToast({
+    duration: 0,
+    message: '加载中...',
+    forbidClick: true,
+    loadingType: 'spinner',
+  });
+  setTimeout(() => {
+    try {
+      networkList();
+    } catch (error) {
+      console.error(error);
+    }
+    closeToast();
+  }, 50)
+};
+const networkList = () => {
+  loading.value = true;
+  execCmdWithCallback({
+    cmd: `sh ${MODDIR}/api.sh central status`
+    , onSuccess: (data) => {
+      console.info(`status:${data}`)
+      const rst = JSON.parse(data);
+      maxMembers.value = rst.defaultLimits.maxMembers
+      maxNetworks.value = rst.defaultLimits.maxNetworks
+      maxRoutes.value = rst.defaultLimits.maxRoutes
+      if (rst.defaultLimits.maxMembers > 10000) {
+        maxMembers.value = '∞'
+      }
+      if (rst.defaultLimits.maxNetworks > 10000) {
+        maxNetworks.value = '∞'
+      }
+      if (rst.defaultLimits.maxRoutes > 10000) {
+        maxRoutes.value = '∞'
+      }
+    }, onError: (data) => {
+      showToast('加载失败.' + data);
+    }
+  })
+  execCmdWithCallback({
+    cmd: `sh ${MODDIR}/api.sh central network list`, onSuccess: (data) => {
+      list.value = JSON.parse(data);
+      remoteNetwork.updateNetwork(list.value)
+
+      list.value.map((network) => {
+        onlineMemberCount.value += network.onlineMemberCount
+        authorizedMemberCount.value += network.authorizedMemberCount
+        totalMemberCount.value += network.totalMemberCount
+        routeCount.value += network.config.routes ? network.config.routes.length : 0;
+        networkCount.value++;
+      })
+      networkStatus.value += `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${totalMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
+    }, onError: (data) => {
+      showToast('加载失败.' + data);
+    }
+  })
+  loading.value = false;
+  finished.value = true;
+  refreshing.value = false;
+}
+onRefresh();
 </script>

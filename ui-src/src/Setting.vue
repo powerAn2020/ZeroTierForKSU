@@ -30,18 +30,22 @@
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
-    <van-cell title="API Token" :value="apiToken" clickable @click="tokenEditor = true" />
+    <van-cell title="apiToken" :value="apiToken" clickable @click="tokenEditor = true" />
     <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
     <van-cell title="从哪里获取API Token?" is-link url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
   </div>
   <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
     <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central Token" />
   </van-popup>
+  <van-dialog v-model:show="show" show-cancel-button>
+    <iframe :src="pageUrl" style="min-height: 85vh;min-width: 100vw;" frameborder="no" border="0"
+    marginwidth="0" marginheight="0" scrolling="no" allowtransparency="yes"></iframe>
+  </van-dialog>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { exec } from 'kernelsu';
+import { MODDIR, ZTPATH, execCmd } from './tools'
 const enable = ref(true);
 const firewall = ref(true);
 const autoStart = ref(true);
@@ -54,7 +58,9 @@ const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
 const cliStatusText = ref();
 const apiToken = ref('');
-const ZTPATH='/data/adb/zerotier'
+const pageUrl = ref('');
+const show = ref(false);
+
 // 通过 actions 属性来定义菜单选项
 const actions = [
   { text: '自建路由模式', value: '0', disabled: true },
@@ -80,24 +86,13 @@ const defaultRoterMode = ref(actions[1].text);
 //   localStorage.setItem('defaultRoterMode', action.value)
 // }
 
-const execCmd = async (cmd) => {
-  console.info(cmd)
-  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/' });
-  if (errno === 0) {
-    // success
-    console.log(stdout);
-    return stdout;
-  } else {
-    console.info(stderr)
-  }
-}
 const init = () => {
   cliStatusText.value = "启动服务查看节点信息";
   const lApiToken = localStorage.getItem('apiToken');
   if (lApiToken) {
     apiToken.value = lApiToken;
   }
-  execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
+  execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
     const statusObj = JSON.parse(v);
     enable.value = statusObj.enable == "" ? false : true;
     firewall.value = statusObj.firewall;
@@ -118,7 +113,7 @@ const init = () => {
 const saveToken = () => {
   if (apiToken.value.length != 0) {
     localStorage.setItem('apiToken', apiToken.value)
-    execCmd(`echo ${apiToken.value} > ${ZTPATH}/tokenAuth`)
+    execCmd(`sh ${MODDIR}/api.sh apiToken update ${apiToken.value}`)
   } else {
     localStorage.removeItem('apiToken')
   }
@@ -155,27 +150,23 @@ const firewallSwitch = (newValue) => {
   firewallLoading.value = true;
   if (newValue === true) {
     console.info('允许防火墙放行9993')
-    execCmd(`touch ${ZTPATH}/ALLOW_9993`).then(v => {
-      execCmd(`sh ${ZTPATH}/api.sh local firewall A`).then(v2 => {
-        if (typeof (v2) != 'undefined' && v2 != '') {
-          showDialog({
-            title: v2,
-          })
-        }
-        firewallLoading.value = false;
-      })
+    execCmd(`sh ${MODDIR}/api.sh local firewall A`).then(v2 => {
+      if (typeof (v2) != 'undefined' && v2 != '') {
+        showDialog({
+          title: v2,
+        })
+      }
+      firewallLoading.value = false;
     })
   } else {
     console.info('禁止防火墙放行9993')
-    execCmd(`rm ${ZTPATH}/ALLOW_9993`).then(v => {
-      execCmd(`sh ${ZTPATH}/api.sh local firewall D`).then(v2 => {
-        if (typeof (v2) != 'undefined' && v2 != '') {
-          showDialog({
-            title: v2,
-          })
-        }
-        firewallLoading.value = false;
-      })
+    execCmd(`sh ${MODDIR}/api.sh local firewall D`).then(v2 => {
+      if (typeof (v2) != 'undefined' && v2 != '') {
+        showDialog({
+          title: v2,
+        })
+      }
+      firewallLoading.value = false;
     })
   }
 };
@@ -187,14 +178,14 @@ const enableSwitch = (newValue) => {
     execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
-      }, 1000);
+      }, 50);
     })
   } else {
     console.info('关闭zerotier')
     execCmd(`touch ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
-      }, 1000);
+      }, 50);
     })
   }
 };

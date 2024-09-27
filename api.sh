@@ -24,7 +24,8 @@
 ###       orbit                                     -- Join Private Root Servers
 ###         moonid     value:[ moonid ]
 ###     central
-###       network                                     -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", No parameters are required. When the action is "modify", "networkid" and "bodydata" are required.
+###       status                                    -- Show Center Status
+###       network                                   -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "remove", "bodydata" is optional. When the action is "add", No parameters are required. When the action is "modify", "networkid" and "bodydata" are required.
 ###         action     value:[ list | remove | add | modify ]
 ###         networkid  value:[ networkid ](optional)
 ###         bodydata   value:[ JSON object ](optional)
@@ -33,9 +34,9 @@
 ###         networkid  value:[ networkid ] (optional)
 ###         memberID   value:[ memberID ] (optional)
 ###         bodydata   value:[ JSON object ] (optional)
-###     APIKEY                                     -- Manage the tokenAuth for accessing the central API
+###     apiToken                                    -- Manage the tokenAuth for accessing the central API
 ###       action       value:[ show | update ]
-###       key          value:[ apikey ]
+###       key          value:[ apiToken ]
 ###
 ### Example:
 ###   help
@@ -56,16 +57,18 @@
 ###     sh api.sh local network join  yourNetworkid {} (suggest: use command `zerotier-cli join yourNetworkid`)
 ###
 ###   central
+###     sh api.sh central status
 ###     sh api.sh central network list
 ###     sh api.sh central network remove yourNetworkid
 ###     sh api.sh central network add
 ###     sh api.sh central network modify yourNetworkid {}
-###     sh api.sh central member list
+###     sh api.sh central member list yourNetworkid
 ###     sh api.sh central member remove yourNetworkid memberID
-###     sh api.sh central member modify yourNetworkid memberID {}
-###   apikey
-###     sh api.sh apikey show
-###     sh api.sh apikey update xxxxxxxxx
+###     sh api.sh central member modify yourNetworkid memberID '{"hidden":false,"config":{"authorized":true}}'
+###
+###   apiToken
+###     sh api.sh apiToken show
+###     sh api.sh apiToken update xxxxxxxxx
 ###
 
 MODDIR=${0%/*}
@@ -89,10 +92,11 @@ ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 TOKENAUTH=$ZTPATH/TOKENAUTH
 TOKEN=$(cat ${SECRETFILE})
-APIKEY=$(cat ${TOKENAUTH})
-CurlBIN=${MODDIR}/bin/curl
+apiToken=$(cat ${TOKENAUTH})
+CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
 localAPIBase='http://localhost:9993'
 remoteAPIBase='https://api.zerotier.com/api/v1'
+export CURL_CA_BUNDLE=${MODDIR}/bin/cacert.pem
 # =========================== local service ===========================
 local_status() {
   $CurlBIN -H "X-ZT1-Auth: $TOKEN" ${localAPIBase}/status
@@ -114,7 +118,11 @@ local_peer() {
 }
 # $1 :A 和 D
 local_firewall() {
-  if [ "$1" != "A" -a "$1" != "D" ]; then
+  if [ "$1" = "A" ]; then
+    touch ${ZTPATH}/ALLOW_9993
+  elif [ "$1" != "D" ]; then
+    rm ${ZTPATH}/ALLOW_9993
+  else
     echo "only [A,D]"
     exit 1
   fi
@@ -129,7 +137,7 @@ local_orbit() {
 local_router() {
   if [ "$1" = "routing" ]; then
     echo "Unrealized"
-    #TODO android默认ip rule不走main表 除了提升main表优先级,是否还有其它解决方案？
+    #TODO android默认ip rule不走main表 除了提升main表优先级,是否还有其它解决方案?
     # Reference https://yotam.net/posts/network-management-in-android-routing/
     # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
     # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
@@ -150,11 +158,10 @@ api_networks() {
   # $2 jsondata {}
   # $3 /networkid
   if [ "$1" = "GET" -o "$1" = "DELETE" ]; then
-    $CurlBIN -X $1 -H "Authorization: token $APIKEY" ${remoteAPIBase}/network${3}
+    $CurlBIN -X $1 -H "Authorization: token $apiToken" ${remoteAPIBase}/network${3}
   else
-    $CurlBIN -X $1 -H "Content-Type:application/json" -H "Authorization: token $APIKEY" -d "$2" ${remoteAPIBase}/network${3}
+    $CurlBIN -X $1 -H "Content-Type:application/json" -H "Authorization: token $apiToken" -d "$2" ${remoteAPIBase}/network${3}
   fi
-
 }
 
 api_members() {
@@ -163,11 +170,22 @@ api_members() {
   # $3 /memberID
   # $4 jsondata {}
   if [ "$1" = "GET" -o "$1" = "DELETE" ]; then
-    $CurlBIN -X ${1} -H "Authorization: token $APIKEY" ${remoteAPIBase}/network/${2}/member${3}
+    $CurlBIN -X ${1} -H "Authorization: token $apiToken" ${remoteAPIBase}/network/${2}/member${3}
   else
-    $CurlBIN -X $1 -H "Content-Type:application/json" -H "Authorization: token $APIKEY" -d "$4" ${remoteAPIBase}/network/${2}/member${3}
+    $CurlBIN -X $1 -H "Content-Type:application/json" -H "Authorization: token $apiToken" -d "$4" ${remoteAPIBase}/network/${2}/member${3}
   fi
-
+}
+remote_status() {
+  $CurlBIN -X GET -H "Authorization: token $apiToken" ${remoteAPIBase}/status
+}
+check_apiToken() {
+  if [ ! -f ${TOKENAUTH} -a -z $apiToken ]; then
+    # 重定向提示内容给webui
+    {
+      echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2
+      exit 1
+    }
+  fi
 }
 help() {
   sed -rn 's/^### ?//;T;p;' "$0"
@@ -181,10 +199,11 @@ local)
     local_status
     ;;
   network)
+    shift
     action=$1
     networkid=$2
     bodydata=$3
-    if [ ! -z "${bodydata}" ]; then
+    if [ -z "${bodydata}" ]; then
       bodydata="{}"
     fi
     if [ ! -z "${networkid}" ]; then
@@ -219,13 +238,18 @@ local)
   esac
   ;;
 central)
+  check_apiToken
   shift
   case $1 in
+  status)
+    remote_status
+    ;;
   network)
+    shift
     action=$1
     networkid=$2
     bodydata=$3
-    if [ ! -z "${bodydata}" ]; then
+    if [ -z "${bodydata}" ]; then
       bodydata="{}"
     fi
     if [ ! -z "${networkid}" ]; then
@@ -247,11 +271,12 @@ central)
     esac
     ;;
   member)
+    shift
     action=$1
     networkid=$2
     memberID=$3
     bodydata=$4
-    if [ ! -z "${bodydata}" ]; then
+    if [ -z "${bodydata}" ]; then
       bodydata="{}"
     fi
     if [ ! -z "${memberID}" ]; then
@@ -271,13 +296,14 @@ central)
     ;;
   esac
   ;;
-apikey)
+apiToken)
   shift
   action=$1
   key=$2
   case $action in
   show)
-    echo "APIKEY:$(cat ${APIKEY})"
+    check_apiToken
+    echo "${apiToken}"
     ;;
   update)
     echo "${key}" >${TOKENAUTH}

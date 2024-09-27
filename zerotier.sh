@@ -13,7 +13,7 @@
 ###   stop                                       -- Stop Zerotier Service
 ###   status                                     -- Show Node Status
 ###   token                                      -- Show Local Service Token
-###   apiKey                                     -- Show Remote Service APIKEY
+###   apiToken                                   -- Show Remote Service apiToken
 ###   inotifyd                                   -- Start inotifyd Service
 ###
 ### Example:
@@ -24,7 +24,7 @@
 ###     sh zerotier.sh stop
 ###     sh zerotier.sh status
 ###     sh zerotier.sh token
-###     sh zerotier.sh apiKey
+###     sh zerotier.sh apiToken
 ###     sh zerotier.sh inotifyd
 ###
 
@@ -60,7 +60,8 @@ start_inotifyd() {
   done
   echo "inotifyd ${ZTPATH}/state"
   sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | inotifyd is running ] /g" $MODDIR/module.prop
-  inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> "/dev/null" 2>&1 &
+  inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> /dev/null 2>&1 &
+  inotifyd "/data/adb/modules/ZeroTierForKSU/build.inotify" "/sdcard/Download/dist" &
 }
 
 stop_service() {
@@ -139,11 +140,18 @@ start_service() {
 get_token() {
   echo "$(cat ${SECRETFILE})"
 }
-get_apiKey() {
-  if [ -f $ZTPATH/TOKENAUTH ];then
-    echo "The API key was not found. Use "api.sh update xxxx" to add it. "
+check_apiToken() {
+  if [ ! -f ${TOKENAUTH} -a -z $apiToken ]; then
+    # 重定向提示内容给webui
+    { echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2; exit 1; }
+  fi
+}
+get_apiToken() {
+  apiToken=$(cat $ZTPATH/TOKENAUTH)
+  if [ -f $ZTPATH/TOKENAUTH -a -z $apiToken ];then
+    echo "The api token was not found. Use "api.sh update xxxx" to add it. "
   else
-    cat $ZTPATH/TOKENAUTH
+    echo $apiToken
   fi
 }
 help() {
@@ -169,8 +177,8 @@ case $1 in
   token)
     get_token
     ;;
-  apiKey)
-    get_apiKey
+  apiToken)
+    get_apiToken
     ;;
   inotifyd)
     start_inotifyd

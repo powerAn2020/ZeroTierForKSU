@@ -1,46 +1,45 @@
 <template>
-  <van-notice-bar wrapable :scrollable="false" :text="networkStatus" />
-  <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-    <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了">
-      <van-cell v-for="item in list" :key="item" :title="item" to="" is-link>
-        <template #title>
-          
-        </template>
-
-      </van-cell>
-    </van-list>
-  </van-pull-refresh>
-
   <router-view />
 </template>
 
 <script setup>
-const list = ref([]);
-const loading = ref(false);
-const finished = ref(false);
-const refreshing = ref(false);
-const networkStatus = ref('');
+import { useRoute, useRouter } from 'vue-router'
+import { MODDIR, execCmdWithCallback, execCmdWithErrno } from './tools'
 
-const onRefresh = () => {
-  setTimeout(() => {
-    networkList();
-    // showToast('刷新成功');
-    loading.value = false;
-    finished.value = true;
-  }, 50);
-};
-const networkList = () => {
-  loading.value = true;
-
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh remote network list`).then(v => {
-    list.value = JSON.parse(v);
+const router = useRouter()
+const route = useRoute()
+const init = () => {
+  execCmdWithErrno(`sh ${MODDIR}/api.sh apiToken show`).then(v => {
+    console.info(`v:${v}`)
+    if (v == 0) {
+      router.push('/center/network')
+    } else {
+      showDialog({ message: '未配置apiToken,先去设置页添加一个吧' });
+    }
   })
+
+}
+init()
+const beforeClose = (action) => {
+  new Promise((resolve) => {
+    setTimeout(() => {
+      execCmdWithCallback({
+        cmd: `sh ${MODDIR}/api.sh central network add`, onSuccess: (data) => {
+          showToast('添加成功');
+        }, onError: (data) => {
+          showToast('添加失败.' + data);
+        }
+      })
+      resolve(true);
+    }, 50);
+  });
 }
 const newAdd = (index) => {
-
-}
-const init = () => {
-  networkList();
+  showConfirmDialog({
+    message:
+      '添加一个新网络?',
+    beforeClose
+  })
 }
 defineExpose({ newAdd });
 </script>

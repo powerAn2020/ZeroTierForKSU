@@ -39,6 +39,7 @@ jobs:
           wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-${latest_version}.tar.xz
           tar -xJf curl.tar.xz -C $PWD/bin curl
           tar -xJf curl32.tar.xz curl
+          wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
           mkdir $PWD/toolchain 
           wget -O arm64.tar.xz "https://mirror-us-sea1.armbian.airframes.io/dl/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
           wget -O arm.tar.xz "https://mirror-us-sea1.armbian.airframes.io/dl/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
@@ -59,9 +60,9 @@ jobs:
             echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm.json
             echo 'id=ZeroTierForKSU' >module.prop
             echo 'name=ZeroTier For KernelSU' >>module.prop
-            echo "version=${{ env.VERSION }}" >>module.prop
+            echo "version=ZeroTier Version->${{ env.VERSION }} & module Version->${versionCode}" >>module.prop
             echo "versionCode=${versionCode}" >>module.prop
-            echo 'author=powerAn' >>module.prop
+            echo 'author=powerAn2020' >>module.prop
             echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
             git config --global user.email "action@example.com"
             git config --global user.name "github action"
