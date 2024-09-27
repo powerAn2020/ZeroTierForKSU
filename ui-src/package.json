@@ -15,7 +15,7 @@
     "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
-    "@iconify-json/ep": "^1.1.15",
+    "@iconify-json/ep": "^1.2.0",
     "@vant/auto-import-resolver": "^1.1.0",
     "@vitejs/plugin-vue": "^5.1.4",
     "less": "^4.1.3",
