@@ -3,7 +3,7 @@
     {{ networkStatus }}
   </van-notice-bar>
   <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-    <van-list v-model:loading="loading" :finished="finished" style="min-height: 90vh;">
+    <van-list v-model:loading="loading" :finished="finished" style="min-height: 80vh;">
       <van-cell center v-for="item in list" :key="item" :title="item" :to="'/center/networkDetail/' + item.config.id"
         is-link>
         <template #title>
@@ -45,6 +45,10 @@ const maxRoutes = ref('');
 
 const onRefresh = () => {
   networkStatus.value = '';
+  totalMemberCount.value = 0;
+  networkCount.value = 0;
+  routeCount.value = 0;
+  authorizedMemberCount.value = 0;
   showLoadingToast({
     duration: 0,
     message: '加载中...',
@@ -95,7 +99,7 @@ const networkList = () => {
         routeCount.value += network.config.routes ? network.config.routes.length : 0;
         networkCount.value++;
       })
-      networkStatus.value += `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${totalMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
+      networkStatus.value += `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${authorizedMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
     }, onError: (data) => {
       showToast('加载失败.' + data);
     }

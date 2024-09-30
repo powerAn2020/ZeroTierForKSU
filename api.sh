@@ -211,13 +211,13 @@ local)
     fi
     case $action in
     list)
-      local_networks "GET" ${bodydata} ${networkid}
+      local_networks "GET" "${bodydata}" ${networkid}
       ;;
     leave)
-      local_networks "DELETE" ${bodydata} ${networkid}
+      local_networks "DELETE" "${bodydata}" ${networkid}
       ;;
     join)
-      local_networks "POST" ${bodydata} ${networkid}
+      local_networks "POST" "${bodydata}" ${networkid}
       ;;
     esac
     ;;
@@ -257,16 +257,16 @@ central)
     fi
     case $action in
     list)
-      api_networks "GET" ${bodydata} ${networkid}
+      api_networks "GET" "${bodydata}" ${networkid}
       ;;
     remove)
-      api_networks "DELETE" ${bodydata} ${networkid}
+      api_networks "DELETE" "${bodydata}" ${networkid}
       ;;
     add)
-      api_networks "POST" ${bodydata} ""
+      api_networks "POST" "${bodydata}" ""
       ;;
     modify)
-      api_networks "POST" ${bodydata} ${networkid}
+      api_networks "POST" "${bodydata}" ${networkid}
       ;;
     esac
     ;;
@@ -290,7 +290,7 @@ central)
       api_members "DELETE" ${networkid} ${memberID}
       ;;
     modify)
-      api_members "POST" ${networkid} ${memberID} ''${bodydata}''
+      api_members "POST" ${networkid} ${memberID} "${bodydata}"
       ;;
     esac
     ;;

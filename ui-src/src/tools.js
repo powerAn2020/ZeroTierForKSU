@@ -1,4 +1,4 @@
-import { exec, spawn } from 'kernelsu';
+import { exec, spawn,moduleInfo } from 'kernelsu';
 import {Buffer} from 'buffer'
 export const MODDIR = '/data/adb/modules/ZeroTierForKSU'
 export const ZTPATH = '/data/adb/zerotier'
@@ -14,7 +14,7 @@ export const execCmd = async (cmd) => {
     console.error(stderr)
   }
 }
-
+console.info(moduleInfo())
 export const execCmdWithErrno = async (cmd) => {
   console.info(cmd)
   const { errno, stdout, stderr} = await exec(cmd, { cwd: '/' });
