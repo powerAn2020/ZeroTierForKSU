@@ -2,13 +2,26 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 
 const routes = [
-  { path: '/', component: ()=>  import('../Home.vue') },
-  { path: '/setting', component: ()=>  import('../Setting.vue') },
-  { path: '/peers', component: ()=>  import('../Peers.vue') },
+  { path: '/', component: () => import('../Home.vue') },
+  { path: '/setting', component: () => import('../Setting.vue') },
+  { path: '/peers', component: () => import('../Peers.vue') },
+  {
+    path: '/center', component: () => import('../Center.vue')
+    , children: [
+      {
+        path: 'network',
+        component: () => import('../Network.vue')
+      },
+      {
+        path: 'networkDetail/:id',
+        component: () => import('../NetworkDetail.vue')
+      },
+    ]
+  }
 ]
 
 const router = createRouter({
-  // vueRouter@3版本的mode改成了history，hash模式配置createWebHashHistory，history模式配置createWebHistory
+  // vueRouter@3版本的mode改成了history?hash模式配置createWebHashHistory?history模式配置createWebHistory
   history: createWebHashHistory(),
   routes
 })

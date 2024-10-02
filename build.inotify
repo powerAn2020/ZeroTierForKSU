@@ -1,0 +1,17 @@
+#!/system/bin/sh
+events=$1
+monitor_dir=$2
+monitor_file=$3
+
+#echo "$@"
+
+main() {
+  if [ "${monitor_file}" = "dist.zip" ]; then
+    if [ "${events}" = "w" ]; then
+      echo "解压"
+      unzip -o /sdcard/Download/dist/dist.zip -d /data/adb/modules/ZeroTierForKSU/webroot/
+    fi
+  fi
+}
+
+main

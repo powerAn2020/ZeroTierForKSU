@@ -9,9 +9,9 @@ on:
         required: false
         type: string
         default: ''
-  push:
-    branches:
-      - dev
+  # push:
+  #   branches:
+  #     - dev
 
 permissions:
   contents: write  
@@ -40,12 +40,13 @@ jobs:
           # 将zt最新版写入到环境变量
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
 
-          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
+          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-musl-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
-          wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-${latest_version}.tar.xz
+          wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-musl-${latest_version}.tar.xz
           tar -xJf curl.tar.xz -C $PWD/bin curl
           tar -xJf curl32.tar.xz curl
+          wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
           mkdir $PWD/toolchain 
           wget -O arm64.tar.xz "https://mirror-us-sea1.armbian.airframes.io/dl/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
           wget -O arm.tar.xz "https://mirror-us-sea1.armbian.airframes.io/dl/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
@@ -64,9 +65,9 @@ jobs:
           echo "new_module_version=$versionCode" >> $GITHUB_ENV
           echo 'id=ZeroTierForKSU' >module.prop
           echo 'name=ZeroTier For KernelSU' >>module.prop
-          echo "version=${{ env.VERSION }}" >>module.prop
+          echo "version=ZeroTier Version->${{ env.VERSION }} & module Version->${versionCode}" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
-          echo 'author=powerAn' >>module.prop
+          echo 'author=powerAn2020' >>module.prop
           echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
           git config --global user.email "action@example.com"
           MESSAGE=$(git log -1 --pretty=%B)

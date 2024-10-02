@@ -21,7 +21,8 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import { exec } from 'kernelsu';
+import {MODDIR,execCmd} from './tools'
+
 const show = ref(false);
 const moonId = ref('');
 const loading = ref(false);
@@ -33,19 +34,8 @@ const onRefresh = () => {
   setTimeout(() => {
     showToast('刷新成功');
     loading.value = false;
-  }, 1000);
+  }, 50);
 };
-const execCmd = async (cmd) => {
-  console.info(cmd)
-  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/tmp' });
-  if (errno === 0) {
-    // success
-    console.log(stdout);
-    return stdout;
-  } else {
-    console.info(stderr)
-  }
-}
 const newAdd = (index) => {
   show.value = true;
 }
@@ -69,7 +59,7 @@ const getContent = (arr) => {
 const addBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
-      execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh orbit ${moonId.value}`).then(v => {
+      execCmd(`sh ${MODDIR}/api.sh local orbit ${moonId.value}`).then(v => {
         showToast('完成');
         resolve(true);
       })
@@ -79,7 +69,7 @@ const addBtn = (action) =>
     }
   });
 const getList = () => {
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh peer`).then(v => {
+  execCmd(`sh ${MODDIR}/api.sh local peer`).then(v => {
     items.length = 0;
     items.push(...JSON.parse(v));
   })

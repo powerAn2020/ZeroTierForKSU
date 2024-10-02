@@ -11,7 +11,7 @@
             </template>
             <van-cell >
               <template #title>
-                id:{{item.id}}
+                networkid:{{item.id}}
               </template>
               <template #label>
                 name:{{item.name}}
@@ -67,7 +67,7 @@
 defineProps(["theme"]);//接收父组件传来的值
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
-import { exec } from 'kernelsu';
+import {MODDIR,ZTPATH,execCmd} from './tools'
 
 const chosenAddressId = ref('1');
 // const text = ref('禁用')
@@ -108,20 +108,20 @@ const onRefresh = () => {
   setTimeout(() => {
     showToast('刷新成功');
     loading.value = false;
-  }, 1000);
+  }, 50);
 };
 //新增或修改
 const newAdd = (index) => {
   if (ready.value != true) {
     showDialog({
-      title: 'zerotier服务尚未启动，是否确认开启？',
+      title: 'zerotier服务尚未启动?是否确认开启?',
     })
       .then(() => {
-        execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+        execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
           setTimeout(() => {
             showToast('启动完成');
             return true;
-          }, 2000);          
+          }, 50);          
         })
       })
     return;
@@ -144,7 +144,6 @@ const newAdd = (index) => {
   chosenAddressId.value = index;
 }
 const changeStatus = (index) => {
-  debugger
   let status = items[index];
   //点击禁用
   if (typeof (status.enable) == 'undefined' || status.enable === 'true') {
@@ -162,7 +161,7 @@ const changeStatus = (index) => {
 }
 const delNode = (index) => {
   showConfirmDialog({
-    title: '确定删除记录吗？这将离开当前网络，并短暂断网。',
+    title: '确定删除记录吗?这将离开当前网络?并短暂断网.',
   })
     .then(() => {
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
@@ -179,33 +178,34 @@ const delNode = (index) => {
 }
 const joinApi = (info) => {
   const postData = JSON.stringify(info)
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh joinOrUpdateNetwork ${info.id} '${postData}'`).then(v => {
+  execCmd(`sh ${MODDIR}/api.sh local network join ${info.id} '${postData}'`).then(v => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
       showToast('完成,即将重载列表');
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 50);
     } catch (error) {
       showDialog({
         title: '操作失败',
         message: v
-      }).
-      console.info(v);
+      }).then(() => {
+        // on close
+      });
     }
 
   });
 }
 const leaveApi = (info) => {
-  execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh leaveNetwork ${info.id}`).then(v => {
+  execCmd(`sh ${MODDIR}/api.sh local network leave ${info.id}`).then(v => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
       showToast('完成,即将重载列表');
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 50);
     } catch (error) {
       console.error(v);
       showDialog({
@@ -218,7 +218,7 @@ const leaveApi = (info) => {
   });
 }
 const getList=()=>{
-  execCmd('sh /data/adb/modules/ZeroTierForKSU/api.sh networks').then(v => {
+  execCmd(`sh ${MODDIR}/api.sh local network list`).then(v => {
       items.length = 0;
       let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       if(leaveNetwork){
@@ -229,7 +229,7 @@ const getList=()=>{
         if (statusObj.length > 0) {
           items.push(...statusObj)
         } else if(items.length==0){
-          showDialog({ message: '暂未加入任何节点，先去加入一个吧' });
+          showDialog({ message: '暂未加入任何节点?先去加入一个吧' });
         }
       }
     });
@@ -241,37 +241,27 @@ const addOrUpdateBtn = (action) =>
       joinApi(info)
       setTimeout(() => {
         resolve(true)
-      }, 1500);
+      }, 50);
     } else if (action === 'cancel') {
       resolve(true);
       // reset();
     }
   });
-const execCmd = async (cmd) => {
-  console.info(cmd)
-  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/' });
-  if (errno === 0) {
-    // success
-    console.log(stdout);
-    return stdout;
-  } else {
-    console.info(stderr)
-  }
-}
-execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
+
+execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
   const statusObj = JSON.parse(v);
   if (statusObj.enable == "") {
     showDialog({
-      title: 'zerotier服务尚未启动，是否确认开启？',
+      title: 'zerotier服务尚未启动?是否确认开启?',
     })
       .then(() => {
-    execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
           showToast('启动完成');
           setTimeout(() => {
             ready.value = true;
             window.location.reload();
             return true;
-          }, 2000);
+          }, 50);
         })
       })
   } else {
@@ -282,7 +272,7 @@ execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
   //加载路由并配置防火墙
   // const loadRouter=()=>{
   //   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
-  //   execCmd(`sh /data/adb/modules/ZeroTierForKSU/api.sh router ${defaultRoterMode} `).then(v => {
+  //   execCmd(`sh ${MODDIR}/api.sh local router ${defaultRoterMode} `).then(v => {
   //   })
   // }
 defineExpose({ newAdd });

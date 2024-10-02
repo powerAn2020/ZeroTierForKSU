@@ -11,7 +11,7 @@
         <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="autoStartLoading" />
       </template>
     </van-cell>
-    <van-cell center title="路由模式">
+    <!-- <van-cell center title="路由模式">
       <template #right-icon>
         <van-popover v-model:show="showPopover" :actions="actions" @select="onSelect">
           <template #reference>
@@ -19,7 +19,7 @@
           </template>
         </van-popover>
       </template>
-    </van-cell>
+    </van-cell> -->
     <van-cell center title="开机自启">
       <template #right-icon>
         <van-switch v-model="autoStart" @update:model-value="autoStartSwitch" :loading="autoStartLoading" />
@@ -30,24 +30,30 @@
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
+    <van-cell title="API Token" :value="apiToken" clickable @click="tokenEditor = true" />
     <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
+    <van-cell title="从哪里获取API Token?" is-link url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
   </div>
-
+  <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
+    <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central Token" />
+  </van-popup>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { exec } from 'kernelsu';
+import { MODDIR, ZTPATH, execCmd } from './tools'
 const enable = ref(true);
 const firewall = ref(true);
 const autoStart = ref(true);
 const uninstallKeep = ref(false);
 const enableLoading = ref(false);
+const tokenEditor = ref(false);
 const firewallLoading = ref(false);
 const autoStartLoading = ref(false);
 const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
 const cliStatusText = ref();
+const apiToken = ref('');
 
 // 通过 actions 属性来定义菜单选项
 const actions = [
@@ -56,65 +62,66 @@ const actions = [
 ];
 const defaultRoterMode = ref(actions[1].text);
 // 绑定路由选择事件
-const onSelect = (action) => {
-  defaultRoterMode.value = action.text;
-  showToast(action.text)
-  console.info(action)
-  if (action.value == '1') {
-    console.info('main表优先模式')
-    execCmd('rm /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
-      console.info(v)
-    })
-  } else {
-    console.info('自建路由模式')
-    execCmd('touch /data/adb/zerotier/ROUTER_RULE_NEW').then(v => {
-      console.info(v)
-    })
+// const onSelect = (action) => {
+//   defaultRoterMode.value = action.text;
+//   showToast(action.text)
+//   console.info(action)
+//   if (action.value == '1') {
+//     console.info('main表优先模式')
+//     execCmd(`rm ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
+//       console.info(v)
+//     })
+//   } else {
+//     console.info('自建路由模式')
+//     execCmd(`touch ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
+//       console.info(v)
+//     })
+//   }
+//   localStorage.setItem('defaultRoterMode', action.value)
+// }
+
+const init = () => {
+  cliStatusText.value = "启动服务查看节点信息";
+  const lApiToken = localStorage.getItem('apiToken');
+  if (lApiToken) {
+    apiToken.value = lApiToken;
   }
-  localStorage.setItem('defaultRoterMode', action.value)
+  execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
+    const statusObj = JSON.parse(v);
+    enable.value = statusObj.enable == "" ? false : true;
+    firewall.value = statusObj.firewall;
+    autoStart.value = statusObj.autoStart;
+    uninstallKeep.value = statusObj.uninstallKeep;
+    localStorage.setItem('defaultRoterMode', statusObj.routerRuleNew)
+    defaultRoterMode.value = actions[parseInt(statusObj.routerRuleNew)].text;
+    const cliStatus = statusObj.cliStatus;
+    if (typeof (cliStatus) != 'undefined' && cliStatus != '') {
+      const cliStatusArr = cliStatus.split(' ');
+      const nodeId = cliStatusArr[2];
+      const zerotierVersion = cliStatusArr[3];
+      const serviceStatus = cliStatusArr[4];
+      cliStatusText.value = `本机节点:${nodeId} 服务状态:${serviceStatus} 版本：${zerotierVersion}`
+    }
+  });
 }
-
-const execCmd = async (cmd) => {
-  console.info(cmd)
-  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/' });
-  if (errno === 0) {
-    // success
-    console.log(stdout);
-    return stdout;
+const saveToken = () => {
+  if (apiToken.value.length != 0) {
+    localStorage.setItem('apiToken', apiToken.value)
+    execCmd(`sh ${MODDIR}/api.sh apiToken update ${apiToken.value}`)
   } else {
-    console.info(stderr)
+    localStorage.removeItem('apiToken')
   }
 }
-cliStatusText.value = "启动服务查看节点信息";
-execCmd('sh /data/adb/modules/ZeroTierForKSU/zerotier.sh status').then(v => {
-  const statusObj = JSON.parse(v);
-  enable.value = statusObj.enable == "" ? false : true;
-  firewall.value = statusObj.firewall;
-  autoStart.value = statusObj.autoStart;
-  uninstallKeep.value = statusObj.uninstallKeep;
-  localStorage.setItem('defaultRoterMode', statusObj.routerRuleNew)
-  defaultRoterMode.value=actions[parseInt(statusObj.routerRuleNew)].text;
-  const cliStatus = statusObj.cliStatus;
-  if (typeof (cliStatus) != 'undefined' && cliStatus!='') {
-    const cliStatusArr = cliStatus.split(' ');
-    const nodeId = cliStatusArr[2];
-    const zerotierVersion = cliStatusArr[3];
-    const serviceStatus = cliStatusArr[4];
-    cliStatusText.value = `本机节点:${nodeId} 服务状态:${serviceStatus} 版本：${zerotierVersion}`
-  }
-
-});
-
 const autoStartSwitch = (newValue) => {
   autoStartLoading.value = true;
   if (newValue === true) {
     console.info('开启开机自启服务')
-    execCmd('rm /data/adb/zerotier/MANUAL').then(v => {
+    execCmd(`rm ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
     })
   } else {
     console.info('关闭开机自启服务')
-    execCmd('touch /data/adb/zerotier/MANUAL').then(v => {
+    execCmd(`touch ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
     })
   }
@@ -123,12 +130,12 @@ const uninstallKeepSwitch = (newValue) => {
   uninstallKeepLoading.value = true;
   if (newValue === true) {
     console.info('开启卸载保留数据')
-    execCmd('touch /data/adb/zerotier/KEEP_ON_UNINSTALL').then(v => {
+    execCmd(`touch ${ZTPATH}/KEEP_ON_UNINSTALL`).then(v => {
       uninstallKeepLoading.value = false;
     })
   } else {
     console.info('关闭卸载保留数据')
-    execCmd('rm /data/adb/zerotier/KEEP_ON_UNINSTALL').then(v => {
+    execCmd(`rm ${ZTPATH}/KEEP_ON_UNINSTALL`).then(v => {
       uninstallKeepLoading.value = false;
     })
   }
@@ -137,27 +144,23 @@ const firewallSwitch = (newValue) => {
   firewallLoading.value = true;
   if (newValue === true) {
     console.info('允许防火墙放行9993')
-    execCmd('touch /data/adb/zerotier/ALLOW_9993').then(v => {
-      execCmd(`sh /data/adb/zerotier/api.sh firewall A`).then(v2 => {
-        if (typeof (v2) != 'undefined' && v2 != '') {
-          showDialog({
-            title: v2,
-          })
-        }
-        firewallLoading.value = false;
-      })
+    execCmd(`sh ${MODDIR}/api.sh local firewall A`).then(v2 => {
+      if (typeof (v2) != 'undefined' && v2 != '') {
+        showDialog({
+          title: v2,
+        })
+      }
+      firewallLoading.value = false;
     })
   } else {
     console.info('禁止防火墙放行9993')
-    execCmd('rm /data/adb/zerotier/ALLOW_9993').then(v => {
-      execCmd(`sh /data/adb/zerotier/api.sh firewall D`).then(v2 => {
-        if (typeof (v2) != 'undefined' && v2 != '') {
-          showDialog({
-            title: v2,
-          })
-        }
-        firewallLoading.value = false;
-      })
+    execCmd(`sh ${MODDIR}/api.sh local firewall D`).then(v2 => {
+      if (typeof (v2) != 'undefined' && v2 != '') {
+        showDialog({
+          title: v2,
+        })
+      }
+      firewallLoading.value = false;
     })
   }
 };
@@ -166,19 +169,19 @@ const enableSwitch = (newValue) => {
   if (newValue === true) {
     console.info('启动zerotier')
     // const cacheRoterMode = localStorage.getItem('defaultRoterMode');
-    execCmd(`rm /data/adb/zerotier/state/disable`).then(v => {
+    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
-      }, 1000);    
+      }, 50);
     })
   } else {
     console.info('关闭zerotier')
-    execCmd('touch /data/adb/zerotier/state/disable').then(v => {
+    execCmd(`touch ${ZTPATH}/state/disable`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
-      }, 1000);        
+      }, 50);
     })
   }
 };
-
+init()
 </script>

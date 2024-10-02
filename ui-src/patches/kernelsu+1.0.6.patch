@@ -1,0 +1,26 @@
+diff --git a/node_modules/kernelsu/index.js b/node_modules/kernelsu/index.js
+index 7d54742..b876e2d 100644
+--- a/node_modules/kernelsu/index.js
++++ b/node_modules/kernelsu/index.js
+@@ -71,9 +71,9 @@ function Stdio() {
+   export function spawn(command, args, options) {
+     if (typeof args === "undefined") {
+       args = [];
+-    } else if (typeof args === "object") {
+-        // allow for (command, options) signature
+-        options = args;
++    } else if (!(args instanceof Array)) {
++      // allow for (command, options) signature
++      options = args;
+     }
+     
+     if (typeof options === "undefined") {
+@@ -113,3 +113,7 @@ export function fullScreen(isFullScreen) {
+ export function toast(message) {
+   ksu.toast(message);
+ }
++
++export function moduleInfo() {
++  return ksu.moduleInfo();
++}
+\ No newline at end of file

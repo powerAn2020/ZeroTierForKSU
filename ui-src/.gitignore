@@ -1,6 +1,7 @@
 node_modules
 dist
 .DS_Store
-dist
 dist-ssr
 *.local
+/dist.zip
+package-lock.json
