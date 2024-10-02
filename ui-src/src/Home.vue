@@ -191,8 +191,9 @@ const joinApi = (info) => {
       showDialog({
         title: '操作失败',
         message: v
-      }).
-      console.info(v);
+      }).then(() => {
+        // on close
+      });
     }
 
   });

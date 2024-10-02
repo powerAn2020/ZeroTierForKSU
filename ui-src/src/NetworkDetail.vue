@@ -1,7 +1,7 @@
 <template>
 
   <van-nav-bar left-text="返回" title="Zerotier For KSU" left-arrow @click-left="onClickLeft" safe-area-inset-top fixed />
-  <van-collapse v-model="activeNames" accordion>
+  <van-collapse v-model="activeNames">
     <van-collapse-item title="概览" name="dash">
       <van-card :desc="'description:' + networkObj.description"
         :title="networkObj.config.name ? networkObj.config.name : 'Undefined'">
@@ -30,21 +30,21 @@
     <van-collapse-item title="成员" name="member">
       <van-collapse v-model="nodeId" @change="changeMember" accordion>
         <van-collapse-item v-for="(item, index) in memberList" :title="item.nodeId" :key="index" :name="item.nodeId">
-          <van-field name="checkbox" label="授权情况">
+          <van-field name="checkbox" label="授权情况" input-align="right">
             <template #input>
               <van-checkbox v-model="item.config.authorized" shape="square"
                 @click="updateMember(item.nodeId, false, '1')" />
             </template>
           </van-field>
-          <van-field name="checkbox" label="允许桥接">
+          <van-field name="checkbox" label="允许桥接" input-align="right">
             <template #input>
               <van-checkbox v-model="item.config.activeBridge" shape="square"
                 @click="updateMember(item.nodeId, false, '2')" />
             </template>
           </van-field>
-          <van-field v-model="item.name" label="名称" placeholder="请输入名称" is-link
+          <van-field v-model="item.name" label="名称" placeholder="请输入名称" is-link input-align="right"
             @update:model-value="updateMember(item.nodeId, false, '3')" />
-          <van-field v-model="item.description" label="备注" placeholder="请输入备注" is-link
+          <van-field v-model="item.description" label="备注" placeholder="请输入备注" is-link input-align="right"
             @update:model-value="updateMember(item.nodeId, false, '4')" />
           <van-cell title="虚拟IP" clickable is-link center @click="ipAssignmentsEditor = true">
             <template #value>
@@ -78,12 +78,12 @@
         <van-collapse-item title="Basics"> -->
       <van-cell-group title="Basics">
         <van-cell title="Network ID" :value="networkObj.id" />
-        <van-field v-model="networkObj.config.name" label="名称" placeholder="请输入名称" is-link
+        <van-field v-model="networkObj.config.name" label="名称" placeholder="请输入名称" is-link input-align="right"
           @update:model-value="updateNetwork" />
-        <van-field v-model="networkObj.config.description" label="备注" placeholder="请输入备注" is-link
+        <van-field v-model="networkObj.config.description" label="备注" placeholder="请输入备注" is-link input-align="right"
           @update:model-value="updateNetwork" />
         <van-field name="radio" label="网络类型">
-          <template #input>
+          <template #right-icon>
             <van-radio-group v-model="networkObj.config.private" direction="horizontal">
               <van-radio :name="true">私有</van-radio>
               <van-radio :name="false">公开</van-radio>
@@ -91,25 +91,25 @@
           </template>
         </van-field>
         <van-field label="启用组播">
-          <template #input>
+          <template #right-icon>
             <van-switch :model-value="networkObj.config.enableBroadcast"
               @update:model-value="onUpdateEnableBroadcastValue" />
           </template>
         </van-field>
         <van-field v-model:show="networkObj.config.enableBroadcast" v-model="networkObj.config.multicastLimit"
-          label="组播限制" placeholder="32" is-link @update:model-value="updateNetwork" />
+          input-align="right" label="组播限制" placeholder="32" is-link @update:model-value="updateNetwork" />
       </van-cell-group>
 
-      <van-cell-group title="IPv6配置">
-        <van-cell title="ZeroTier RFC4193">
+      <van-cell-group title="IPv4配置">
+        <van-cell title="Auto-Assign from Range">
           <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode.rfc4193" />
+            <van-switch v-model="networkObj.config.v4AssignMode.zt" />
           </template>
           <template #label>
-            (/128 for each device)
+            
           </template>
         </van-cell>
-        <van-cell title="ZeroTier 6PLANE">
+        <van-cell title="Range Start">
           <template #value>
             <van-switch v-model="networkObj.config.v6AssignMode['6plane']" />
           </template>
@@ -117,7 +117,7 @@
             (/80 routable for each device)
           </template>
         </van-cell>
-        <van-cell title="Auto-Assign from Range">
+        <van-cell title="Range End">
           <template #value>
             <van-switch v-model="networkObj.config.v6AssignMode.zt" />
           </template>
@@ -148,52 +148,11 @@
         </van-cell>
       </van-cell-group>
 
-      <van-cell-group title="IPv6配置">
-        <van-cell title="ZeroTier RFC4193">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode.rfc4193" />
-          </template>
-          <template #label>
-            (/128 for each device)
-          </template>
-        </van-cell>
-        <van-cell title="ZeroTier 6PLANE">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode['6plane']" />
-          </template>
-          <template #label>
-            (/80 routable for each device)
-          </template>
-        </van-cell>
-        <van-cell title="Auto-Assign from Range">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode.zt" />
-          </template>
-        </van-cell>
-      </van-cell-group>
-
-      <van-cell-group title="IPv6配置">
-        <van-cell title="ZeroTier RFC4193">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode.rfc4193" />
-          </template>
-          <template #label>
-            (/128 for each device)
-          </template>
-        </van-cell>
-        <van-cell title="ZeroTier 6PLANE">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode['6plane']" />
-          </template>
-          <template #label>
-            (/80 routable for each device)
-          </template>
-        </van-cell>
-        <van-cell title="Auto-Assign from Range">
-          <template #value>
-            <van-switch v-model="networkObj.config.v6AssignMode.zt" />
-          </template>
-        </van-cell>
+      <van-cell-group title="DNS配置">
+        <van-field v-model="networkObj.config.dns.domain" label="名称" placeholder="请输入名称" is-link input-align="right"
+          @update:model-value="updateNetwork" />
+          <van-field v-model="networkObj.config.dns.servers" label="名称" placeholder="请输入名称" is-link input-align="right"
+          @update:model-value="updateNetwork" />
       </van-cell-group>
       <!-- </van-collapse-item> -->
       <!-- </van-collapse> -->

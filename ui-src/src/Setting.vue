@@ -30,17 +30,13 @@
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
-    <van-cell title="apiToken" :value="apiToken" clickable @click="tokenEditor = true" />
+    <van-cell title="API Token" :value="apiToken" clickable @click="tokenEditor = true" />
     <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
     <van-cell title="从哪里获取API Token?" is-link url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
   </div>
   <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
     <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central Token" />
   </van-popup>
-  <van-dialog v-model:show="show" show-cancel-button>
-    <iframe :src="pageUrl" style="min-height: 85vh;min-width: 100vw;" frameborder="no" border="0"
-    marginwidth="0" marginheight="0" scrolling="no" allowtransparency="yes"></iframe>
-  </van-dialog>
 </template>
 
 <script setup>
@@ -58,8 +54,6 @@ const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
 const cliStatusText = ref();
 const apiToken = ref('');
-const pageUrl = ref('');
-const show = ref(false);
 
 // 通过 actions 属性来定义菜单选项
 const actions = [

@@ -16,7 +16,7 @@
     <!-- <div style="height: 5rem;"></div> -->
     <div style="height: 2.8rem;"></div>
     <router-view v-slot="{ Component }">
-      <component ref="routerViewRef" :is="Component" :theme="theme ? 'light' : 'dark'" />
+      <component ref="routerViewRef" :is="Component" :theme="theme" />
     </router-view>
     <div style="height: 0.1rem;"></div>
     <van-tabbar route safe-area-inset-bottom>
