@@ -22,14 +22,16 @@
 - [ ] 在模块禁用的情况下依然可以操作服务启用和停用(实际上不应该能操作，毕竟都禁用了)，这将导致下次启用模块的时候要启停服务两次才能使用zerotier进程正确启动。**ps:模块禁用功能是特地保留的，我不想在停用模块的情况下还占用系统资源。**
 - [ ] 服务停止的情况下，有概率会在首页显示已经禁用的节点。这是不一样的，我都强制弹框让开启服务再操作了，有空再找
 - ~~[zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)~~ ZerotierOne 1.14.0版本已修复
+- [ ] 管理页在处理Member的时候需要等待处理完才能展开下一个Member的信息，否则后一个会覆盖前一个的配置，导致第一个Member修改的配置不生效。可以提前缓存下要修改的信息，一次发送请求，下次再改。
 
 ## TODO
 
 1. [ ] UI增加一个开发版和稳定版切换，现在测试好麻烦。
 2. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
 3. [ ] 新建zerotier路由规则表（没学会。先放着吧）
-4.国际化
-
+4. [X] 增加管理页面，需要自行准备[API Token](https://docs.zerotier.com/api/tokens/#zerotier-central-token)
+5. [ ] 国际化
+6. [ ] 等待新版KSU发布后，重新发版，现在是以补丁的形式提前用上了KSU的某些未修复的API
 ## 免责声明
 
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
@@ -55,7 +57,7 @@
 
 ### 执行脚本说明
 
-### **执行所有脚本都需要带全路径**
+### **执行所有脚本都需要带全路径/Executing all scripts requires a full path**
 
     ```Shell
   sh /data/adb/modules/ZeroTierForKSU/zerotier-cli # 同官方
