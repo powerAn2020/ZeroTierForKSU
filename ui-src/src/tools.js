@@ -45,14 +45,17 @@ export const execCmdWithCallback = async ({cmd, options = { cwd: '/' }, onSucces
 }
 
 export const spawnCmdWithCallback = ({cmd, args = [], onSuccess, onError}) => {
+  console.info(cmd)
   const childProcess = spawn(cmd, args);
   childProcess.stdout.on('data', (data) => {
+    console.log(data);
     if (onSuccess) {
       onSuccess(data);
     }
   });
-  childProcess.stdout.on('data', (data) => {
-    if (onSuccess) {
+  childProcess.stderr.on('data', (data) => {
+    console.log(data);
+    if (onError) {
       onError(data);
     }
   });

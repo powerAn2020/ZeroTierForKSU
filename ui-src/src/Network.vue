@@ -33,7 +33,7 @@ const list = ref([]);
 const loading = ref(false);
 const finished = ref(false);
 const refreshing = ref(false);
-const networkStatus = ref('');
+const networkStatus = ref('加载中');
 const onlineMemberCount = ref(0);
 const authorizedMemberCount = ref(0);
 const totalMemberCount = ref(0);
@@ -44,7 +44,7 @@ const maxNetworks = ref('');
 const maxRoutes = ref('');
 
 const onRefresh = () => {
-  networkStatus.value = '';
+  networkStatus.value = '加载中';
   totalMemberCount.value = 0;
   networkCount.value = 0;
   routeCount.value = 0;
@@ -99,7 +99,7 @@ const networkList = () => {
         routeCount.value += network.config.routes ? network.config.routes.length : 0;
         networkCount.value++;
       })
-      networkStatus.value += `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${authorizedMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
+      networkStatus.value = `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${authorizedMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
     }, onError: (data) => {
       showToast('加载失败.' + data);
     }

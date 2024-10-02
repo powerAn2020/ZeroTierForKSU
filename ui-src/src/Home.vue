@@ -144,7 +144,6 @@ const newAdd = (index) => {
   chosenAddressId.value = index;
 }
 const changeStatus = (index) => {
-  debugger
   let status = items[index];
   //点击禁用
   if (typeof (status.enable) == 'undefined' || status.enable === 'true') {
