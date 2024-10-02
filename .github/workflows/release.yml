@@ -33,10 +33,10 @@ jobs:
             exit 0
           fi
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-${latest_version}.tar.xz"
+          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-musl-${latest_version}.tar.xz"
           echo ${download_link}
           wget -O curl.tar.xz ${download_link}
-          wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-${latest_version}.tar.xz
+          wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-musl-${latest_version}.tar.xz
           tar -xJf curl.tar.xz -C $PWD/bin curl
           tar -xJf curl32.tar.xz curl
           wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
