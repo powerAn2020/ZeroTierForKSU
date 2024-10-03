@@ -270,12 +270,11 @@
         </van-cell>
         <van-cell center v-for="(iroute, rridx) in networkObj.config.routes" :key="iroute">
           <template #title>
-            <van-field placeholder="x.x.x.x/x" v-model="iroute.target"
-              @update:model-value="v => updateIpRoute(v, rridx)">
+            <van-field placeholder="x.x.x.x/x" v-model="iroute.target">
             </van-field>
           </template>
           <template #value>
-            <van-field placeholder="IPv4/IPv6" v-model="iroute.via" @update:model-value="v => updateIpRoute(v, rridx)">
+            <van-field placeholder="IPv4/IPv6" v-model="iroute.via">
             </van-field>
           </template>
           <template #right-icon>
@@ -385,22 +384,11 @@ const deleteRoute = (didx) => {
   networkObj.value.config.routes.splice(didx, 1)
   updateNetwork()
 }
-const updateIpPool = (data, didx) => {
-  const ipRangeStart = data.split('-')[0];
-  const ipRangeEnd = data.split('-')[1];
-  networkObj.config.ipAssignmentPools[didx].ipRangeStart = ipRangeStart;
-  networkObj.config.ipAssignmentPools[didx].ipRangeEnd = ipRangeEnd;
-  console.info('updateIpPool')
-}
 const updateDNS = (data, didx) => {
-  debugger
   networkObj.value.config.dns.servers[didx] = data;
   console.info('updateDNS')
 }
 
-const updateIpRoute = (data, didx) => {
-  console.info('updateIpRoute')
-}
 
 const updateNetwork = (i) => {
   debounce(() => {

@@ -1,20 +1,20 @@
 <template>
   <!-- 主体列表 -->
-  <van-pull-refresh v-model="loading" @refresh="onRefresh" >
+  <van-pull-refresh v-model="loading" @refresh="onRefresh">
     <van-collapse v-model="activeNames" accordion style="min-height: 90vh;">
       <van-collapse-item v-for="(item, index) in items" :key="index" :name="index">
         <template #title>
           <van-swipe-cell :name="index">
             <template #left>
               <van-button square :type="item.enable === 'false' ? 'primary' : 'danger'" size="small"
-                :text="item.enable === 'false' ? '启用' : '禁用'" @click="changeStatus(index)" />
+                :text="item.enable === 'false' ? '启用' : '禁用'" @click="changeStatus(index)" class="full-button" />
             </template>
-            <van-cell >
+            <van-cell center >
               <template #title>
-                networkid:{{item.id}}
+                networkid:{{ item.id }}
               </template>
               <template #label>
-                name:{{item.name}}
+                name:{{ item.name }}
               </template>
               <!-- 使用 title 插槽来自定义标题 -->
               <template #value>
@@ -30,12 +30,12 @@
               </template>
             </van-cell>
             <template #right>
-              <van-button size="small" square type="primary" text="编辑" @click="newAdd(index)" />
-              <van-button size="small" square type="danger" text="删除" @click="delNode(index)" />
+              <van-button size="small" square type="primary" text="编辑" @click="newAdd(index)" class="full-button" />
+              <van-button size="small" square type="danger" text="删除" @click="delNode(index)" class="full-button" />
             </template>
           </van-swipe-cell>
         </template>
-        <JsonViewer :expand-depth="1" :value="item" copyable sort :theme="theme?'light':'dark'"/>
+        <JsonViewer :expand-depth="1" :value="item" copyable sort :theme="theme ? 'light' : 'dark'" />
       </van-collapse-item>
     </van-collapse>
   </van-pull-refresh>
@@ -67,7 +67,7 @@
 defineProps(["theme"]);//接收父组件传来的值
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
-import {MODDIR,ZTPATH,execCmd} from './tools'
+import { MODDIR, ZTPATH, execCmd } from './tools'
 
 const chosenAddressId = ref('1');
 // const text = ref('禁用')
@@ -89,13 +89,6 @@ function source() {
   };
 }
 
-let leaveNetwork = localStorage.getItem("leaveNetwork");
-if (typeof leaveNetwork == "undefined" && leaveNetwork == null) {
-  leaveNetwork = [];
-  localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
-} else {
-  leaveNetwork = JSON.parse(leaveNetwork);
-}
 // ======== method=========
 
 const reset = () => {
@@ -121,7 +114,7 @@ const newAdd = (index) => {
           setTimeout(() => {
             showToast('启动完成');
             return true;
-          }, 50);          
+          }, 50);
         })
       })
     return;
@@ -132,11 +125,11 @@ const newAdd = (index) => {
     readonly.value = true;
     const editObj = JSON.parse(JSON.stringify(items[index]));
     info.allowDNS = editObj.allowDNS,
-    info.allowDefault = editObj.allowDefault,
-    info.allowManaged = editObj.allowManaged,
-    info.allowGlobal = editObj.allowGlobal,
-    info.name = editObj.name,
-    info.id = editObj.id
+      info.allowDefault = editObj.allowDefault,
+      info.allowManaged = editObj.allowManaged,
+      info.allowGlobal = editObj.allowGlobal,
+      info.name = editObj.name,
+      info.id = editObj.id
   } else {
     readonly.value = false;
     reset()
@@ -144,17 +137,18 @@ const newAdd = (index) => {
   chosenAddressId.value = index;
 }
 const changeStatus = (index) => {
+  debugger
   let status = items[index];
   //点击禁用
   if (typeof (status.enable) == 'undefined' || status.enable === 'true') {
     status.enable = 'false';
     leaveApi(status)
-    leaveNetwork.push(status)
-    localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
+
   } else {
     status.enable = 'true';
     //点击启用
     joinApi(status)
+    let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
     const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id)
     localStorage.setItem("leaveNetwork", JSON.stringify(nleaveNetwork));
   }
@@ -200,12 +194,15 @@ const joinApi = (info) => {
 const leaveApi = (info) => {
   execCmd(`sh ${MODDIR}/api.sh local network leave ${info.id}`).then(v => {
     try {
+      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
       const statusObj = JSON.parse(v);
       console.info(statusObj);
-      showToast('完成,即将重载列表');
-      setTimeout(() => {
-        window.location.reload();
-      }, 50);
+      leaveNetwork.push(info)
+      localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
+      // showToast('完成,即将重载列表');
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 50);
     } catch (error) {
       console.error(v);
       showDialog({
@@ -217,22 +214,23 @@ const leaveApi = (info) => {
     }
   });
 }
-const getList=()=>{
+const getList = () => {
+  debugger
   execCmd(`sh ${MODDIR}/api.sh local network list`).then(v => {
-      items.length = 0;
-      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
-      if(leaveNetwork){
-        items.push(...leaveNetwork)
+    items.length = 0;
+    let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
+    if (leaveNetwork) {
+      items.push(...leaveNetwork)
+    }
+    if (v !== "") {
+      const statusObj = JSON.parse(v);
+      if (statusObj.length > 0) {
+        items.push(...statusObj)
+      } else if (items.length == 0) {
+        showDialog({ message: '暂未加入任何节点?先去加入一个吧' });
       }
-      if (v !== "") {
-        const statusObj = JSON.parse(v);
-        if (statusObj.length > 0) {
-          items.push(...statusObj)
-        } else if(items.length==0){
-          showDialog({ message: '暂未加入任何节点?先去加入一个吧' });
-        }
-      }
-    });
+    }
+  });
 }
 const addOrUpdateBtn = (action) =>
   new Promise((resolve) => {
@@ -248,35 +246,53 @@ const addOrUpdateBtn = (action) =>
     }
   });
 
-execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
-  const statusObj = JSON.parse(v);
-  if (statusObj.enable == "") {
-    showDialog({
-      title: 'zerotier服务尚未启动?是否确认开启?',
-    })
-      .then(() => {
-    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
-          showToast('启动完成');
-          setTimeout(() => {
-            ready.value = true;
-            window.location.reload();
-            return true;
-          }, 50);
-        })
-      })
+const init = () => {
+  console.info('init')
+  let leaveNetwork = localStorage.getItem("leaveNetwork");
+  if (typeof leaveNetwork == "undefined" || leaveNetwork == null) {
+    leaveNetwork = [];
+    localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
   } else {
-    ready.value = true;
-    getList();
+    leaveNetwork = JSON.parse(leaveNetwork);
   }
-});
-  //加载路由并配置防火墙
-  // const loadRouter=()=>{
-  //   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
-  //   execCmd(`sh ${MODDIR}/api.sh local router ${defaultRoterMode} `).then(v => {
-  //   })
-  // }
+  execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
+    const statusObj = JSON.parse(v);
+    if (statusObj.enable == "") {
+      showConfirmDialog({
+        title: 'zerotier服务尚未启动?是否确认开启?',
+      })
+        .then(() => {
+          execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
+            showToast('启动完成');
+            setTimeout(() => {
+              ready.value = true;
+              window.location.reload();
+              return true;
+            }, 50);
+          })
+        }).catch(() => {
+
+        })
+    } else {
+      ready.value = true;
+      getList();
+    }
+  });
+}
+init()
+
+//加载路由并配置防火墙
+// const loadRouter=()=>{
+//   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
+//   execCmd(`sh ${MODDIR}/api.sh local router ${defaultRoterMode} `).then(v => {
+//   })
+// }
 defineExpose({ newAdd });
 
 </script>
 
-<style lang="less"></style>
+<style>
+.full-button {
+  height: 100%;
+}
+</style>
