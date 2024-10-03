@@ -80,7 +80,7 @@
         <van-cell title="Network ID" :value="networkObj.id" center />
         <van-field v-model="networkObj.config.name" label="名称" placeholder="请输入名称" is-link input-align="right"
           @update:model-value="updateNetwork(1)" />
-        <van-field v-model="networkObj.config.description" label="备注" placeholder="请输入备注" is-link input-align="right"
+        <van-field v-model="networkObj.description" label="备注" placeholder="请输入备注" is-link input-align="right"
           @update:model-value="updateNetwork(2)" />
         <van-field name="radio" label="网络类型" input-align="right">
           <template #right-icon>
@@ -99,7 +99,7 @@
           </template>
         </van-cell>
         <van-field :disabled="!networkObj.config.enableBroadcast" v-model="networkObj.config.multicastLimit"
-          input-align="right" label="组播限制" placeholder="32" is-link @blur="updateNetwork(5)" />
+          input-align="right" label="组播限制" placeholder="32" type="digit" is-link @blur="updateNetwork(5)" />
       </van-cell-group>
 
       <van-cell-group title="路由管理">
@@ -116,7 +116,7 @@
             {{ route.via ? route.via : '(LAN)' }}
           </template>
           <template #right-icon>
-            <van-icon name="delete-o" color="#1989fa" size="1.2rem" @click="networkObj.config.routes.splice(ridx, 1)" />
+            <van-icon name="delete-o" color="#1989fa" size="1.2rem" @click="deleteRoute(ridx)" />
           </template>
         </van-cell>
         <van-empty v-show="networkObj.config.routes.length == 0" image="network"
@@ -150,7 +150,7 @@
             <van-switch v-model="networkObj.config.v6AssignMode.zt" size="22px" @change="updateNetwork(9)" />
           </template>
         </van-cell>
-        <van-cell title="Set IPv4/IPv6 Address Pool" clickable is-link center @click="ipAssignmentPoolsEditor = true">
+        <van-cell title="IPv4/IPv6 Address Pool" clickable is-link center @click="ipAssignmentPoolsEditor = true">
           <template #right-icon>
             <!-- v-show="networkObj.config.enableBroadcast"  -->
             <van-space direction="vertical" fill>
@@ -169,8 +169,21 @@
       <van-cell-group title="DNS配置">
         <van-field v-model="networkObj.config.dns.domain" label="Domain" placeholder="Domain" is-link
           input-align="right" @update:model-value="updateNetwork(10)" />
-        <van-field v-model="networkObj.config.dns.servers" label="Servers" placeholder="Servers" is-link
-          input-align="right" @blur="updateNetwork(11)"/>
+        <van-cell title="Servers" clickable is-link center @click="dnsEditor = true">
+          <template #right-icon>
+            <!-- v-show="networkObj.config.enableBroadcast"  -->
+            <van-space direction="vertical" fill>
+              <van-tag type="primary" v-for="(dns, dxidx) in networkObj.config.dns.servers" :key="dxidx" :name="dxidx">
+                {{ dns }}
+              </van-tag>
+            </van-space>
+          </template>
+          <template #extra>
+            <van-icon name="arrow" />
+          </template>
+        </van-cell>
+        <!-- <van-field v-model="networkObj.config.dns.servers" label="Servers" placeholder="Servers" is-link
+          input-align="right" @blur="updateNetwork(11)" /> -->
         <!--  -->
       </van-cell-group>
     </van-collapse-item>
@@ -214,14 +227,27 @@
     </van-cell>
     <van-form>
       <van-list>
-        <van-field :rules="[{ validator: asyncIPPoolValidator, message: '请输入正确IP' }]" show-error
-          v-for="(iipv4, iidx) in networkObj.config.ipAssignmentPools" :label="iidx + ':'"
-          placeholder="IPRange Start-IPRange End(IPv4/Ipv6)" :model-value="formatIpRange(iipv4)"
-          @update:model-value="v => updateIpPool(v, iidx)">
+        <van-cell center>
+          <template #title>
+            <van-field placeholder="Range Start" readonly required />
+          </template>
+          <template #value>
+            <van-field placeholder="Range End" readonly required />
+          </template>
+        </van-cell>
+        <van-cell center v-for="(iipv4, iidx) in networkObj.config.ipAssignmentPools" :key="iipv4">
+          <template #title>
+            <van-field placeholder="IPv4/IPv6" v-model="iipv4.ipRangeStart">
+            </van-field>
+          </template>
+          <template #value>
+            <van-field placeholder="IPv4/IPv6" v-model="iipv4.ipRangeEnd">
+            </van-field>
+          </template>
           <template #right-icon>
             <van-icon size="1rem" name="cross" @click="networkObj.config.ipAssignmentPools.splice(iidx, 1)" />
           </template>
-        </van-field>
+        </van-cell>
       </van-list>
     </van-form>
   </van-popup>
@@ -234,7 +260,7 @@
     </van-cell>
     <van-form>
       <van-list>
-        <van-cell center >
+        <van-cell center>
           <template #title>
             <van-field placeholder="Destination" readonly required />
           </template>
@@ -256,7 +282,24 @@
             <van-icon size="1rem" name="cross" @click="networkObj.config.routes.splice(iidx, 1)" />
           </template>
         </van-cell>
-
+      </van-list>
+    </van-form>
+  </van-popup>
+  <!-- DNS 地址管理 -->
+  <van-popup v-model:show="dnsEditor" round :style="{ width: '90%', maxHeight: '85%' }" :before-close="checkDNS">
+    <van-cell title="DNS Servers" title-style="max-width:100%;" center>
+      <template #right-icon>
+        <van-icon size="1.2rem" name="plus" @click='addNetworkDNS' />
+      </template>
+    </van-cell>
+    <van-form>
+      <van-list>
+        <van-field show-error v-for="(dns, diidx) in networkObj.config.dns.servers" :label="diidx + ':'"
+          placeholder="x.x.x.x" :model-value="dns" @update:model-value="v => updateDNS(v, diidx)">
+          <template #right-icon>
+            <van-icon size="1rem" name="cross" @click="networkObj.config.dns.servers.splice(diidx, 1)" />
+          </template>
+        </van-field>
       </van-list>
     </van-form>
   </van-popup>
@@ -266,16 +309,44 @@
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import { MODDIR, execCmdWithCallback, execCmdWithErrno, spawnCmdWithCallback } from './tools'
-import { useRemoteNetworkStore } from './stores/remoteNetwork'
+// import { useRemoteNetworkStore } from './stores/remoteNetwork'
 
-const remoteNetwork = useRemoteNetworkStore();
+// const remoteNetwork = useRemoteNetworkStore();
 
 const router = useRouter()
 const route = useRoute()
-const networkObj = ref()
+const networkObj = ref({
+  "id": "",
+  "config": {
+    "enableBroadcast": true,
+    "id": "",
+    "ipAssignmentPools": null,
+    "multicastLimit": 32,
+    "name": "",
+    "private": false,
+    "routes": [],
+    "v4AssignMode": {
+      "zt": false
+    },
+    "v6AssignMode": {
+      "6plane": false,
+      "rfc4193": false,
+      "zt": false
+    },
+    "dns": {
+      "domain": "",
+      "servers": null
+    }
+  },
+  "description": "",
+  "onlineMemberCount": 0,
+  "authorizedMemberCount": 0,
+  "totalMemberCount": 0
+})
 const ipAssignmentsEditor = ref(false)
 const ipAssignmentPoolsEditor = ref(false)
 const routeEditor = ref(false)
+const dnsEditor = ref(false)
 const addNetworkMemberShow = ref(false)
 const memberList = ref([])
 const modifiedMember = ref({})
@@ -290,9 +361,16 @@ const nodeId = ref(['']);
 
 const asyncIPv4Validator = (val) =>
   new Promise((resolve) => {
+    debugger
     resolve(IPV4Pattern.test(val));
   });
 
+const addNetworkDNS = () => {
+  if (!networkObj.value.config.dns.servers) {
+    networkObj.value.config.dns.servers = [];
+  }
+  networkObj.value.config.dns.servers.push('')
+}
 const asyncIPPoolValidator = (val) =>
   new Promise((resolve) => {
     const ipArr = val.split('-');
@@ -303,8 +381,21 @@ const asyncIPPoolValidator = (val) =>
     }
   });
 
+const deleteRoute = (didx) => {
+  networkObj.value.config.routes.splice(didx, 1)
+  updateNetwork()
+}
 const updateIpPool = (data, didx) => {
+  const ipRangeStart = data.split('-')[0];
+  const ipRangeEnd = data.split('-')[1];
+  networkObj.config.ipAssignmentPools[didx].ipRangeStart = ipRangeStart;
+  networkObj.config.ipAssignmentPools[didx].ipRangeEnd = ipRangeEnd;
   console.info('updateIpPool')
+}
+const updateDNS = (data, didx) => {
+  debugger
+  networkObj.value.config.dns.servers[didx] = data;
+  console.info('updateDNS')
 }
 
 const updateIpRoute = (data, didx) => {
@@ -313,15 +404,24 @@ const updateIpRoute = (data, didx) => {
 
 const updateNetwork = (i) => {
   debounce(() => {
+    networkObj.value.config.multicastLimit = parseInt(networkObj.value.config.multicastLimit);
     console.info(networkObj)
+    showLoadingToast({
+      duration: 0,
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
     spawnCmdWithCallback({
       cmd: `sh ${MODDIR}/api.sh central network modify ${networkObj.value.id} '${JSON.stringify(networkObj.value)}'`, onSuccess: (data) => {
+        closeToast()
         showToast('更新网络信息完成');
       }, onError: (data) => {
+        closeToast()
         showToast('更新网络信息失败.' + data);
       }
     })
-  }, 1500, false)();
+  }, 1000, false)();
   console.info('updateNetwork' + i)
 }
 const showTips = (i) => {
@@ -334,7 +434,7 @@ const showTips = (i) => {
   showToast({ message: message, duration: duration });
 }
 const updateMember = (memberID, immediate, id) => {
-  
+
   console.info(`id-->:${id}`)
   if (!memberID) {
     return;
@@ -344,6 +444,12 @@ const updateMember = (memberID, immediate, id) => {
   }
 
   debounce(() => {
+    showLoadingToast({
+      duration: 0,
+      message: '加载中...',
+      forbidClick: true,
+      loadingType: 'spinner',
+    });
     console.info(`updateMember->${memberID}`)
     const params = {
       "name": modifiedMember.value.name,
@@ -361,8 +467,10 @@ const updateMember = (memberID, immediate, id) => {
         if (!s) {
           memberList.value.push(JSON.parse(data))
         }
+        closeToast()
         showToast('更新成员信息完成');
       }, onError: (data) => {
+        closeToast()
         showToast('新增失败.' + data);
       }
     })
@@ -390,13 +498,26 @@ const checkIPRange = () => {
   updateNetwork()
   return true;
 }
+const checkDNS = () => {
+  for (const ipObj of networkObj.value.config.dns.servers) {
+    if (IPV4Pattern.test(ipObj) || IPV6Pattern.test(ipObj)) {
+      continue
+    } else {
+      showToast('DNS记录无效，请检查');
+      return false
+    }
+  }
+  updateNetwork()
+  return true;
+}
+
 const checkRoute = () => {
-  
+
   for (const ipObj of networkObj.value.config.routes) {
     if (cidrRegex.test(ipObj['target'])) {
-      if(!ipObj['via'] || (IPV4Pattern.test(ipObj['via']) || IPV6Pattern.test(ipObj['via']))){
+      if (!ipObj['via'] || (IPV4Pattern.test(ipObj['via']) || IPV6Pattern.test(ipObj['via']))) {
         continue
-      }else{
+      } else {
         showToast('Via无效，请检查');
         return false
       }
@@ -679,13 +800,21 @@ const init = () => {
     loadingType: 'spinner',
   });
   console.info(`networkid:${route.params.id}`);
-  networkObj.value = remoteNetwork.getNetworkById(route.params.id)
-  if (!networkObj.value) {
-    closeToast();
-    router.push('/center/network')
-  }
-  getMembers(route.params.id)
-  closeToast();
+  execCmdWithCallback({
+    cmd: `sh ${MODDIR}/api.sh central network list ${route.params.id}`, onSuccess: (data) => {
+      networkObj.value = JSON.parse(data);
+      if (!networkObj.value) {
+        closeToast();
+        router.push('/center/network')
+      }
+      getMembers(route.params.id)
+      closeToast();
+      showToast('加载完成.');
+    }, onError: (data) => {
+      showToast('加载失败.' + data);
+    }
+  })
+  // networkObj.value = remoteNetwork.getNetworkById(route.params.id)
 }
 
 init()

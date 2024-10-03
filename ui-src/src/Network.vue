@@ -4,7 +4,7 @@
   </van-notice-bar>
   <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
     <van-list v-model:loading="loading" :finished="finished" style="min-height: 80vh;">
-      <van-cell center v-for="item in list" :key="item" :title="item" :to="'/center/networkDetail/' + item.config.id"
+      <van-cell center v-for="item in list" :key="item" :title="item" :to="'/center/networkDetail/' + item.config.id" replace clickable
         is-link>
         <template #title>
           networkid: {{ item.config.id }}
