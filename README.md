@@ -26,12 +26,12 @@
 
 ## TODO
 
-1. [ ] UI增加一个开发版和稳定版切换，现在测试好麻烦。
-2. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
-3. [ ] 新建zerotier路由规则表（没学会。先放着吧）
-4. [X] 增加管理页面，需要自行准备[API Token](https://docs.zerotier.com/api/tokens/#zerotier-central-token)
-5. [ ] 国际化
-6. [ ] 等待新版KSU发布后，重新发版，现在是以补丁的形式提前用上了KSU的某些未修复的API
+1. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
+2. [ ] 新建zerotier路由规则表（没学会。先放着吧）
+3. [X] 增加管理页面，需要自行准备[API Token](https://docs.zerotier.com/api/tokens/#zerotier-central-token)
+4. [ ] 国际化
+5. [ ] 等待新版KSU发布后，重新发版，现在是以补丁的形式提前用上了KSU的某些未修复的API
+
 ## 免责声明
 
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
@@ -48,7 +48,7 @@
 
 ### 文件说明
 
-#### Zerotier数据目录:`/data/adb/zerotier`；虽然UI都实现了，但是还是说明下，给自己备忘下；在该目录下创建以下文件可以做到
+#### Zerotier数据目录:`/data/adb/zerotier`；在该目录下创建以下文件可以做到
 
   创建文件`/data/adb/zerotier/KEEP_ON_UNINSTALL`，卸载模块可保留数据目录
   创建文件`/data/adb/zerotier/MANMANUAL`，关闭开机自启
@@ -59,15 +59,14 @@
 
 ### **执行所有脚本都需要带全路径/Executing all scripts requires a full path**
 
-    ```Shell
+```Shell
   sh /data/adb/modules/ZeroTierForKSU/zerotier-cli # 同官方
   sh /data/adb/modules/ZeroTierForKSU/zerotier-idtool # 同官方
   sh /data/adb/modules/ZeroTierForKSU/zerotier.inotify # 监听/data/adb/zerotier/state目录，用于启动服务。
-    ```
+```
 
-    ```markdown
-ZeroTier for KSU - zerotier.sh
-
+#### ZeroTier for KSU - zerotier.sh
+```Shell
 Usage:
   zerotier.sh options
 
@@ -82,18 +81,18 @@ Options:
   inotifyd                                   -- Start inotifyd Service
 
 Example:
-  help
-    sh zerotier.sh -h
-    sh zerotier.sh start
-    sh zerotier.sh restart
-    sh zerotier.sh stop
-    sh zerotier.sh status
-    sh zerotier.sh token
-    sh zerotier.sh apiToken
-    sh zerotier.sh inotifyd
+  sh zerotier.sh -h
+  sh zerotier.sh start
+  sh zerotier.sh restart
+  sh zerotier.sh stop
+  sh zerotier.sh status
+  sh zerotier.sh token
+  sh zerotier.sh apiToken
+  sh zerotier.sh inotifyd
 
- # 通过webapi接口调用zerotier服务
-ZeroTier for KSU - api.sh
+```
+#### ZeroTier for KSU - api.sh
+```shell 
 
 Usage:
   api.sh <api_type> [options]
@@ -161,4 +160,4 @@ Example:
   apiToken
     sh api.sh apiToken show
     sh api.sh apiToken update xxxxxxxxx
-    ```
+```
