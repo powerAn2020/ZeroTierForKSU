@@ -5,10 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "if exist %cd%\\dist.zip del %cd%\\dist.zip",
     "build": "vite build",
-    "postinstall": "patch-package",
-    "postbuild": "7z u dist.zip ./dist/* & adb -s 192.168.10.237:37755 push %cd%\\dist.zip /sdcard/Download/dist/"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "buffer": "^6.0.3",
