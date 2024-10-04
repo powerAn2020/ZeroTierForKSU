@@ -22,8 +22,8 @@
     </router-view>
     <div style="height: 0.1rem;"></div>
     <van-tabbar route safe-area-inset-bottom>
-      <van-tabbar-item replace to="/" icon="home-o">{{$t('common.dash')}}</van-tabbar-item>
-      <van-tabbar-item replace to="/peers" icon="friends-o">{{$t('common.peers')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/" icon="home-o">{{t('common.dash')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/peers" icon="friends-o">{{t('common.peers')}}</van-tabbar-item>
       <van-tabbar-item replace to="/center">
         <template #icon>
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 36 36">
@@ -36,11 +36,11 @@
           </svg>
 
         </template>
-        {{$t('common.network')}}
+        {{t('common.network')}}
       </van-tabbar-item>
-      <van-tabbar-item replace to="/setting" icon="setting-o">{{$t('common.setting')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/setting" icon="setting-o">{{t('common.setting')}}</van-tabbar-item>
     </van-tabbar>
-    <van-action-sheet v-model:show="localeShow" :actions="locale" @select="switchLocale" close-on-click-action/>
+    <van-action-sheet v-model:show="localeShow" :actions="language" @select="switchLocale" close-on-click-action/>
 
   </van-config-provider>
   <!-- <van-floating-bubble icon="replay" axis="xy" magnetic="x" @click="onClick" /> -->
@@ -51,7 +51,8 @@
 // import { ref, watch } from 'vue';
 // import { useRouter } from 'vue-router';
 import { execCmd } from './tools'
-import i18n from './locales/i18n'
+import { vantLocales, useI18n , i18n} from './locales'; // 导入所有翻译信息
+const { t, locale } = useI18n();
 
 const router = useRouter()
 const theme = ref();
@@ -64,13 +65,21 @@ const add = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvM
 // const onClick = () => {
 //   window.location.reload();
 // }
-const locale = [
-  { name: "中文(简体)", value: "zh-CN" },
-  { name: "English(US)", value: "en-US" }
+
+const language = [
+  { name: "中文(简体)", value: "zh" },
+  { name: "English(US)", value: "en" }
 ]
-const switchLocale = (locale) => {
-  i18n.global.locale = locale.value
-  localStorage.setItem('ZerotierForKSU.locale', locale.value)
+// 切换语言
+const switchLocale = (language) => {
+  debugger
+  // Vant basic
+  vantLocales(language)
+  // Business component
+  // locale.value = language;
+  locale.value = language.value
+  // Cookie
+  localStorage.setItem('ZerotierForKSU.locale', language.value)
   localeShow.value = false;
 }
 const initTheme = () => {
@@ -97,6 +106,7 @@ const initTheme = () => {
   }
 }
 const initI18n = () => {
+  debugger
   const cacheLocale = localStorage.getItem('ZerotierForKSU.locale')
   if (typeof cacheLocale != "undefined" && cacheLocale != null) {
     i18n.global.locale = cacheLocale
@@ -141,5 +151,18 @@ initI18n()
 .van-theme-dark body {
   color: #f5f5f5;
   background-color: black;
+}
+
+.van-theme-light body {
+  /* color: #f7f8fa; */
+  background-color: #f7f8fa;
+  --van-dialog-background: #f7f8fa;
+}
+* {
+	-webkit-touch-callout:none; /*系统默认菜单被禁用*/
+	-webkit-user-select:none; /*webkit浏览器*/
+	-moz-user-select:none;/*火狐*/
+	-ms-user-select:none; /*IE10*/
+	user-select:none;
 }
 </style>

@@ -27,13 +27,15 @@
 // import { ref } from 'vue';
 import { MODDIR, execCmdWithCallback, execCmdWithErrno, spawnCmdWithCallback } from './tools'
 import { useRemoteNetworkStore } from './stores/remoteNetwork'
+import {  useI18n } from './locales'; // 导入所有翻译信息
+const { t } = useI18n();
 
 const remoteNetwork = useRemoteNetworkStore();
 const list = ref([]);
 const loading = ref(false);
 const finished = ref(false);
 const refreshing = ref(false);
-const networkStatus = ref($t('common.loading'));
+const networkStatus = ref(t('common.loading'));
 const onlineMemberCount = ref(0);
 const authorizedMemberCount = ref(0);
 const totalMemberCount = ref(0);
@@ -44,7 +46,7 @@ const maxNetworks = ref('');
 const maxRoutes = ref('');
 
 const onRefresh = () => {
-  networkStatus.value = $t('common.loading');
+  networkStatus.value = t('common.loading');
   totalMemberCount.value = 0;
   networkCount.value = 0;
   routeCount.value = 0;
@@ -84,8 +86,8 @@ const networkList = () => {
         maxRoutes.value = '∞'
       }
     }, onError: (data) => {
-      showToast($t('common.loading_fail') + data);
-      networkStatus.value = $t('common.check_network_tips');
+      showToast(t('common.loading_fail') + data);
+      networkStatus.value = t('common.check_network_tips');
     }
   })
   execCmdWithCallback({
@@ -100,10 +102,10 @@ const networkList = () => {
         routeCount.value += network.config.routes ? network.config.routes.length : 0;
         networkCount.value++;
       })
-      networkStatus.value = `$t('network.networkCount'):${networkCount.value}/${maxNetworks.value} $t('network.maxMembers'):${totalMemberCount.value}/${maxMembers.value} $t('network.authorizedMemberCount'):${authorizedMemberCount.value} $t('network.routeCount'):${routeCount.value}/${maxRoutes.value}`
+      networkStatus.value = `${t('network.networkCount')}:${networkCount.value}/${maxNetworks.value} ${t('network.maxMembers')}:${totalMemberCount.value}/${maxMembers.value} ${t('network.authorizedMemberCount')}:${authorizedMemberCount.value} ${t('network.routeCount')}:${routeCount.value}/${maxRoutes.value}`
     }, onError: (data) => {
-      showToast($t('common.loading_fail') + data);
-      networkStatus.value = $t('common.check_network_tips');
+      showToast(t('common.loading_fail') + data);
+      networkStatus.value = t('common.check_network_tips');
     }
   })
   loading.value = false;

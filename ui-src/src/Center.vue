@@ -1,7 +1,7 @@
 <template>
   <div style="height: 0.1rem;"></div>
   <router-view />
-  <van-empty :description="$t('network.api-not-found')" v-if="show"/>
+  <van-empty :description="t('network.api-not-found')" v-if="show"/>
   <div style="height: 2.8rem;"></div>
 </template>
 
@@ -9,6 +9,8 @@
 // import { ref } from 'vue';
 // import { useRoute, useRouter } from 'vue-router'
 import { MODDIR, execCmdWithCallback, execCmdWithErrno } from './tools'
+import {  useI18n } from './locales'; // 导入所有翻译信息
+const { t } = useI18n();
 
 const router = useRouter()
 const route = useRoute()
@@ -31,9 +33,9 @@ const beforeClose = (action) => {
     setTimeout(() => {
       execCmdWithCallback({
         cmd: `sh ${MODDIR}/api.sh central network add`, onSuccess: (data) => {
-          showToast($t('network.operation_success'));
+          showToast(t('network.operation_success'));
         }, onError: (data) => {
-          showToast($t('network.operation_fail') + data);
+          showToast(t('network.operation_fail') + data);
         }
       })
       resolve(true);
@@ -43,7 +45,7 @@ const beforeClose = (action) => {
 const newAdd = (index) => {
   showConfirmDialog({
     message:
-      $t('network.ask_new_network'),
+      t('network.ask_new_network'),
     beforeClose
   })
 }

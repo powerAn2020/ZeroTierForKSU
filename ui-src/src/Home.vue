@@ -1,8 +1,8 @@
 <template>
   <!-- 主体列表 -->
-  <van-empty v-show="!ready" image="network" :description="$t('common.service_no_run')">
+  <van-empty v-show="!ready" image="network" :description="t('common.service_no_run')">
     <van-button round type="primary" class="bottom-button" @click="startService">{{
-      $t('common.service_start') }}</van-button>
+      t('common.service_start') }}</van-button>
   </van-empty>
   <van-pull-refresh v-model="loading" @refresh="onRefresh">
     <van-collapse v-show="items.length != 0" v-model="activeNames" accordion style="min-height: 90vh;">
@@ -11,7 +11,7 @@
           <van-swipe-cell :name="index">
             <template #left>
               <van-button square :type="item.enable === 'false' ? 'primary' : 'danger'" size="small"
-                :text="item.enable === 'false' ? $t('home.enable') : $t('home.disable')" @click="changeStatus(index)"
+                :text="item.enable === 'false' ? t('home.enable') : t('home.disable')" @click="changeStatus(index)"
                 class="full-button" />
             </template>
             <van-cell center>
@@ -23,25 +23,25 @@
               </template>
               <!-- 使用 title 插槽来自定义标题 -->
               <template #value>
-                <van-tag v-if="item.enable === 'false'" type="danger">{{ $t('home.disabled') }}</van-tag>
-                <van-tag v-else type="success">{{ $t('home.enabled') }}</van-tag>
+                <van-tag v-if="item.enable === 'false'" type="danger">{{ t('home.disabled') }}</van-tag>
+                <van-tag v-else type="success">{{ t('home.enabled') }}</van-tag>
                 <van-tag v-if="item.status === 'REQUESTING_CONFIGURATION'" type="primary">{{
-                  $t('home.requesting_configuration') }}</van-tag>
-                <van-tag v-else-if="item.status === 'NOT_FOUND'" type="warning">{{ $t('home.not_found') }}</van-tag>
-                <van-tag v-else-if="item.status === 'ACCESS_DENIED'" type="danger">{{ $t('home.access_denied')
+                  t('home.requesting_configuration') }}</van-tag>
+                <van-tag v-else-if="item.status === 'NOT_FOUND'" type="warning">{{ t('home.not_found') }}</van-tag>
+                <van-tag v-else-if="item.status === 'ACCESS_DENIED'" type="danger">{{ t('home.access_denied')
                   }}</van-tag>
-                <van-tag v-else-if="item.status === 'PORT_ERROR'" type="danger">{{ $t('home.port_error') }}</van-tag>
-                <van-tag v-else-if="item.status === 'CLIENT_TOO_OLD'" type="warning">{{ $t('home.client_too_old')
+                <van-tag v-else-if="item.status === 'PORT_ERROR'" type="danger">{{ t('home.port_error') }}</van-tag>
+                <van-tag v-else-if="item.status === 'CLIENT_TOO_OLD'" type="warning">{{ t('home.client_too_old')
                   }}</van-tag>
                 <van-tag v-else-if="item.status === 'AUTHENTICATION_REQUIRED'" type="primary">{{
-                  $t('home.authentication_required') }}</van-tag>
-                <van-tag v-else-if="item.status === 'OK'" type="primary">{{ $t('home.ok') }}</van-tag>
+                  t('home.authentication_required') }}</van-tag>
+                <van-tag v-else-if="item.status === 'OK'" type="primary">{{ t('home.ok') }}</van-tag>
               </template>
             </van-cell>
             <template #right>
-              <van-button size="small" square type="primary" :text="$t('common.edit')" @click="newAdd(index)"
+              <van-button size="small" square type="primary" :text="t('common.edit')" @click="newAdd(index)"
                 class="full-button" />
-              <van-button size="small" square type="danger" :text="$t('common.delete')" @click="delNode(index)"
+              <van-button size="small" square type="danger" :text="t('common.delete')" @click="delNode(index)"
                 class="full-button" />
             </template>
           </van-swipe-cell>
@@ -51,28 +51,28 @@
     </van-collapse>
   </van-pull-refresh>
   <!-- <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" /> -->
-  <van-dialog v-model:show="show" :title="$t('home.edit_node_title')" show-cancel-button :before-close="addOrUpdateBtn">
+  <van-dialog v-model:show="show" :title="t('home.edit_node_title')" show-cancel-button :before-close="addOrUpdateBtn">
     <van-space direction="vertical" fill>
       <van-row :gutter="[20, 20]">
         <van-col span="24">
-          <van-field v-model="addOrUpdate.id" :label="$t('home.nodeId')" required
-            :placeholder="$t('home.nodeId_input_tips')" :readonly="readonly" />
+          <van-field v-model="addOrUpdate.id" :label="t('home.nodeId')" required
+            :placeholder="t('home.nodeId_input_tips')" :readonly="readonly" />
         </van-col>
       </van-row>
       <van-row :gutter="[20, 20]">
         <van-col span="12"> <van-checkbox shape="square" name="allowManaged" v-model="addOrUpdate.allowManaged">{{
-          $t('home.allowManaged') }}</van-checkbox>
+          t('home.allowManaged') }}</van-checkbox>
         </van-col>
         <van-col span="12"> <van-checkbox shape="square" name="allowGlobal" v-model="addOrUpdate.allowGlobal">{{
-          $t('home.allowGlobal') }}</van-checkbox>
+          t('home.allowGlobal') }}</van-checkbox>
         </van-col>
       </van-row>
       <van-row :gutter="[20, 20]">
         <van-col span="12"> <van-checkbox shape="square" name="allowDefault" v-model="addOrUpdate.allowDefault">{{
-          $t('home.allowDefault') }}</van-checkbox>
+          t('home.allowDefault') }}</van-checkbox>
         </van-col>
         <van-col span="12"> <van-checkbox shape="square" name="allowDNS" v-model="addOrUpdate.allowDNS">{{
-          $t('home.allowDNS') }}</van-checkbox>
+          t('home.allowDNS') }}</van-checkbox>
         </van-col>
       </van-row>
       <van-row :gutter="[20, 20]">
@@ -89,7 +89,8 @@ defineProps(["theme"]);//接收父组件传来的值
 import { JsonViewer } from "vue3-json-viewer"
 import { MODDIR, ZTPATH, execCmd } from './tools'
 import { useModuleInfoStore } from './stores/status'
-
+import {  useI18n } from './locales'; // 导入所有翻译信息
+const { t } = useI18n();
 const moduleInfo = useModuleInfoStore();
 
 const chosenAddressId = ref('1');
@@ -126,9 +127,9 @@ const onRefresh = () => {
   }, 50);
 };
 const startService = () => {
-  execCmd(`sh ${MODDIR}/zerotier.sh start`).then(v => {
+  execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
     setTimeout(() => {
-      showToast($t('common.operation_success'));
+      showToast(t('common.operation_success'));
       ready.value = true;
       window.location.reload();
     }, 50);
@@ -136,7 +137,7 @@ const startService = () => {
 }
 const startServiceConfirm = () => {
   showConfirmDialog({
-    title: $t('common.ask_service_start'),
+    title: t('common.ask_service_start'),
   })
     .then(() => {
       startService()
@@ -192,7 +193,7 @@ const delNode = (index) => {
     return;
   }
   showConfirmDialog({
-    title: $t('home.leave_confirm'),
+    title: t('home.leave_confirm'),
   })
     .then(() => {
       let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
@@ -217,13 +218,13 @@ const joinApi = (info) => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
-      showToast($t('network.operation_success'));
+      showToast(t('network.operation_success'));
       setTimeout(() => {
         window.location.reload();
       }, 50);
     } catch (error) {
       showDialog({
-        title: $t('network.operation_fail'),
+        title: t('network.operation_fail'),
         message: v
       }).then(() => {
         // on close
@@ -251,7 +252,7 @@ const leaveApi = (info) => {
     } catch (error) {
       console.error(v);
       showDialog({
-        title: $t('network.operation_fail'),
+        title: t('network.operation_fail'),
         message: v
       }).then(() => {
         // on close
@@ -275,7 +276,7 @@ const getList = () => {
         }
         items.push(...statusObj)
       } else if (items.length == 0) {
-        console.info($t('home.noNetwork_tips'))
+        console.info(t('home.noNetwork_tips'))
       }
     }
   });
@@ -323,7 +324,7 @@ const init = () => {
       }
     });
     closeToast()
-  }, 500)
+  }, 1000)
 }
 init()
 

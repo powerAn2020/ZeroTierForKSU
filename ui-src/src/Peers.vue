@@ -1,7 +1,7 @@
 <template>
-  <van-empty v-show="!ready" image="network" :description="$t('common.service_no_run')">
+  <van-empty v-show="!ready" image="network" :description="t('common.service_no_run')">
     <van-button round type="primary" class="bottom-button" @click="startService">{{
-      $t('common.service_start') }}</van-button>
+      t('common.service_start') }}</van-button>
   </van-empty>
   <van-pull-refresh v-model="loading" @refresh="onRefresh">
     <van-collapse v-show="items.length != 0" v-model="activeNames" accordion style="min-height: 90vh;">
@@ -11,12 +11,12 @@
           <!-- <template #value>
             </template> -->
         </template>
-        <van-text-ellipsis rows="2" :content="getContent(item.paths)" :expand-text="$t('peers.expand')" :collapse-text="$t('peers.collapse')" />
+        <van-text-ellipsis rows="2" :content="getContent(item.paths)" :expand-text="t('peers.expand')" :collapse-text="t('peers.collapse')" />
       </van-collapse-item>
     </van-collapse>
   </van-pull-refresh>
 
-  <van-dialog v-model:show="show" :title="$t('peers.moonOrPlant')" show-cancel-button :before-close="addBtn">
+  <van-dialog v-model:show="show" :title="t('peers.moonOrPlant')" show-cancel-button :before-close="addBtn">
     <van-col span="24">
       <van-field v-model="moonId" label="world ID" required placeholder="world ID" />
     </van-col>
@@ -27,7 +27,8 @@
 // import { reactive, ref } from 'vue';
 import { ZTPATH, MODDIR, execCmd } from './tools'
 import { useModuleInfoStore } from './stores/status'
-
+import {  useI18n } from './locales'; // 导入所有翻译信息
+const { t } = useI18n();
 const moduleInfo = useModuleInfoStore();
 const ready = ref(false);
 
@@ -39,7 +40,7 @@ const activeNames = ref(null);
 const items = reactive([])
 
 const startService = () => {
-  execCmd(`sh ${MODDIR}/zerotier.sh start`).then(v => {
+  execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
     setTimeout(() => {
       ready.value = true;
       window.location.reload();
@@ -119,7 +120,7 @@ const init = () => {
       }
     });
     closeToast()
-  }, 500)
+  }, 1000)
 }
 init()
 defineExpose({ newAdd });
