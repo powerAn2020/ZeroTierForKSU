@@ -1,7 +1,8 @@
 <template>
   <!-- 主体列表 -->
-  <van-empty v-show="!ready" image="network" description="服务未启动">
-    <van-button round type="primary" class="bottom-button" @click="startService">启动服务</van-button>
+  <van-empty v-show="!ready" image="network" :description="$t('common.service_no_run')">
+    <van-button round type="primary" class="bottom-button" @click="startService">{{
+      $t('common.service_start') }}</van-button>
   </van-empty>
   <van-pull-refresh v-model="loading" @refresh="onRefresh">
     <van-collapse v-show="items.length != 0" v-model="activeNames" accordion style="min-height: 90vh;">
@@ -10,7 +11,8 @@
           <van-swipe-cell :name="index">
             <template #left>
               <van-button square :type="item.enable === 'false' ? 'primary' : 'danger'" size="small"
-                :text="item.enable === 'false' ? '启用' : '禁用'" @click="changeStatus(index)" class="full-button" />
+                :text="item.enable === 'false' ? $t('home.enable') : $t('home.disable')" @click="changeStatus(index)"
+                class="full-button" />
             </template>
             <van-cell center>
               <template #title>
@@ -21,20 +23,26 @@
               </template>
               <!-- 使用 title 插槽来自定义标题 -->
               <template #value>
-                <van-tag v-if="item.enable === 'false'" type="danger">已禁用</van-tag>
-                <van-tag v-else type="success">已启用</van-tag>
-                <van-tag v-if="item.status === 'REQUESTING_CONFIGURATION'" type="primary">正在获取配置</van-tag>
-                <van-tag v-else-if="item.status === 'NOT_FOUND'" type="warning">无效组网ID</van-tag>
-                <van-tag v-else-if="item.status === 'ACCESS_DENIED'" type="danger">授权认证失败</van-tag>
-                <van-tag v-else-if="item.status === 'PORT_ERROR'" type="danger">本地端口错误</van-tag>
-                <van-tag v-else-if="item.status === 'CLIENT_TOO_OLD'" type="warning">低版本客户端</van-tag>
-                <van-tag v-else-if="item.status === 'AUTHENTICATION_REQUIRED'" type="primary">请求授权认证</van-tag>
-                <van-tag v-else-if="item.status === 'OK'" type="primary">组网成功</van-tag>
+                <van-tag v-if="item.enable === 'false'" type="danger">{{ $t('home.disabled') }}</van-tag>
+                <van-tag v-else type="success">{{ $t('home.enabled') }}</van-tag>
+                <van-tag v-if="item.status === 'REQUESTING_CONFIGURATION'" type="primary">{{
+                  $t('home.requesting_configuration') }}</van-tag>
+                <van-tag v-else-if="item.status === 'NOT_FOUND'" type="warning">{{ $t('home.not_found') }}</van-tag>
+                <van-tag v-else-if="item.status === 'ACCESS_DENIED'" type="danger">{{ $t('home.access_denied')
+                  }}</van-tag>
+                <van-tag v-else-if="item.status === 'PORT_ERROR'" type="danger">{{ $t('home.port_error') }}</van-tag>
+                <van-tag v-else-if="item.status === 'CLIENT_TOO_OLD'" type="warning">{{ $t('home.client_too_old')
+                  }}</van-tag>
+                <van-tag v-else-if="item.status === 'AUTHENTICATION_REQUIRED'" type="primary">{{
+                  $t('home.authentication_required') }}</van-tag>
+                <van-tag v-else-if="item.status === 'OK'" type="primary">{{ $t('home.ok') }}</van-tag>
               </template>
             </van-cell>
             <template #right>
-              <van-button size="small" square type="primary" text="编辑" @click="newAdd(index)" class="full-button" />
-              <van-button size="small" square type="danger" text="删除" @click="delNode(index)" class="full-button" />
+              <van-button size="small" square type="primary" :text="$t('common.edit')" @click="newAdd(index)"
+                class="full-button" />
+              <van-button size="small" square type="danger" :text="$t('common.delete')" @click="delNode(index)"
+                class="full-button" />
             </template>
           </van-swipe-cell>
         </template>
@@ -43,32 +51,41 @@
     </van-collapse>
   </van-pull-refresh>
   <!-- <van-floating-bubble icon="replay" axis="xy" @click="loadRouter" /> -->
-  <van-dialog v-model:show="show" title="配置节点" show-cancel-button :before-close="addOrUpdateBtn">
-    <van-row :gutter="[20, 20]">
-      <van-col span="24">
-        <van-field v-model="addOrUpdate.id" label="组网ID" required placeholder="请输入组网id" :readonly="readonly" />
-      </van-col>
-      <van-col span="12"> <van-checkbox shape="square" name="allowManaged"
-          v-model="addOrUpdate.allowManaged">允许管理地址</van-checkbox>
-      </van-col>
-      <van-col span="12"> <van-checkbox shape="square" name="allowGlobal"
-          v-model="addOrUpdate.allowGlobal">允许管理全局IP</van-checkbox>
-      </van-col>
-      <van-col span="12"> <van-checkbox shape="square" name="allowDefault"
-          v-model="addOrUpdate.allowDefault">允许默认路由</van-checkbox>
-      </van-col>
-      <van-col span="12"> <van-checkbox shape="square" name="allowDNS"
-          v-model="addOrUpdate.allowDNS">允许配置DNS</van-checkbox>
-      </van-col>
-      <van-col span="12"> </van-col>
-    </van-row>
+  <van-dialog v-model:show="show" :title="$t('home.edit_node_title')" show-cancel-button :before-close="addOrUpdateBtn">
+    <van-space direction="vertical" fill>
+      <van-row :gutter="[20, 20]">
+        <van-col span="24">
+          <van-field v-model="addOrUpdate.id" :label="$t('home.nodeId')" required
+            :placeholder="$t('home.nodeId_input_tips')" :readonly="readonly" />
+        </van-col>
+      </van-row>
+      <van-row :gutter="[20, 20]">
+        <van-col span="12"> <van-checkbox shape="square" name="allowManaged" v-model="addOrUpdate.allowManaged">{{
+          $t('home.allowManaged') }}</van-checkbox>
+        </van-col>
+        <van-col span="12"> <van-checkbox shape="square" name="allowGlobal" v-model="addOrUpdate.allowGlobal">{{
+          $t('home.allowGlobal') }}</van-checkbox>
+        </van-col>
+      </van-row>
+      <van-row :gutter="[20, 20]">
+        <van-col span="12"> <van-checkbox shape="square" name="allowDefault" v-model="addOrUpdate.allowDefault">{{
+          $t('home.allowDefault') }}</van-checkbox>
+        </van-col>
+        <van-col span="12"> <van-checkbox shape="square" name="allowDNS" v-model="addOrUpdate.allowDNS">{{
+          $t('home.allowDNS') }}</van-checkbox>
+        </van-col>
+      </van-row>
+      <van-row :gutter="[20, 20]">
+        <van-col span="24"> </van-col>
+      </van-row>
+    </van-space>
   </van-dialog>
 
 </template>
 
 <script setup>
 defineProps(["theme"]);//接收父组件传来的值
-import { ref, reactive } from 'vue';
+// import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { MODDIR, ZTPATH, execCmd } from './tools'
 import { useModuleInfoStore } from './stores/status'
@@ -105,23 +122,21 @@ let info = addOrUpdate.value // Js里操作只操作 info 就可以不用 infoRe
 const onRefresh = () => {
   getList();
   setTimeout(() => {
-    showToast('刷新成功');
     loading.value = false;
   }, 50);
 };
 const startService = () => {
-  execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
-    showToast('启动完成');
+  execCmd(`sh ${MODDIR}/zerotier.sh start`).then(v => {
     setTimeout(() => {
+      showToast($t('common.operation_success'));
       ready.value = true;
       window.location.reload();
-      return true;
     }, 50);
   })
 }
 const startServiceConfirm = () => {
   showConfirmDialog({
-    title: 'zerotier服务尚未启动?是否确认开启?',
+    title: $t('common.ask_service_start'),
   })
     .then(() => {
       startService()
@@ -162,7 +177,6 @@ const changeStatus = (index) => {
   if (typeof (status.enable) == 'undefined' || status.enable === 'true') {
     status.enable = 'false';
     leaveApi(status)
-
   } else {
     status.enable = 'true';
     //点击启用
@@ -178,7 +192,7 @@ const delNode = (index) => {
     return;
   }
   showConfirmDialog({
-    title: '确定删除记录吗?这将离开当前网络?并短暂断网.',
+    title: $t('home.leave_confirm'),
   })
     .then(() => {
       let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
@@ -203,13 +217,13 @@ const joinApi = (info) => {
     try {
       const statusObj = JSON.parse(v);
       console.info(statusObj);
-      showToast('完成,即将重载列表');
+      showToast($t('network.operation_success'));
       setTimeout(() => {
         window.location.reload();
       }, 50);
     } catch (error) {
       showDialog({
-        title: '操作失败',
+        title: $t('network.operation_fail'),
         message: v
       }).then(() => {
         // on close
@@ -237,7 +251,7 @@ const leaveApi = (info) => {
     } catch (error) {
       console.error(v);
       showDialog({
-        title: '操作失败',
+        title: $t('network.operation_fail'),
         message: v
       }).then(() => {
         // on close
@@ -261,7 +275,7 @@ const getList = () => {
         }
         items.push(...statusObj)
       } else if (items.length == 0) {
-        console.info('暂未加入任何节点?先去加入一个吧')
+        console.info($t('home.noNetwork_tips'))
       }
     }
   });

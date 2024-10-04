@@ -1,13 +1,13 @@
 <template>
   <div style="height: 0.1rem;"></div>
   <router-view />
-  <van-empty description="未配置API Token" v-if="show"/>
+  <van-empty :description="$t('network.api-not-found')" v-if="show"/>
   <div style="height: 2.8rem;"></div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router'
+// import { ref } from 'vue';
+// import { useRoute, useRouter } from 'vue-router'
 import { MODDIR, execCmdWithCallback, execCmdWithErrno } from './tools'
 
 const router = useRouter()
@@ -31,9 +31,9 @@ const beforeClose = (action) => {
     setTimeout(() => {
       execCmdWithCallback({
         cmd: `sh ${MODDIR}/api.sh central network add`, onSuccess: (data) => {
-          showToast('添加成功');
+          showToast($t('network.operation_success'));
         }, onError: (data) => {
-          showToast('添加失败.' + data);
+          showToast($t('network.operation_fail') + data);
         }
       })
       resolve(true);
@@ -43,7 +43,7 @@ const beforeClose = (action) => {
 const newAdd = (index) => {
   showConfirmDialog({
     message:
-      '添加一个新网络?',
+      $t('network.ask_new_network'),
     beforeClose
   })
 }

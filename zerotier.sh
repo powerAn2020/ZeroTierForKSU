@@ -122,10 +122,10 @@ start_service() {
       rm ${ZTPATH}/state/disable
     fi
     $ZEROTIERD -d $ZTPATH 2>&1 >$ZTPATH/error.log
-    sshd_rc=$?
-    if [ $sshd_rc -ne 0 ]; then
-      echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
-      exit $sshd_rc
+    zt_rc=$?
+    if [ $zt_rc -ne 0 ]; then
+      echo "$0: Error ${zt_rc} starting ${ZEROTIERD}... bailing."
+      exit $zt_rc
     fi
     sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✔︎ service is running ] /g" $MODDIR/module.prop
     if [ ! -f ${ROUTER_RULE_NEW} ]; then

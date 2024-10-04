@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "devbuild": "vite build",
+    "predevbuild": "if exist %cd%\\dist.zip del %cd%\\dist.zip",
+    "postdevbuild": "7z u dist.zip ./dist/* & adb -s 192.168.10.237:46713 push %cd%\\dist.zip /sdcard/Download/dist/"
   },
   "dependencies": {
     "buffer": "^6.0.3",
@@ -14,6 +17,7 @@
     "pinia": "^2.2.2",
     "vant": "^4.9.7",
     "vue": "^3.5.10",
+    "vue-i18n": "^9.14.1",
     "vue-router": "^4.4.5",
     "vue3-json-viewer": "^2.2.2"
   },

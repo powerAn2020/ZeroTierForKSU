@@ -1,17 +1,17 @@
 <template>
   <van-notice-bar wrapable :scrollable="false" :text="cliStatusText" />
   <div>
-    <van-cell center title="启用服务">
+    <van-cell center :title="$t('common.service_start')">
       <template #right-icon>
         <van-switch v-model="enable" @update:model-value="enableSwitch" :loading="enableLoading" />
       </template>
     </van-cell>
-    <van-cell center title="放行9993端口">
+    <van-cell center :title="$t('setting.allow9993')">
       <template #right-icon>
-        <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="autoStartLoading" />
+        <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="firewallLoading" />
       </template>
     </van-cell>
-    <!-- <van-cell center title="路由模式">
+    <!-- <van-cell center :title="$t('setting.routeMode')">
       <template #right-icon>
         <van-popover v-model:show="showPopover" :actions="actions" @select="onSelect">
           <template #reference>
@@ -20,27 +20,27 @@
         </van-popover>
       </template>
     </van-cell> -->
-    <van-cell center title="开机自启">
+    <van-cell center :title="$t('setting.autoStart')">
       <template #right-icon>
         <van-switch v-model="autoStart" @update:model-value="autoStartSwitch" :loading="autoStartLoading" />
       </template>
     </van-cell>
-    <van-cell center title="卸载保留数据">
+    <van-cell center :title="$t('setting.uninstallKeep')">
       <template #right-icon>
         <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
       </template>
     </van-cell>
     <van-cell title="API Token" :value="apiToken" clickable @click="tokenEditor = true" />
-    <van-cell title="查看源码" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
-    <van-cell title="从哪里获取API Token?" is-link url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
+    <van-cell :title="$t('setting.sourceCode')" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
+    <van-cell :title="$t('setting.apiDocument')" is-link url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
   </div>
   <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
-    <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central Token" />
+    <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central API Token" />
   </van-popup>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+// import { ref } from 'vue';
 import { MODDIR, ZTPATH, execCmd } from './tools'
 const enable = ref(true);
 const firewall = ref(true);
@@ -57,8 +57,8 @@ const apiToken = ref('');
 
 // 通过 actions 属性来定义菜单选项
 const actions = [
-  { text: '自建路由模式', value: '0', disabled: true },
-  { text: 'main表优先模式', value: '1' },
+  { text: $t('setting.routeMode_rule'), value: '0', disabled: true },
+  { text: $t('setting.routeMode_main'), value: '1' },
 ];
 const defaultRoterMode = ref(actions[1].text);
 // 绑定路由选择事件
@@ -81,7 +81,7 @@ const defaultRoterMode = ref(actions[1].text);
 // }
 
 const init = () => {
-  cliStatusText.value = "启动服务查看节点信息";
+  cliStatusText.value = $t('setting.cliStatusText');
   const lApiToken = localStorage.getItem('ZerotierForKSU.apiToken');
   if (lApiToken) {
     apiToken.value = lApiToken;
@@ -183,7 +183,7 @@ const enableSwitch = (newValue) => {
     execCmd(`sh ${MODDIR}/zerotier.sh stop`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
-        cliStatusText.value = "启动服务查看节点信息";
+        cliStatusText.value = $t('setting.cliStatusText');;
       }, 50);
     })
   }
