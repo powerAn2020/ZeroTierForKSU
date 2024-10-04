@@ -82,7 +82,7 @@ const defaultRoterMode = ref(actions[1].text);
 
 const init = () => {
   cliStatusText.value = "启动服务查看节点信息";
-  const lApiToken = localStorage.getItem('apiToken');
+  const lApiToken = localStorage.getItem('ZerotierForKSU.apiToken');
   if (lApiToken) {
     apiToken.value = lApiToken;
   }
@@ -92,7 +92,7 @@ const init = () => {
     firewall.value = statusObj.firewall;
     autoStart.value = statusObj.autoStart;
     uninstallKeep.value = statusObj.uninstallKeep;
-    localStorage.setItem('defaultRoterMode', statusObj.routerRuleNew)
+    localStorage.setItem('ZerotierForKSU.defaultRoterMode', statusObj.routerRuleNew)
     defaultRoterMode.value = actions[parseInt(statusObj.routerRuleNew)].text;
     const cliStatus = statusObj.cliStatus;
     if (typeof (cliStatus) != 'undefined' && cliStatus != '') {
@@ -105,12 +105,16 @@ const init = () => {
   });
 }
 const saveToken = () => {
-  if (apiToken.value.length != 0) {
-    localStorage.setItem('apiToken', apiToken.value)
-    execCmd(`sh ${MODDIR}/api.sh apiToken update ${apiToken.value}`)
+  console.info(saveToken)
+  apiToken.value=apiToken.value.trim()
+  if (apiToken.value.length == 0) {
+    showToast('移除API Token')
+    localStorage.removeItem('ZerotierForKSU.apiToken')
   } else {
-    localStorage.removeItem('apiToken')
+    localStorage.setItem('ZerotierForKSU.apiToken', apiToken.value)
+    showToast('更新API Token')
   }
+  execCmd(`sh ${MODDIR}/api.sh apiToken update ${apiToken.value}`)
 }
 const autoStartSwitch = (newValue) => {
   autoStartLoading.value = true;
@@ -168,17 +172,18 @@ const enableSwitch = (newValue) => {
   enableLoading.value = true;
   if (newValue === true) {
     console.info('启动zerotier')
-    // const cacheRoterMode = localStorage.getItem('defaultRoterMode');
-    execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
+    // const cacheRoterMode = localStorage.getItem('ZerotierForKSU.defaultRoterMode');
+    execCmd(`sh ${MODDIR}/zerotier.sh start`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
       }, 50);
     })
   } else {
     console.info('关闭zerotier')
-    execCmd(`touch ${ZTPATH}/state/disable`).then(v => {
+    execCmd(`sh ${MODDIR}/zerotier.sh stop`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
+        cliStatusText.value = "启动服务查看节点信息";
       }, 50);
     })
   }

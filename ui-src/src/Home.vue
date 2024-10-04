@@ -1,7 +1,10 @@
 <template>
   <!-- 主体列表 -->
+  <van-empty v-show="!ready" image="network" description="服务未启动">
+    <van-button round type="primary" class="bottom-button" @click="startService">启动服务</van-button>
+  </van-empty>
   <van-pull-refresh v-model="loading" @refresh="onRefresh">
-    <van-collapse v-model="activeNames" accordion style="min-height: 90vh;">
+    <van-collapse v-show="items.length != 0" v-model="activeNames" accordion style="min-height: 90vh;">
       <van-collapse-item v-for="(item, index) in items" :key="index" :name="index">
         <template #title>
           <van-swipe-cell :name="index">
@@ -9,7 +12,7 @@
               <van-button square :type="item.enable === 'false' ? 'primary' : 'danger'" size="small"
                 :text="item.enable === 'false' ? '启用' : '禁用'" @click="changeStatus(index)" class="full-button" />
             </template>
-            <van-cell center >
+            <van-cell center>
               <template #title>
                 networkid:{{ item.id }}
               </template>
@@ -68,6 +71,9 @@ defineProps(["theme"]);//接收父组件传来的值
 import { ref, reactive } from 'vue';
 import { JsonViewer } from "vue3-json-viewer"
 import { MODDIR, ZTPATH, execCmd } from './tools'
+import { useModuleInfoStore } from './stores/status'
+
+const moduleInfo = useModuleInfoStore();
 
 const chosenAddressId = ref('1');
 // const text = ref('禁用')
@@ -103,20 +109,30 @@ const onRefresh = () => {
     loading.value = false;
   }, 50);
 };
+const startService = () => {
+  execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
+    showToast('启动完成');
+    setTimeout(() => {
+      ready.value = true;
+      window.location.reload();
+      return true;
+    }, 50);
+  })
+}
+const startServiceConfirm = () => {
+  showConfirmDialog({
+    title: 'zerotier服务尚未启动?是否确认开启?',
+  })
+    .then(() => {
+      startService()
+    })
+    .catch(() => resolve(true));
+
+}
 //新增或修改
 const newAdd = (index) => {
-  if (ready.value != true) {
-    showDialog({
-      title: 'zerotier服务尚未启动?是否确认开启?',
-    })
-      .then(() => {
-        execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
-          setTimeout(() => {
-            showToast('启动完成');
-            return true;
-          }, 50);
-        })
-      })
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
     return;
   }
   show.value = true;
@@ -137,7 +153,10 @@ const newAdd = (index) => {
   chosenAddressId.value = index;
 }
 const changeStatus = (index) => {
-  debugger
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
+    return;
+  }
   let status = items[index];
   //点击禁用
   if (typeof (status.enable) == 'undefined' || status.enable === 'true') {
@@ -148,29 +167,37 @@ const changeStatus = (index) => {
     status.enable = 'true';
     //点击启用
     joinApi(status)
-    let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
+    let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
     const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id)
-    localStorage.setItem("leaveNetwork", JSON.stringify(nleaveNetwork));
+    localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
   }
 }
 const delNode = (index) => {
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
+    return;
+  }
   showConfirmDialog({
     title: '确定删除记录吗?这将离开当前网络?并短暂断网.',
   })
     .then(() => {
-      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
+      let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
       let status = items[index];
       items.splice(index, 1)
       leaveApi(status)
       if (leaveNetwork.length > 0) {
         const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id);
-        localStorage.setItem("leaveNetwork", JSON.stringify(nleaveNetwork));
+        localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
       }
       return true;
     })
     .catch(() => resolve(true));
 }
 const joinApi = (info) => {
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
+    return;
+  }
   const postData = JSON.stringify(info)
   execCmd(`sh ${MODDIR}/api.sh local network join ${info.id} '${postData}'`).then(v => {
     try {
@@ -192,13 +219,17 @@ const joinApi = (info) => {
   });
 }
 const leaveApi = (info) => {
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
+    return;
+  }
   execCmd(`sh ${MODDIR}/api.sh local network leave ${info.id}`).then(v => {
     try {
-      let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
+      let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
       const statusObj = JSON.parse(v);
       console.info(statusObj);
       leaveNetwork.push(info)
-      localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
+      localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
       // showToast('完成,即将重载列表');
       // setTimeout(() => {
       //   window.location.reload();
@@ -215,19 +246,22 @@ const leaveApi = (info) => {
   });
 }
 const getList = () => {
-  debugger
+  if (!moduleInfo.getServiceState) {
+    startServiceConfirm()
+    return;
+  }
   execCmd(`sh ${MODDIR}/api.sh local network list`).then(v => {
     items.length = 0;
-    let leaveNetwork = JSON.parse(localStorage.getItem('leaveNetwork'));
-    if (leaveNetwork) {
-      items.push(...leaveNetwork)
-    }
     if (v !== "") {
       const statusObj = JSON.parse(v);
       if (statusObj.length > 0) {
+        let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
+        if (leaveNetwork) {
+          items.push(...leaveNetwork)
+        }
         items.push(...statusObj)
       } else if (items.length == 0) {
-        showDialog({ message: '暂未加入任何节点?先去加入一个吧' });
+        console.info('暂未加入任何节点?先去加入一个吧')
       }
     }
   });
@@ -248,42 +282,40 @@ const addOrUpdateBtn = (action) =>
 
 const init = () => {
   console.info('init')
-  let leaveNetwork = localStorage.getItem("leaveNetwork");
+  showLoadingToast({
+    duration: 0,
+    message: '',
+    forbidClick: true,
+    loadingType: 'spinner',
+  });
+  let leaveNetwork = localStorage.getItem("ZerotierForKSU.leaveNetwork");
   if (typeof leaveNetwork == "undefined" || leaveNetwork == null) {
     leaveNetwork = [];
-    localStorage.setItem("leaveNetwork", JSON.stringify(leaveNetwork));
+    localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
   } else {
     leaveNetwork = JSON.parse(leaveNetwork);
   }
-  execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
-    const statusObj = JSON.parse(v);
-    if (statusObj.enable == "") {
-      showConfirmDialog({
-        title: 'zerotier服务尚未启动?是否确认开启?',
-      })
-        .then(() => {
-          execCmd(`rm ${ZTPATH}/state/disable`).then(v => {
-            showToast('启动完成');
-            setTimeout(() => {
-              ready.value = true;
-              window.location.reload();
-              return true;
-            }, 50);
-          })
-        }).catch(() => {
-
-        })
-    } else {
-      ready.value = true;
-      getList();
-    }
-  });
+  setTimeout(() => {
+    execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
+      const statusObj = JSON.parse(v);
+      if (statusObj.enable == "") {
+        ready.value = false;
+        moduleInfo.changeServiceState(false);
+        // startServiceConfirm()
+      } else {
+        ready.value = true;
+        moduleInfo.changeServiceState(true);
+        getList();
+      }
+    });
+    closeToast()
+  }, 500)
 }
 init()
 
 //加载路由并配置防火墙
 // const loadRouter=()=>{
-//   const defaultRoterMode=localStorage.getItem('defaultRoterMode')
+//   const defaultRoterMode=localStorage.getItem('ZerotierForKSU.defaultRoterMode')
 //   execCmd(`sh ${MODDIR}/api.sh local router ${defaultRoterMode} `).then(v => {
 //   })
 // }

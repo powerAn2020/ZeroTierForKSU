@@ -42,9 +42,9 @@
                 @change="updateMember(item.nodeId, false, '2')" />
             </template>
           </van-field>
-          <van-field v-model="item.name" label="名称" placeholder="请输入名称" is-link input-align="right"
+          <van-field v-model.trim="item.name" label="名称" placeholder="请输入名称" is-link input-align="right"
             @update:model-value="updateMember(item.nodeId, false, '3')" />
-          <van-field v-model="item.description" label="备注" placeholder="请输入备注" is-link input-align="right"
+          <van-field v-model.trim="item.description" label="备注" placeholder="请输入备注" is-link input-align="right"
             @update:model-value="updateMember(item.nodeId, false, '4')" />
           <van-cell title="虚拟IP" clickable is-link center @click="ipAssignmentsEditor = true">
             <template #value>
@@ -78,9 +78,9 @@
         <van-collapse-item title="Basics"> -->
       <van-cell-group title="Basics">
         <van-cell title="Network ID" :value="networkObj.id" center />
-        <van-field v-model="networkObj.config.name" label="名称" placeholder="请输入名称" is-link input-align="right"
+        <van-field v-model.trim="networkObj.config.name" label="名称" placeholder="请输入名称" is-link input-align="right"
           @update:model-value="updateNetwork(1)" />
-        <van-field v-model="networkObj.description" label="备注" placeholder="请输入备注" is-link input-align="right"
+        <van-field v-model.trim="networkObj.description" label="备注" placeholder="请输入备注" is-link input-align="right"
           @update:model-value="updateNetwork(2)" />
         <van-field name="radio" label="网络类型" input-align="right">
           <template #right-icon>
@@ -98,7 +98,7 @@
             <van-switch v-model="networkObj.config.enableBroadcast" size="22px" @change="updateNetwork(4)" />
           </template>
         </van-cell>
-        <van-field :disabled="!networkObj.config.enableBroadcast" v-model="networkObj.config.multicastLimit"
+        <van-field :disabled="!networkObj.config.enableBroadcast" v-model.trim="networkObj.config.multicastLimit"
           input-align="right" label="组播限制" placeholder="32" type="digit" is-link @blur="updateNetwork(5)" />
       </van-cell-group>
 
@@ -167,7 +167,7 @@
       </van-cell-group>
 
       <van-cell-group title="DNS配置">
-        <van-field v-model="networkObj.config.dns.domain" label="Domain" placeholder="Domain" is-link
+        <van-field v-model.trim="networkObj.config.dns.domain" label="Domain" placeholder="Domain" is-link
           input-align="right" @update:model-value="updateNetwork(10)" />
         <van-cell title="Servers" clickable is-link center @click="dnsEditor = true">
           <template #right-icon>
@@ -212,7 +212,7 @@
   <!-- 新增成员 -->
   <van-dialog v-model:show="addNetworkMemberShow" title="添加成员" show-cancel-button :before-close="checkMemberID">
     <van-form>
-      <van-field :rules="[{ required: true, message: '请输入成员ID' }]" v-model="memberId" label="成员ID" required
+      <van-field :rules="[{ required: true, message: '请输入成员ID' }]" v-model.trim="memberId" label="成员ID" required
         placeholder="请输入成员ID" maxlength="10" />
     </van-form>
   </van-dialog>
@@ -237,11 +237,11 @@
         </van-cell>
         <van-cell center v-for="(iipv4, iidx) in networkObj.config.ipAssignmentPools" :key="iipv4">
           <template #title>
-            <van-field placeholder="IPv4/IPv6" v-model="iipv4.ipRangeStart">
+            <van-field placeholder="IPv4/IPv6" v-model.trim="iipv4.ipRangeStart">
             </van-field>
           </template>
           <template #value>
-            <van-field placeholder="IPv4/IPv6" v-model="iipv4.ipRangeEnd">
+            <van-field placeholder="IPv4/IPv6" v-model.trim="iipv4.ipRangeEnd">
             </van-field>
           </template>
           <template #right-icon>
@@ -270,11 +270,11 @@
         </van-cell>
         <van-cell center v-for="(iroute, rridx) in networkObj.config.routes" :key="iroute">
           <template #title>
-            <van-field placeholder="x.x.x.x/x" v-model="iroute.target">
+            <van-field placeholder="x.x.x.x/x" v-model.trim="iroute.target">
             </van-field>
           </template>
           <template #value>
-            <van-field placeholder="IPv4/IPv6" v-model="iroute.via">
+            <van-field placeholder="IPv4/IPv6" v-model.trim="iroute.via">
             </van-field>
           </template>
           <template #right-icon>

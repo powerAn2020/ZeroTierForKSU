@@ -51,7 +51,7 @@ const onRefresh = () => {
   authorizedMemberCount.value = 0;
   showLoadingToast({
     duration: 0,
-    message: '加载中...',
+    message: '',
     forbidClick: true,
     loadingType: 'spinner',
   });
@@ -85,6 +85,7 @@ const networkList = () => {
       }
     }, onError: (data) => {
       showToast('加载失败.' + data);
+      networkStatus.value = '加载失败，请检查网络情况。';
     }
   })
   execCmdWithCallback({
@@ -102,6 +103,7 @@ const networkList = () => {
       networkStatus.value = `网络数:${networkCount.value}/${maxNetworks.value} 用户数:${totalMemberCount.value}/${maxMembers.value} 授权用户数:${authorizedMemberCount.value} 路由数:${routeCount.value}/${maxRoutes.value}`
     }, onError: (data) => {
       showToast('加载失败.' + data);
+      networkStatus.value = '加载失败，请检查网络情况。';
     }
   })
   loading.value = false;

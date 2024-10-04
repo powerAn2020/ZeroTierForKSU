@@ -70,17 +70,17 @@ execCmd('settings get secure ui_night_mode').then(v => {
   if (v == null) {
     theme.value = false;
   }
-  localStorage.setItem('theme', theme.value)
+  localStorage.setItem('ZerotierForKSU.theme', theme.value)
 });
-const cacheTheme = localStorage.getItem('theme');
+const cacheTheme = localStorage.getItem('ZerotierForKSU.theme');
 if (typeof cacheTheme != "undefined" && cacheTheme != null) {
   theme.value = JSON.parse(cacheTheme);
 } else {
-  localStorage.setItem('theme', false)
+  localStorage.setItem('ZerotierForKSU.theme', false)
 }
 const switchTheme = () => {
   theme.value = !theme.value;
-  localStorage.setItem('theme', theme.value)
+  localStorage.setItem('ZerotierForKSU.theme', theme.value)
 };
 const newAdd = (index) => {
   routerViewRef.value.newAdd(index);

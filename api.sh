@@ -92,7 +92,7 @@ ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 TOKENAUTH=$ZTPATH/TOKENAUTH
 TOKEN=$(cat ${SECRETFILE})
-apiToken=$(cat ${TOKENAUTH})
+apiToken=$(grep '[^[:space:]]' $TOKENAUTH)
 CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
 localAPIBase='http://localhost:9993'
 remoteAPIBase='https://api.zerotier.com/api/v1'
@@ -179,7 +179,7 @@ remote_status() {
   $CurlBIN -X GET -H "Authorization: token $apiToken" ${remoteAPIBase}/status
 }
 check_apiToken() {
-  if [ ! -f ${TOKENAUTH} -a -z $apiToken ]; then
+  if [ ! -f ${TOKENAUTH} -o -z "$apiToken" ]; then
     # 重定向提示内容给webui
     {
       echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2
