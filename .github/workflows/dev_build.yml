@@ -62,10 +62,10 @@ jobs:
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
           echo "Scheduled event triggered this workflow"
           versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
-          echo "new_module_version=$versionCode" >> $GITHUB_ENV
+          echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
           echo 'id=ZeroTierForKSU' >module.prop
           echo 'name=ZeroTier For KernelSU' >>module.prop
-          echo "version=ZeroTier Version->${{ env.VERSION }} & module Version->${versionCode}" >>module.prop
+          echo "version=${versionCode}" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn2020' >>module.prop
           echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
@@ -107,21 +107,21 @@ jobs:
           mv zerotier-one-arm64 zerotier-one
           ls -la
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
-          bash build.sh ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
-          unzip -d ZeroTierForKSU-arm64-${{ env.VERSION }} ZeroTierForKSU-arm64-${{ env.VERSION }}.zip
+          bash build.sh ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
+          unzip -d ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
-          bash build.sh ZeroTierForKSU-arm-${{ env.VERSION }}.zip
-          unzip -d ZeroTierForKSU-arm-${{ env.VERSION }} ZeroTierForKSU-arm-${{ env.VERSION }}.zip
+          bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
+          unzip -d ZeroTierForKSU-arm-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 
 
       - name: Upload artifact
         id: arm64-zip
         uses: actions/upload-artifact@v4
         with:
-          name: ZeroTierForKSU-arm64-${{ env.VERSION }}
-          path: ./ZeroTierForKSU-arm64-${{ env.VERSION }}/*
+          name: ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}
+          path: ./ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}/*
           retention-days: 7
 
       - name: Upload artifact
@@ -137,8 +137,8 @@ jobs:
         run: |
           echo "Artifact1 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
           echo "Artifact2 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"${{ steps.arm64-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.new_module_version}}',"zipUrl":"${{ steps.arm-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"${{ steps.arm64-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"${{ steps.arm-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
       
       - name: update json
         run: |
@@ -151,5 +151,17 @@ jobs:
         if:  ${{ env.COMMIT == '1' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: dev 
+          branch: dev
+
+      - name: Manual Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          prerelease: true
+          generate_release_notes: true
+          tag_name: ${{ env.MODULE_VERSION }}
+          name: ZeroTierForKSU-dev-${{ env.MODULE_VERSION }}
+          files: |
+            ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
+            ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
   
