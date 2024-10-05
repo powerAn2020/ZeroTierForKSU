@@ -11,6 +11,8 @@
 ###   <api_type>   local/central
 ###     local
 ###       status                                    -- Show Node Status
+###       service                                    -- Manage Zerotier-One Service Status
+###         action     value:[ start | stop ]
 ###       network                                   -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "leave", "bodydata" is optional. When the action is "join", "networkid" and "bodydata" are required.
 ###         action     value:[ list | leave | join ]
 ###         networkid  value:[ networkid ](optional)
@@ -44,6 +46,8 @@
 ###
 ###   local
 ###     sh api.sh local status
+###     sh api.sh local service start
+###     sh api.sh local service stop
 ###     sh api.sh local peer
 ###     sh api.sh local firewall A
 ###     sh api.sh local firewall D
@@ -92,7 +96,7 @@ ZEROTIERD=$MODDIR/zerotier-one
 SECRETFILE=$ZTPATH/authtoken.secret
 TOKENAUTH=$ZTPATH/TOKENAUTH
 TOKEN=$(cat ${SECRETFILE})
-apiToken=$(cat ${TOKENAUTH})
+apiToken=$(grep '[^[:space:]]' $TOKENAUTH)
 CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
 localAPIBase='http://localhost:9993'
 remoteAPIBase='https://api.zerotier.com/api/v1'
@@ -152,6 +156,16 @@ local_router() {
     fi
   fi
 }
+local_service() {
+  if [ "$1" = "start" ]; then
+    if [ ! -f "${ZTPATH}/state/disable" ];then
+      touch ${ZTPATH}/state/disable
+    fi
+    rm ${ZTPATH}/state/disable
+  else
+    touch ${ZTPATH}/state/disable
+  fi
+}
 # =========================== Central API ===========================
 api_networks() {
   # $1 operation GET/POST/DELETE
@@ -179,7 +193,7 @@ remote_status() {
   $CurlBIN -X GET -H "Authorization: token $apiToken" ${remoteAPIBase}/status
 }
 check_apiToken() {
-  if [ ! -f ${TOKENAUTH} -a -z $apiToken ]; then
+  if [ ! -f ${TOKENAUTH} -o -z "$apiToken" ]; then
     # 重定向提示内容给webui
     {
       echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2
@@ -197,6 +211,10 @@ local)
   case $1 in
   status)
     local_status
+    ;;
+  service)
+    shift
+    local_service $1
     ;;
   network)
     shift

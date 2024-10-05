@@ -2,14 +2,16 @@
   <van-config-provider :theme="theme ? 'light' : 'dark'">
     <van-nav-bar title="Zerotier For KSU" safe-area-inset-top fixed>
       <template #left>
-        <van-icon size="1.2rem" @click="switchTheme" :name="iconName"
-          style="background-color: #1989fa;border-radius: 50%;" />
+        <van-space>
+          <van-icon size="1.2rem" @click="switchTheme" :name="iconName" />
+          <van-icon size="1.2rem" :name="lang" @click="localeShow = true" />
+        </van-space>
       </template>
       <template #right>
         <!-- <el-icon><icon-ep-sunny /></el-icon>
       <el-icon><icon-ep-moon /></el-icon> -->
         <!-- <v-icon name="bi-music-player" /> -->
-        <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" name="add" size="1.2rem"
+        <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" :name="add" size="1.2rem"
           @click="newAdd(undefined)" />
       </template>
     </van-nav-bar>
@@ -20,8 +22,8 @@
     </router-view>
     <div style="height: 0.1rem;"></div>
     <van-tabbar route safe-area-inset-bottom>
-      <van-tabbar-item replace to="/" icon="home-o">首页</van-tabbar-item>
-      <van-tabbar-item replace to="/peers" icon="friends-o">成员</van-tabbar-item>
+      <van-tabbar-item replace to="/" icon="home-o">{{t('common.dash')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/peers" icon="friends-o">{{t('common.peers')}}</van-tabbar-item>
       <van-tabbar-item replace to="/center">
         <template #icon>
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 36 36">
@@ -34,71 +36,133 @@
           </svg>
 
         </template>
-        管理
+        {{t('common.network')}}
       </van-tabbar-item>
-      <van-tabbar-item replace to="/setting" icon="setting-o">设置</van-tabbar-item>
+      <van-tabbar-item replace to="/setting" icon="setting-o">{{t('common.setting')}}</van-tabbar-item>
     </van-tabbar>
+    <van-action-sheet v-model:show="localeShow" :actions="language" @select="switchLocale" close-on-click-action/>
+
   </van-config-provider>
   <!-- <van-floating-bubble icon="replay" axis="xy" magnetic="x" @click="onClick" /> -->
 
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+// import { ref, watch } from 'vue';
+// import { useRouter } from 'vue-router';
 import { execCmd } from './tools'
+import { vantLocales, useI18n , i18n} from './locales'; // 导入所有翻译信息
+const { t, locale } = useI18n();
 
 const router = useRouter()
 const theme = ref();
+const localeShow = ref(false);
 const routerViewRef = ref()
-const night = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiIGQ9Ik05Ljg3NCA1LjAwOGMyLjcyOC0xLjY4IDYuNjA0LTEuMDE0IDguMjUuMTk3Yy0yLjk1NS44NC01LjExIDMuMjY3LTUuMjQyIDYuNDE1Yy0uMTggNC4yOCAzLjAwNiA2LjU4OCA1LjI0IDcuMTUyYy0xLjk2NCAxLjM0My00LjM2IDEuMjkzLTUuMjM1IDEuMTcyYy0zLjU2OC0uNDkyLTYuOTAyLTMuNDMzLTcuMDA3LTcuNzExYy0uMTA2LTQuMjc4IDIuNTczLTYuMzUgMy45OTQtNy4yMjV6Ii8+PC9zdmc+";
-const light = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMTAyNCAxMDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik01MTIgNzA0YTE5MiAxOTIgMCAxIDAgMC0zODRhMTkyIDE5MiAwIDAgMCAwIDM4NG0wIDY0YTI1NiAyNTYgMCAxIDEgMC01MTJhMjU2IDI1NiAwIDAgMSAwIDUxMm0wLTcwNGEzMiAzMiAwIDAgMSAzMiAzMnY2NGEzMiAzMiAwIDAgMS02NCAwVjk2YTMyIDMyIDAgMCAxIDMyLTMybTAgNzY4YTMyIDMyIDAgMCAxIDMyIDMydjY0YTMyIDMyIDAgMSAxLTY0IDB2LTY0YTMyIDMyIDAgMCAxIDMyLTMyTTE5NS4yIDE5NS4yYTMyIDMyIDAgMCAxIDQ1LjI0OCAwbDQ1LjI0OCA0NS4yNDhhMzIgMzIgMCAxIDEtNDUuMjQ4IDQ1LjI0OEwxOTUuMiAyNDAuNDQ4YTMyIDMyIDAgMCAxIDAtNDUuMjQ4bTU0My4xMDQgNTQzLjEwNGEzMiAzMiAwIDAgMSA0NS4yNDggMGw0NS4yNDggNDUuMjQ4YTMyIDMyIDAgMCAxLTQ1LjI0OCA0NS4yNDhsLTQ1LjI0OC00NS4yNDhhMzIgMzIgMCAwIDEgMC00NS4yNDhNNjQgNTEyYTMyIDMyIDAgMCAxIDMyLTMyaDY0YTMyIDMyIDAgMCAxIDAgNjRIOTZhMzIgMzIgMCAwIDEtMzItMzJtNzY4IDBhMzIgMzIgMCAwIDEgMzItMzJoNjRhMzIgMzIgMCAxIDEgMCA2NGgtNjRhMzIgMzIgMCAwIDEtMzItMzJNMTk1LjIgODI4LjhhMzIgMzIgMCAwIDEgMC00NS4yNDhsNDUuMjQ4LTQ1LjI0OGEzMiAzMiAwIDAgMSA0NS4yNDggNDUuMjQ4TDI0MC40NDggODI4LjhhMzIgMzIgMCAwIDEtNDUuMjQ4IDBtNTQzLjEwNC01NDMuMTA0YTMyIDMyIDAgMCAxIDAtNDUuMjQ4bDQ1LjI0OC00NS4yNDhhMzIgMzIgMCAwIDEgNDUuMjQ4IDQ1LjI0OGwtNDUuMjQ4IDQ1LjI0OGEzMiAzMiAwIDAgMS00NS4yNDggMCIvPjwvc3ZnPg=="
-const iconName = ref();
+const lang = "data:image/svg+xml;base64,PHN2ZyB0PSIxNzE3MTMyMzU2MTg3IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjkyMjAiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNODQ2LjA0IDg2Ni43N2MtMTcuMDggMi4wMy0zMi41Ny0xMC4xOC0zNC41OS0yNy4yNi0wLjIyLTEuOS0wLjI3LTMuODEtMC4xNS01Ljcxdi0xMjNjMC0zMy43My0yMi4xNy0zMy43My0zMC41My0zMy43My0yMS4yOC0wLjQ2LTM4LjkxIDE2LjQzLTM5LjM2IDM3LjcyLTAuMDEgMC40Ni0wLjAxIDAuOTIgMCAxLjM3djExNy42NmMtMC43NiAxOC45LTE2LjcxIDMzLjYxLTM1LjYxIDMyLjg0LTE3LjgzLTAuNzItMzIuMTItMTUuMDEtMzIuODQtMzIuODRWNjQ3LjY4Yy0xLjIzLTE3LjIzIDExLjc0LTMyLjE5IDI4Ljk3LTMzLjQxIDEuNjktMC4xMiAzLjM5LTAuMSA1LjA4IDAuMDVhMzEuOTUzIDMxLjk1MyAwIDAgMSAzMS4zMyAxNy43NiA4OS40MzUgODkuNDM1IDAgMCAxIDU0Ljk5LTE3Ljc2YzU0LjExIDAgODYuNDUgMzMuNTkgODYuNDUgOTAuMDNWODMzLjhhMzIuMjUgMzIuMjUgMCAwIDEtOC44OCAyMy43MiAzNC4wMjYgMzQuMDI2IDAgMCAxLTI0LjgyIDkuMzNsLTAuMDQtMC4wOHogbS0yMzMuMTItNy40NmgtMTM0LjdjLTQyLjc3IDAtNjEuODUtMTguOTYtNjEuODUtNjEuNTdWNjA4LjA3YzAtNDIuNTIgMTkuMDktNjEuNTcgNjEuODUtNjEuNTdoMTI4Ljc0YzE3LjkyIDAgMzIuNDUgMTQuNTMgMzIuNDUgMzIuNDVzLTE0LjUzIDMyLjQ1LTMyLjQ1IDMyLjQ1SDQ5MC43M2MtMS4yMi0wLjA4LTIuNDUgMC4wOS0zLjYgMC41IDAuMTMgMC0wLjE1IDAuOC0wLjE1IDIuODl2NTIuNThoMTA2YzE2LjMzLTEuNjYgMzAuOTEgMTAuMjQgMzIuNTcgMjYuNTcgMC4xNyAxLjY4IDAuMiAzLjM3IDAuMDggNS4wNiAwLjk4IDE2LjY2LTExLjczIDMwLjk3LTI4LjQgMzEuOTUtMS40MSAwLjA4LTIuODMgMC4wNy00LjI0LTAuMDVINDg2LjlWNzkxYy0wLjA0IDEuMDYgMC4wOCAyLjEzIDAuMzUgMy4xNSAxLjEyIDAuMTUgMi4yNSAwLjIzIDMuMzggMC4yNGgxMjIuMzFjMTYuOTYtMS4wNyAzMS41OCAxMS44MSAzMi42NSAyOC43NiAwLjA3IDEuMTYgMC4wOCAyLjMzIDAuMDIgMy41IDEuMzUgMTYuNjgtMTEuMDcgMzEuMy0yNy43NSAzMi42NS0xLjY0IDAuMTMtMy4yOCAwLjEzLTQuOTIgMGgtMC4wMnpNMzI3LjU0IDQ4Mi44NWMtMTcuMzYgMi4zNi0zMy4zNC05LjgtMzUuNy0yNy4xNi0wLjMtMi4yMS0wLjM3LTQuNDQtMC4yLTYuNjdWMzcwLjVoLTg1LjI3Yy00NS44NiAwLTY2LjMxLTIwLjUyLTY2LjMxLTY2LjMxdi05My44N2MwLTQ1LjU4IDIwLjUyLTY1LjkgNjYuMzEtNjUuOWg4NS4yN3YtMzEuNTNjLTEuMzgtMTcuMTEgMTEuMzctMzIuMTEgMjguNDgtMzMuNDkgMS45Mi0wLjE1IDMuODQtMC4xMyA1Ljc2IDAuMDcgMzAuMjYgMCAzNi42MyAxOC4xNyAzNi42MyAzMy40MnYzMS41OWg4Ni4wOWM0NS44NiAwIDY2LjMzIDIwLjM0IDY2LjMzIDY1Ljg4djkzLjg5YzAgNDUuODYtMjAuNTIgNjYuMjktNjYuMzMgNjYuMjloLTg2LjA1djc4LjUyYzEuMjUgMTcuNDctMTEuOSAzMi42NS0yOS4zNyAzMy45MS0xLjg4IDAuMTMtMy43NiAwLjEtNS42My0wLjF2LTAuMDJ6TTIxNy4yMSAyMTEuMjdjLTYuNDcgMC03LjA3IDAuNi03LjA3IDcuMDd2NzguMmMwIDYuNTMgMC42IDcuMTUgNy4wNyA3LjE1aDc0LjQzdi05Mi40MmgtNzQuNDN6IG0xNDUuMzUgOTIuMzhoNzUuMjljNi4yOSAwIDcuMDktMC44IDcuMDktNy4wN3YtNzguMjVjMC02LjI5LTAuOC03LjA5LTcuMDktNy4wOWgtNzUuMzF2OTIuNDJoMC4wMnogbTE1MS40MiA2NTUuOTFDMjY2LjQzIDk1OC44MiA2Ni4zNiA3NTcuNTUgNjcuMSA1MTBjMC4xLTM1IDQuMzEtNjkuODYgMTIuNTItMTAzLjg4IDQuODEtMTkgMjMuOTItMzAuNjggNDMuMDMtMjYuMjkgMTkuMSA0LjYxIDMwLjg2IDIzLjgxIDI2LjI5IDQyLjkxLTQ4LjkzIDIwMi4zMyA3NS40MiA0MDYuMDEgMjc3Ljc1IDQ1NC45NGEzNzYuOTI0IDM3Ni45MjQgMCAwIDAgODcuMjkgMTAuNTZjMTkuNjkgMC4wMiAzNS42NCAxNS45OSAzNS42MyAzNS42OS0wLjAyIDE5LjY3LTE1Ljk2IDM1LjYxLTM1LjYzIDM1LjYzeiBtMzk4LjQ5LTMxMC4wNWMtMTkuNjkgMC0zNS42Ni0xNS45Ni0zNS42Ni0zNS42NSAwLTIuOTUgMC4zNy01LjkgMS4wOS04Ljc2IDUxLjMxLTIwMS44Mi03MC43LTQwNy4wMi0yNzIuNTItNDU4LjMzLTI5Ljg5LTcuNi02MC41OS0xMS41LTkxLjQzLTExLjYyLTE5LjY4IDAtMzUuNjQtMTUuOTUtMzUuNjQtMzUuNjMgMC0xOS42OCAxNS45NS0zNS42NCAzNS42My0zNS42NGgwLjAxYzI0Ny41NyAwLjc2IDQ0Ny42NSAyMDIuMDggNDQ2Ljg5IDQ0OS42NS0wLjExIDM2LjgtNC43NiA3My40NC0xMy44MyAxMDkuMS00IDE1LjgtMTguMjMgMjYuODgtMzQuNTQgMjYuODh6IiBmaWxsPSIjMTk4OWZhIiBwLWlkPSI5MjIxIj48L3BhdGg+PC9zdmc+"
+
+const iconName = 'data:image/svg+xml;base64,PHN2ZyB0PSIxNzE3MTMxOTA1ODExIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjQ2MDEiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNMzIwIDg1LjMzMzMzM0MyNDMuNjI2NjY3IDEzNC40IDE5MiAyMjEuMDEzMzMzIDE5MiAzMjAgMTkyIDQxOC45ODY2NjcgMjQzLjYyNjY2NyA1MDUuNiAzMjEuMjggNTU0LjY2NjY2NyAxOTAuMjkzMzMzIDU1NC42NjY2NjcgODUuMzMzMzMzIDQ0OS43MDY2NjcgODUuMzMzMzMzIDMyMCA4NS4zMzMzMzMgMTkwLjI5MzMzMyAxOTAuMjkzMzMzIDg1LjMzMzMzMyAzMjAgODUuMzMzMzMzTTgxMy42NTMzMzMgMTQ5LjMzMzMzMyA4NzQuNjY2NjY3IDIxMC4zNDY2NjcgMjEwLjM0NjY2NyA4NzQuNjY2NjY3IDE0OS4zMzMzMzMgODEzLjY1MzMzMyA4MTMuNjUzMzMzIDE0OS4zMzMzMzNNNTQ5Ljk3MzMzMyAyNTMuMDEzMzMzIDQ4Ni44MjY2NjcgMjEzLjMzMzMzMyA0MjUuMzg2NjY3IDI1NiA0NDMuMzA2NjY3IDE4My40NjY2NjcgMzg0IDEzOC4yNCA0NTguNjY2NjY3IDEzMy4xMiA0ODMuNDEzMzMzIDYyLjcyIDUxMiAxMzIuMjY2NjY3IDU4NS44MTMzMzMgMTMzLjU0NjY2NyA1MjguMjEzMzMzIDE4MS43NiA1NDkuOTczMzMzIDI1My4wMTMzMzNNNDA5LjE3MzMzMyA0MDcuMDQgMzU5LjY4IDM3NS44OTMzMzMgMzExLjg5MzMzMyA0MDkuMTczMzMzIDMyNi40IDM1Mi44NTMzMzMgMjc5Ljg5MzMzMyAzMTcuNDQgMzM3LjkyIDMxMy42IDM1Ny4xMiAyNTguNTYgMzc4Ljg4IDMxMi43NDY2NjcgNDM2LjkwNjY2NyAzMTQuMDI2NjY3IDM5Mi4xMDY2NjcgMzUxLjE0NjY2NyA0MDkuMTczMzMzIDQwNy4wNE04MTAuNjY2NjY3IDU3NkM4MTAuNjY2NjY3IDcwNS43MDY2NjcgNzA1LjcwNjY2NyA4MTAuNjY2NjY3IDU3NiA4MTAuNjY2NjY3IDUyMy45NDY2NjcgODEwLjY2NjY2NyA0NzUuNzMzMzMzIDc5My42IDQzNi45MDY2NjcgNzY1LjAxMzMzM0w3NjUuMDEzMzMzIDQzNi45MDY2NjdDNzkzLjYgNDc1LjczMzMzMyA4MTAuNjY2NjY3IDUyMy45NDY2NjcgODEwLjY2NjY2NyA1NzZNNjIyLjkzMzMzMyA4NTYuNzQ2NjY3IDc0MS4xMiA4MDcuNjggNzMwLjg4IDk1MC42MTMzMzMgNjIyLjkzMzMzMyA4NTYuNzQ2NjY3TTgwNy42OCA3NDEuNTQ2NjY3IDg1Ni43NDY2NjcgNjIzLjM2IDk1MC42MTMzMzMgNzMxLjczMzMzMyA4MDcuNjggNzQxLjU0NjY2N004NTYuNzQ2NjY3IDUyOS45MiA4MDguMTA2NjY3IDQxMS4zMDY2NjcgOTUwLjYxMzMzMyA0MjEuNTQ2NjY3IDg1Ni43NDY2NjcgNTI5LjkyTTQxMC44OCA4MDcuNjggNTI5LjA2NjY2NyA4NTYuNzQ2NjY3IDQyMS4xMiA5NTAuMTg2NjY3IDQxMC44OCA4MDcuNjhaIiBwLWlkPSI0NjAyIiBmaWxsPSIjMTk4OWZhIj48L3BhdGg+PC9zdmc+';
+const add = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxnIGZpbGw9IiMxOTg5ZmEiIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMnMxMCA0LjQ3NyAxMCAxMHMtNC40NzcgMTAtMTAgMTBTMiAxNy41MjMgMiAxMm0xMC04YTggOCAwIDEgMCAwIDE2YTggOCAwIDAgMCAwLTE2Ii8+PHBhdGggZD0iTTEzIDdhMSAxIDAgMSAwLTIgMHY0SDdhMSAxIDAgMSAwIDAgMmg0djRhMSAxIDAgMSAwIDIgMHYtNGg0YTEgMSAwIDEgMCAwLTJoLTR6Ii8+PC9nPjwvc3ZnPg==';
 // const onClick = () => {
 //   window.location.reload();
 // }
-execCmd('settings get secure ui_night_mode').then(v => {
-  // 0 表示跟随系统设置?即当前模式与系统设置的主题模式相匹配.
-  // 1 表示开启了 Dark Mode（夜间模式）.
-  // 2 表示关闭了 Dark Mode（白天模式）.
-  if (v == '1') {
-    theme.value = true;
-  } else if (v == '2') {
-    theme.value = false;
-  }
-  // 返回值竟然有null
-  if (v == null) {
-    theme.value = false;
-  }
-  localStorage.setItem('theme', theme.value)
-});
-const cacheTheme = localStorage.getItem('theme');
-if (typeof cacheTheme != "undefined" && cacheTheme != null) {
-  theme.value = JSON.parse(cacheTheme);
-} else {
-  localStorage.setItem('theme', false)
+
+const language = [
+  { name: "中文(简体)", value: "zh" },
+  { name: "English(US)", value: "en" }
+]
+// 切换语言
+const switchLocale = (language) => {
+  debugger
+  // Vant basic
+  vantLocales(language)
+  // Business component
+  // locale.value = language;
+  locale.value = language.value
+  // Cookie
+  localStorage.setItem('ZerotierForKSU.locale', language.value)
+  localeShow.value = false;
 }
+const initTheme = () => {
+  execCmd('settings get secure ui_night_mode').then(v => {
+    // 0 表示跟随系统设置?即当前模式与系统设置的主题模式相匹配.
+    // 1 表示开启了 Dark Mode（夜间模式）.
+    // 2 表示关闭了 Dark Mode（白天模式）.
+    if (v == '1') {
+      theme.value = true;
+    } else if (v == '2') {
+      theme.value = false;
+    }
+    // 返回值竟然有null
+    if (v == null) {
+      theme.value = false;
+    }
+    localStorage.setItem('ZerotierForKSU.theme', theme.value)
+  });
+  const cacheTheme = localStorage.getItem('ZerotierForKSU.theme');
+  if (typeof cacheTheme != "undefined" && cacheTheme != null) {
+    theme.value = JSON.parse(cacheTheme);
+  } else {
+    localStorage.setItem('ZerotierForKSU.theme', false)
+  }
+}
+const initI18n = () => {
+  debugger
+  const cacheLocale = localStorage.getItem('ZerotierForKSU.locale')
+  if (typeof cacheLocale != "undefined" && cacheLocale != null) {
+    i18n.global.locale = cacheLocale
+    return
+  }
+  let locale
+  switch (navigator.language) {
+    case 'en':
+      locale = 'en-US'
+      break
+    case 'zh-CN':
+      locale = 'zh-CN'
+      break
+    default:
+      locale = 'zh-CN'
+  }
+  i18n.global.locale = locale
+  localStorage.setItem('ZerotierForKSU.locale', locale)
+}
+
 const switchTheme = () => {
   theme.value = !theme.value;
-  localStorage.setItem('theme', theme.value)
+  localStorage.setItem('ZerotierForKSU.theme', theme.value)
 };
 const newAdd = (index) => {
   routerViewRef.value.newAdd(index);
 }
-watch(theme, (theme, prevtheme) => {
-  if (JSON.parse(theme)) {
-    iconName.value = night;
-  } else {
-    iconName.value = light;
-  }
-}, {
-  immediate: true
-})
+// watch(theme, (theme, prevtheme) => {
+//   if (JSON.parse(theme)) {
+//     iconName.value = night;
+//   } else {
+//     iconName.value = light;
+//   }
+// }, {
+//   immediate: true
+// })
+initTheme()
+initI18n()
 </script>
 
 <style>
 .van-theme-dark body {
   color: #f5f5f5;
   background-color: black;
+}
+
+.van-theme-light body {
+  /* color: #f7f8fa; */
+  background-color: #f7f8fa;
+  --van-dialog-background: #f7f8fa;
+}
+* {
+	-webkit-touch-callout:none; /*系统默认菜单被禁用*/
+	-webkit-user-select:none; /*webkit浏览器*/
+	-moz-user-select:none;/*火狐*/
+	-ms-user-select:none; /*IE10*/
+	user-select:none;
 }
 </style>

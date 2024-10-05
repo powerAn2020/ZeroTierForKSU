@@ -1,22 +1,28 @@
 <template>
   <div style="height: 0.1rem;"></div>
   <router-view />
+  <van-empty :description="t('network.api-not-found')" v-if="show"/>
   <div style="height: 2.8rem;"></div>
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+// import { ref } from 'vue';
+// import { useRoute, useRouter } from 'vue-router'
 import { MODDIR, execCmdWithCallback, execCmdWithErrno } from './tools'
+import {  useI18n } from './locales'; // 导入所有翻译信息
+const { t } = useI18n();
 
 const router = useRouter()
 const route = useRoute()
+const show=ref(false);
 const init = () => {
   execCmdWithErrno(`sh ${MODDIR}/api.sh apiToken show`).then(v => {
     console.info(`v:${v}`)
     if (v == 0) {
       router.push('/center/network')
     } else {
-      showDialog({ message: '未配置apiToken,先去设置页添加一个吧' });
+      show.value=true;
+      // showDialog({ message: '未配置apiToken,先去设置页添加一个吧' });
     }
   })
 
@@ -27,9 +33,9 @@ const beforeClose = (action) => {
     setTimeout(() => {
       execCmdWithCallback({
         cmd: `sh ${MODDIR}/api.sh central network add`, onSuccess: (data) => {
-          showToast('添加成功');
+          showToast(t('network.operation_success'));
         }, onError: (data) => {
-          showToast('添加失败.' + data);
+          showToast(t('network.operation_fail') + data);
         }
       })
       resolve(true);
@@ -39,7 +45,7 @@ const beforeClose = (action) => {
 const newAdd = (index) => {
   showConfirmDialog({
     message:
-      '添加一个新网络?',
+      t('network.ask_new_network'),
     beforeClose
   })
 }

@@ -102,6 +102,8 @@ Options:
   <api_type>   local/central
     local
       status                                    -- Show Node Status
+      service                                    -- Manage Zerotier-One Service Status
+        action     value:[ start | stop ]
       network                                   -- When the action is "list", "networkid" and "bodydata" are optional. When the action is "leave", "bodydata" is optional. When the action is "join", "networkid" and "bodydata" are required.
         action     value:[ list | leave | join ]
         networkid  value:[ networkid ](optional)
@@ -135,6 +137,8 @@ Example:
 
   local
     sh api.sh local status
+    sh api.sh local service start
+    sh api.sh local service stop
     sh api.sh local peer
     sh api.sh local firewall A
     sh api.sh local firewall D

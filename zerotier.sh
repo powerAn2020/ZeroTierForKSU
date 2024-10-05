@@ -60,13 +60,13 @@ start_inotifyd() {
   done
   echo "inotifyd ${ZTPATH}/state"
   sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | inotifyd is running ] /g" $MODDIR/module.prop
-  inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >> /dev/null 2>&1 &
+  inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >>/dev/null 2>&1 &
   inotifyd "/data/adb/modules/ZeroTierForKSU/build.inotify" "/sdcard/Download/dist" &
 }
 
 stop_service() {
   zpid=$(pgrep -f "zerotier-one")
-  if [ -z $zpid ];then
+  if [ -z $zpid ]; then
     echo "service is stop"
   else
     kill $zpid
@@ -77,7 +77,7 @@ stop_service() {
   fi
   sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ❌ service is stop ] /g" $MODDIR/module.prop
 
-  if [ ! -f ${ROUTER_RULE_NEW} ];then
+  if [ ! -f ${ROUTER_RULE_NEW} ]; then
     sh ${MODDIR}/api.sh local router main del
   fi
   # /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
@@ -93,25 +93,25 @@ status_service() {
   if [ ! -f "${MANUAL}" ]; then
     autoStart=true
   fi
-  
+
   routerRuleNew=1
-  if [ -f ${ROUTER_RULE_NEW} ];then
+  if [ -f ${ROUTER_RULE_NEW} ]; then
     routerRuleNew=0
   fi
   firewall=true
   if [ ! -f "${ALLOW_9993}" ]; then
     firewall=false
   fi
-  cliStatus=$(sh ${MODDIR}/zerotier-cli status);
-  if [ $? != 0 ];then
-    cliStatus='';
+  cliStatus=$(sh ${MODDIR}/zerotier-cli status)
+  if [ $? != 0 ]; then
+    cliStatus=''
   fi
   data='{ "enable": "'${zpid}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "uninstallKeep": '${uninstallKeep}',"routerRuleNew": '${routerRuleNew}', "cliStatus": "'${cliStatus}'" }'
   echo $data
 }
 start_service() {
   zpid=$(pgrep -f "zerotier-one")
-  if [ -z $zpid ];then
+  if [ -z $zpid ]; then
     if [ -f "${ALLOW_9993}" ]; then
       # set firewall
       sh ${MODDIR}/api.sh local firewall A
@@ -121,14 +121,14 @@ start_service() {
     if [ -f ${ZTPATH}/state/disable ]; then
       rm ${ZTPATH}/state/disable
     fi
-    $ZEROTIERD -d $ZTPATH 2>&1 > $ZTPATH/error.log
-    sshd_rc=$?
-    if [ $sshd_rc -ne 0 ]; then
-      echo "$0: Error ${sshd_rc} starting ${ZEROTIERD}... bailing."
-      exit $sshd_rc
+    $ZEROTIERD -d $ZTPATH 2>&1 >$ZTPATH/error.log
+    zt_rc=$?
+    if [ $zt_rc -ne 0 ]; then
+      echo "$0: Error ${zt_rc} starting ${ZEROTIERD}... bailing."
+      exit $zt_rc
     fi
     sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✔︎ service is running ] /g" $MODDIR/module.prop
-    if [ ! -f ${ROUTER_RULE_NEW} ];then
+    if [ ! -f ${ROUTER_RULE_NEW} ]; then
       sh ${MODDIR}/api.sh local router main add
     fi
   else
@@ -140,49 +140,44 @@ start_service() {
 get_token() {
   echo "$(cat ${SECRETFILE})"
 }
-check_apiToken() {
-  if [ ! -f ${TOKENAUTH} -a -z $apiToken ]; then
-    # 重定向提示内容给webui
-    { echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2; exit 1; }
-  fi
-}
 get_apiToken() {
-  apiToken=$(cat $ZTPATH/TOKENAUTH)
-  if [ -f $ZTPATH/TOKENAUTH -a -z $apiToken ];then
-    echo "The api token was not found. Use "api.sh update xxxx" to add it. "
-  else
+  apiToken=$(grep '[^[:space:]]' $ZTPATH/TOKENAUTH)
+  if [ -f $ZTPATH/TOKENAUTH -a -z "$apiToken" ]; then
     echo $apiToken
+  else
+    echo "The api token was not found. Use "api.sh update xxxx" to add it. "
   fi
 }
 help() {
   sed -rn 's/^### ?//;T;p;' "$0"
 }
 case $1 in
-  start)
-    shift
-    start_service
-    ;;
-  stop)
-    shift
-    stop_service
-    ;;
-  restart)
-    shift
-    stop_service
-    start_service
-    ;;
-  status)
-    status_service
-    ;;
-  token)
-    get_token
-    ;;
-  apiToken)
-    get_apiToken
-    ;;
-  inotifyd)
-    start_inotifyd
-    ;;
-  *)
-    help
+start)
+  shift
+  start_service
+  ;;
+stop)
+  shift
+  stop_service
+  ;;
+restart)
+  shift
+  stop_service
+  start_service
+  ;;
+status)
+  status_service
+  ;;
+token)
+  get_token
+  ;;
+apiToken)
+  get_apiToken
+  ;;
+inotifyd)
+  start_inotifyd
+  ;;
+*)
+  help
+  ;;
 esac

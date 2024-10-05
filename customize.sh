@@ -34,6 +34,7 @@ ui_print "- Installing Zerotier for KSU"
 
 if [ ! -d "/data/adb/zerotier" ]; then
   mkdir -p /data/adb/zerotier/state
+  touch /data/adb/zerotier/TOKENAUTH
   set_perm /data/adb/zerotier 0 0 0755
   set_perm /data/adb/zerotier/state 0 0 0755
 fi
@@ -48,6 +49,7 @@ set_perm $MODPATH/zerotier-idtool 0  0  0755
 set_perm $MODPATH/zerotier-cli 0  0  0755
 set_perm $MODPATH/zerotier.sh 0  0  0755
 set_perm $MODPATH/zerotier.inotify 0  0  0755
+set_perm $MODPATH/build.inotify 0  0  0755
 set_perm $MODPATH/api.sh 0  0  0755
 set_perm $MODPATH/uninstall.sh 0  0  0755
 set_perm $MODPATH/bin/curl 0  0  0755
