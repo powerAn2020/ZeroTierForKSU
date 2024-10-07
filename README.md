@@ -1,26 +1,13 @@
 # ZeroTier for KSU
 
-用了各位大佬的模块，但是吧，老用命令行，不是很方便。正好赶上想学学vue，所有就做了这个给自己用。
-
-感谢以下连接提供的帮助，顺序不分先后
-
-- [是否有可能 Zerotier-One 直接在 Android 设备上运行? - V2EX](https://v2ex.com/t/863131)
-- [Android以太网和WIFI完美共存](https://blog.csdn.net/G_Rookie/article/details/109679262)
-- [Network Management in Android: Routing](https://yotam.net/posts/network-management-in-android-routing/)
-- [vant-ui/vant-demo](https://github.com/vant-ui/vant-demo/tree/master/vant/vite)
-- [zfdx123/build-k40-ksu](https://github.com/zfdx123/build-k40-ksu)
-- [eventlOwOp/zerotier-magisk](https://github.com/eventlOwOp/zerotier-magisk/tree/master/zerotier)
-- [linuxscreen/ZeroTierOneForMagisk](https://github.com/linuxscreen/ZeroTierOneForMagisk)
-- [taamarin/box_for_magisk](https://github.com/taamarin/box_for_magisk/blob/master/box/scripts/box.inotify)
-- [stunnel/static-curl](https://github.com/stunnel/static-curl)
-- [tiann/KernelSU](https://github.com/tiann/KernelSU)
-- [shell脚本如何优雅的打印帮助信息](https://blog.csdn.net/lhl_blog/article/details/107409694)
+基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能。
+Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)使用
 
 ## BUG
 
 - [x] ~~通过UI启动的zerotier进程会随着KSU Manager的结束而退出~~
 - [x] 在模块禁用的情况下依然可以操作服务启用和停用(实际上不应该能操作，毕竟都禁用了)，这将导致下次启用模块的时候要启停服务两次才能使用zerotier进程正确启动。**ps:模块禁用功能是特地保留的，我不想在停用模块的情况下还占用系统资源。**
-- [x] 服务停止的情况下，有概率会在首页显示已经禁用的节点。这是不一样的，我都强制弹框让开启服务再操作了，有空再找
+- [x] 服务停止的情况下，有概率会在首页显示已经禁用的节点。
 - ~~[zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)~~ ZerotierOne 1.14.0版本已修复
 - [ ] 管理页在处理Member的时候需要等待处理完才能展开下一个Member的信息，否则后一个会覆盖前一个的配置，导致第一个Member修改的配置不生效。可以提前缓存下要修改的信息，一次发送请求，下次再改。
 
@@ -165,3 +152,17 @@ Example:
     sh api.sh apiToken show
     sh api.sh apiToken update xxxxxxxxx
 ```
+
+## 感谢以下连接提供的帮助，顺序不分先后
+
+- [是否有可能 Zerotier-One 直接在 Android 设备上运行? - V2EX](https://v2ex.com/t/863131)
+- [Android以太网和WIFI完美共存](https://blog.csdn.net/G_Rookie/article/details/109679262)
+- [Network Management in Android: Routing](https://yotam.net/posts/network-management-in-android-routing/)
+- [vant-ui/vant-demo](https://github.com/vant-ui/vant-demo/tree/master/vant/vite)
+- [zfdx123/build-k40-ksu](https://github.com/zfdx123/build-k40-ksu)
+- [eventlOwOp/zerotier-magisk](https://github.com/eventlOwOp/zerotier-magisk/tree/master/zerotier)
+- [linuxscreen/ZeroTierOneForMagisk](https://github.com/linuxscreen/ZeroTierOneForMagisk)
+- [taamarin/box_for_magisk](https://github.com/taamarin/box_for_magisk/blob/master/box/scripts/box.inotify)
+- [stunnel/static-curl](https://github.com/stunnel/static-curl)
+- [tiann/KernelSU](https://github.com/tiann/KernelSU)
+- [shell脚本如何优雅的打印帮助信息](https://blog.csdn.net/lhl_blog/article/details/107409694)
