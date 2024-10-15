@@ -4,15 +4,17 @@
       <template #left>
         <van-space>
           <van-icon size="1.2rem" @click="switchTheme" :name="iconName" />
-          <van-icon size="1.2rem" :name="lang" @click="localeShow = true" />
         </van-space>
       </template>
       <template #right>
         <!-- <el-icon><icon-ep-sunny /></el-icon>
       <el-icon><icon-ep-moon /></el-icon> -->
         <!-- <v-icon name="bi-music-player" /> -->
-        <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" :name="add" size="1.2rem"
-          @click="newAdd(undefined)" />
+        <van-space>
+          <van-icon v-if="router.currentRoute.value.fullPath !== '/setting'" :name="add" size="1.2rem"
+            @click="newAdd(undefined)" />
+          <van-icon size="1.2rem" :name="lang" @click="localeShow = true" />
+        </van-space>
       </template>
     </van-nav-bar>
     <!-- <div style="height: 5rem;"></div> -->
@@ -22,8 +24,8 @@
     </router-view>
     <div style="height: 0.1rem;"></div>
     <van-tabbar route safe-area-inset-bottom>
-      <van-tabbar-item replace to="/" icon="home-o">{{t('common.dash')}}</van-tabbar-item>
-      <van-tabbar-item replace to="/peers" icon="friends-o">{{t('common.peers')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/" icon="home-o">{{ t('common.dash') }}</van-tabbar-item>
+      <van-tabbar-item replace to="/peers" icon="friends-o">{{ t('common.peers') }}</van-tabbar-item>
       <van-tabbar-item replace to="/center">
         <template #icon>
           <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 36 36">
@@ -36,11 +38,11 @@
           </svg>
 
         </template>
-        {{t('common.network')}}
+        {{ t('common.network') }}
       </van-tabbar-item>
-      <van-tabbar-item replace to="/setting" icon="setting-o">{{t('common.setting')}}</van-tabbar-item>
+      <van-tabbar-item replace to="/setting" icon="setting-o">{{ t('common.setting') }}</van-tabbar-item>
     </van-tabbar>
-    <van-action-sheet v-model:show="localeShow" :actions="language" @select="switchLocale" close-on-click-action/>
+    <van-action-sheet v-model:show="localeShow" :actions="language" @select="switchLocale" close-on-click-action />
 
   </van-config-provider>
   <!-- <van-floating-bubble icon="replay" axis="xy" magnetic="x" @click="onClick" /> -->
@@ -51,7 +53,7 @@
 // import { ref, watch } from 'vue';
 // import { useRouter } from 'vue-router';
 import { execCmd } from './tools'
-import { vantLocales, useI18n , i18n} from './locales'; // 导入所有翻译信息
+import { vantLocales, useI18n, i18n } from './locales'; // 导入所有翻译信息
 const { t, locale } = useI18n();
 
 const router = useRouter()
@@ -72,7 +74,7 @@ const language = [
 ]
 // 切换语言
 const switchLocale = (language) => {
-  debugger
+  
   // Vant basic
   vantLocales(language)
   // Business component
@@ -106,7 +108,7 @@ const initTheme = () => {
   }
 }
 const initI18n = () => {
-  debugger
+  
   const cacheLocale = localStorage.getItem('ZerotierForKSU.locale')
   if (typeof cacheLocale != "undefined" && cacheLocale != null) {
     i18n.global.locale = cacheLocale
@@ -158,11 +160,16 @@ initI18n()
   background-color: #f7f8fa;
   --van-dialog-background: #f7f8fa;
 }
+
 * {
-	-webkit-touch-callout:none; /*系统默认菜单被禁用*/
-	-webkit-user-select:none; /*webkit浏览器*/
-	-moz-user-select:none;/*火狐*/
-	-ms-user-select:none; /*IE10*/
-	user-select:none;
+  -webkit-touch-callout: none;
+  /*系统默认菜单被禁用*/
+  -webkit-user-select: none;
+  /*webkit浏览器*/
+  -moz-user-select: none;
+  /*火狐*/
+  -ms-user-select: none;
+  /*IE10*/
+  user-select: none;
 }
 </style>

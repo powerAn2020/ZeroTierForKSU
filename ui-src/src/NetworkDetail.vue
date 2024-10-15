@@ -1,13 +1,14 @@
 <template>
 
-  <van-nav-bar :left-text="t('common.back')" title="Zerotier For KSU" left-arrow @click-left="onClickLeft" safe-area-inset-top fixed />
+  <van-nav-bar :left-text="t('common.back')" title="Zerotier For KSU" left-arrow @click-left="onClickLeft"
+    safe-area-inset-top fixed />
   <van-collapse v-model="activeNames">
     <van-collapse-item :title="t('networkDetail.overview')" name="dash">
       <van-card :desc="'description:' + networkObj.description"
         :title="networkObj.config.name ? networkObj.config.name : 'Undefined'">
         <template #price>
           <!-- 在线用户：{{ networkObj.onlineMemberCount }} -->
-          {{ t('network.authorizedMemberCount') }} :{{ networkObj.authorizedMemberCount }} 
+          {{ t('network.authorizedMemberCount') }} :{{ networkObj.authorizedMemberCount }}
           {{ t('network.maxMembers') }} :{{ networkObj.totalMemberCount }}
         </template>
         <template #tags>
@@ -22,8 +23,10 @@
           </van-space>
         </template>
         <template #footer>
-          <van-button type="success" size="small" @click="addNetworkMemberShow = true">{{t('networkDetail.addMember')}}</van-button>
-          <van-button type="danger" size="small" @click="deleteNetwork(networkObj.id)">{{t('networkDetail.deleteNetwork')}}</van-button>
+          <van-button type="success" size="small" @click="addNetworkMemberShow = true">{{ t('networkDetail.addMember')
+            }}</van-button>
+          <van-button type="danger" size="small" @click="deleteNetwork(networkObj.id)">{{
+            t('networkDetail.deleteNetwork') }}</van-button>
         </template>
       </van-card>
     </van-collapse-item>
@@ -42,10 +45,10 @@
                 @change="updateMember(item.nodeId, false, '2')" />
             </template>
           </van-field>
-          <van-field v-model.trim="item.name" :label="t('networkDetail.name')" placeholder="请输入名称" is-link input-align="right"
-            @update:model-value="updateMember(item.nodeId, false, '3')" />
-          <van-field v-model.trim="item.description" :label="t('networkDetail.description')" placeholder="请输入备注" is-link input-align="right"
-            @update:model-value="updateMember(item.nodeId, false, '4')" />
+          <van-field v-model.trim="item.name" :label="t('networkDetail.name')" placeholder="请输入名称" is-link
+            input-align="right" @update:model-value="updateMember(item.nodeId, false, '3')" />
+          <van-field v-model.trim="item.description" :label="t('networkDetail.description')" placeholder="请输入备注" is-link
+            input-align="right" @update:model-value="updateMember(item.nodeId, false, '4')" />
           <van-cell :title="t('networkDetail.ztIP')" clickable is-link center @click="ipAssignmentsEditor = true">
             <template #value>
               <van-space direction="vertical" fill>
@@ -61,15 +64,16 @@
           <van-cell :title="t('networkDetail.lastOnline')" :value="formatDate(item.lastOnline)" center />
           <van-cell title="" center>
             <template #value>
-              <van-button type="danger" size="small"
-                @click="deleteNetworkMember(index, item.networkId, item.nodeId)">{{t('networkDetail.delMember')}}</van-button>
+              <van-button type="danger" size="small" @click="deleteNetworkMember(index, item.networkId, item.nodeId)">{{
+                t('networkDetail.delMember') }}</van-button>
             </template>
           </van-cell>
         </van-collapse-item>
       </van-collapse>
       <van-cell>
         <template #value>
-          <van-button type="success" size="small" @click="addNetworkMemberShow = true">{{t('networkDetail.addMember')}}</van-button>
+          <van-button type="success" size="small" @click="addNetworkMemberShow = true">{{ t('networkDetail.addMember')
+            }}</van-button>
         </template>
       </van-cell>
     </van-collapse-item>
@@ -78,18 +82,18 @@
         <van-collapse-item title="Basics"> -->
       <van-cell-group title="Basics">
         <van-cell title="Network ID" :value="networkObj.id" center />
-        <van-field v-model.trim="networkObj.config.name" :label="t('networkDetail.name')" placeholder="请输入名称" is-link input-align="right"
-          @update:model-value="updateNetwork(1)" />
-        <van-field v-model.trim="networkObj.description" :label="t('networkDetail.description')" placeholder="请输入备注" is-link input-align="right"
-          @update:model-value="updateNetwork(2)" />
+        <van-field v-model.trim="networkObj.config.name" :label="t('networkDetail.name')" placeholder="请输入名称" is-link
+          input-align="right" @update:model-value="updateNetwork(1)" />
+        <van-field v-model.trim="networkObj.description" :label="t('networkDetail.description')" placeholder="请输入备注"
+          is-link input-align="right" @update:model-value="updateNetwork(2)" />
         <van-field name="radio" :label="t('networkDetail.accessControl')" input-align="right">
           <template #right-icon>
             <van-icon name="info-o" @click="showTips('1')" />
           </template>
           <template #input>
             <van-radio-group v-model="networkObj.config.private" direction="horizontal" @change="updateNetwork">
-              <van-radio :name="true">{{t('networkDetail.accessControl_private')}}</van-radio>
-              <van-radio :name="false">{{t('networkDetail.accessControl_public')}}</van-radio>
+              <van-radio :name="true">{{ t('networkDetail.accessControl_private') }}</van-radio>
+              <van-radio :name="false">{{ t('networkDetail.accessControl_public') }}</van-radio>
             </van-radio-group>
           </template>
         </van-field>
@@ -99,13 +103,15 @@
           </template>
         </van-cell>
         <van-field :disabled="!networkObj.config.enableBroadcast" v-model.trim="networkObj.config.multicastLimit"
-          input-align="right" :label="t('networkDetail.multicastLimit')" placeholder="32" type="digit" is-link @blur="updateNetwork(5)" />
+          input-align="right" :label="t('networkDetail.multicastLimit')" placeholder="32" type="digit" is-link
+          @blur="updateNetwork(5)" />
       </van-cell-group>
 
       <van-cell-group :title="t('networkDetail.routeManage')">
         <van-cell title="" center>
           <template #value>
-            <van-button type="success" size="small" @click="routeEditor = true">{{t('networkDetail.addRouteRule')}}</van-button>
+            <van-button type="success" size="small" @click="routeEditor = true">{{ t('networkDetail.addRouteRule')
+              }}</van-button>
           </template>
         </van-cell>
         <van-cell center v-for="(route, ridx) in networkObj.config.routes" :key="route">
@@ -150,7 +156,8 @@
             <van-switch v-model="networkObj.config.v6AssignMode.zt" size="22px" @change="updateNetwork(9)" />
           </template>
         </van-cell>
-        <van-cell :title="t('networkDetail.ipPoolManage')" clickable is-link center @click="ipAssignmentPoolsEditor = true">
+        <van-cell :title="t('networkDetail.ipPoolManage')" clickable is-link center
+          @click="ipAssignmentPoolsEditor = true">
           <template #right-icon>
             <!-- v-show="networkObj.config.enableBroadcast"  -->
             <van-space direction="vertical" fill>
@@ -167,9 +174,13 @@
       </van-cell-group>
 
       <van-cell-group :title="t('networkDetail.DNSManage')">
-        <van-field v-model.trim="networkObj.config.dns.domain" :title="t('networkDetail.DNSDomain')" placeholder="Domain" is-link
-          input-align="right" @update:model-value="updateNetwork(10)" />
-        <van-cell :title="t('networkDetail.DNSServers')" clickable is-link center @click="dnsEditor = true">
+        <van-field v-model.trim="networkObj.config.dns.domain" :label="t('networkDetail.DNSDomain')"
+          placeholder="Domain" is-link input-align="right" @update:model-value="updateNetwork(10)" />
+        <van-cell clickable is-link center @click="dnsEditor = true">
+          <template #title>
+            {{ t('networkDetail.DNSServers') }}
+            <van-icon name="info-o" @click="showTips('2')" />
+          </template>
           <template #right-icon>
             <!-- v-show="networkObj.config.enableBroadcast"  -->
             <van-space direction="vertical" fill>
@@ -210,10 +221,11 @@
     </van-form>
   </van-popup>
   <!-- 新增成员 -->
-  <van-dialog v-model:show="addNetworkMemberShow" :title="t('networkDetail.addMember')" show-cancel-button :before-close="checkMemberID">
+  <van-dialog v-model:show="addNetworkMemberShow" :title="t('networkDetail.addMember')" show-cancel-button
+    :before-close="checkMemberID">
     <van-form>
-      <van-field :rules="[{ required: true, message: t('networkDetail.nodeIdtIPS') }]" v-model.trim="memberId" :label="t('networkDetail.nodeId')" required
-        :placeholder="t('networkDetail.nodeIdtIPS')" maxlength="10" />
+      <van-field :rules="[{ required: true, message: t('networkDetail.nodeIdtIPS') }]" v-model.trim="memberId"
+        :label="t('networkDetail.nodeId')" required :placeholder="t('networkDetail.nodeIdtIPS')" maxlength="10" />
     </van-form>
   </van-dialog>
   <!-- IPv4/IPv6 地址池管理 -->
@@ -253,7 +265,7 @@
   </van-popup>
   <!--路由管理管理 -->
   <van-popup v-model:show="routeEditor" round :style="{ width: '90%', maxHeight: '85%' }" :before-close="checkRoute">
-    <van-cell title="Add Routes" title-style="max-width:100%;" center>
+    <van-cell :title="t('networkDetail.routeManage')" title-style="max-width:100%;" center>
       <template #right-icon>
         <van-icon size="1.2rem" name="plus" @click='networkObj.config.routes.push({ "target": "", "via": "" })' />
       </template>
@@ -270,15 +282,13 @@
         </van-cell>
         <van-cell center v-for="(iroute, rridx) in networkObj.config.routes" :key="iroute">
           <template #title>
-            <van-field placeholder="IPV4/CIDR" v-model.trim="iroute.target">
-            </van-field>
+            <van-field placeholder="IPV4/CIDR" v-model.trim="iroute.target" />
           </template>
           <template #value>
-            <van-field placeholder="IPv4/IPv6" v-model.trim="iroute.via">
-            </van-field>
+            <van-field placeholder="IPv4/IPv6" v-model.trim="iroute.via" />
           </template>
           <template #right-icon>
-            <van-icon size="1rem" name="cross" @click="networkObj.config.routes.splice(iidx, 1)" />
+            <van-icon size="1rem" name="cross" @click="networkObj.config.routes.splice(rridx, 1)" />
           </template>
         </van-cell>
       </van-list>
@@ -309,7 +319,7 @@
 // import { useRoute, useRouter } from 'vue-router'
 import { MODDIR, execCmdWithCallback, execCmdWithErrno, spawnCmdWithCallback } from './tools'
 // import { useRemoteNetworkStore } from './stores/remoteNetwork'
-import {  useI18n } from './locales'; // 导入所有翻译信息
+import { useI18n } from './locales'; // 导入所有翻译信息
 const { t } = useI18n();
 
 // const remoteNetwork = useRemoteNetworkStore();
@@ -362,7 +372,7 @@ const nodeId = ref(['']);
 
 const asyncIPv4Validator = (val) =>
   new Promise((resolve) => {
-    debugger
+    
     resolve(IPV4Pattern.test(val));
   });
 
@@ -418,8 +428,10 @@ const showTips = (i) => {
   let message;
   let duration = 2000;
   if (i == 1) {
-    message =t('networkDetail.accessControl_tips')
+    message = t('networkDetail.accessControl_tips')
     duration = 5000;
+  } else if (i == 2) {
+    message = t('networkDetail.accessControl_tips')
   }
   showToast({ message: message, duration: duration });
 }
@@ -692,19 +704,14 @@ const onClickLeft = () => {
 }
 
 // 删除网络回调
-const beforeCloseForNetwork = () => {
+const beforeCloseForNetwork = (action) => {
   new Promise((resolve) => {
-    setTimeout(() => {
-      execCmdWithCallback({
-        cmd: `sh ${MODDIR}/api.sh central network remove ${networkObj.value.id}`, onSuccess: (data) => {
-          showToast(t('networkDetail.deleteNetworkSuccessTips'));
-          router.push('/center/network');
-        }, onError: (data) => {
-          showToast(t('networkDetail.deleteNetworkErrorTips') + data);
-        }
-      })
+    
+    if (action == 'confirm') {
+
+    } else {
       resolve(true);
-    }, 50);
+    }
   });
 }
 // 删除网络成员回调
@@ -754,7 +761,7 @@ const deleteNetworkMember = (index, nwid, mbId) => {
   memberId.value = mbId;
   memberIndex.value = index;
   showConfirmDialog({
-    message: `NodeID:${mbId},t('common.deleteConfirm')`,
+    message: `NodeID:${mbId},${t('common.deleteConfirm')}`,
     beforeCloseForMember,
   });
 }
@@ -762,8 +769,21 @@ const deleteNetworkMember = (index, nwid, mbId) => {
 // 删除网络
 const deleteNetwork = (nwid) => {
   showConfirmDialog({
-    message: `networkid:${nwid},t('common.deleteConfirm')`,
-    beforeCloseForNetwork,
+    message: `networkid:${nwid},${t('common.deleteConfirm')}`,
+  }).then(() => {
+
+    setTimeout(() => {
+      execCmdWithCallback({
+        cmd: `sh ${MODDIR}/api.sh central network remove ${networkObj.value.id}`, onSuccess: (data) => {
+          showToast(t('networkDetail.deleteNetworkSuccessTips'));
+          router.push('/center/network')
+        }, onError: (data) => {
+          showToast(t('networkDetail.deleteNetworkErrorTips') + data);
+        }
+      })
+    }, 50);
+  }).catch(() => {
+    resolve(true);
   });
 
 }

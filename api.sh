@@ -124,7 +124,7 @@ local_peer() {
 local_firewall() {
   if [ "$1" = "A" ]; then
     touch ${ZTPATH}/ALLOW_9993
-  elif [ "$1" != "D" ]; then
+  elif [ "$1" = "D" ]; then
     rm ${ZTPATH}/ALLOW_9993
   else
     echo "only [A,D]"
@@ -243,6 +243,7 @@ local)
     local_peer
     ;;
   firewall)
+    shift
     local_firewall $1
     ;;
   router)

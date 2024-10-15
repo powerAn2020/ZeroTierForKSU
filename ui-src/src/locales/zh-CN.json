@@ -77,8 +77,8 @@
 		"v6AssignMode6plane": "ZeroTier 6PLANE(IPv4)",
 		"ipPoolManage": "IPv4/IPv6地址池配置",
 		"DNSManage": "DNS配置",
-		"DNSDomain": "DNS域名",
-		"DNSServers": "DNSIP",
+		"DNSDomain": "DNS 域名",
+		"DNSServers": "DNS IP",
 		"ztIP": "虚拟IP",
 		"IPTips": "请输入正确IP",
 		"nodeId": "成员ID",
@@ -94,7 +94,8 @@
 		"deleteMemberSuccessTips": "删除成员信息完成",
 		"deleteMemberErrorTips": "删除成员信息失败",
 		"addMemberSuccessTips": "添加成员信息完成",
-		"addMemberErrorTips": "添加成员信息失败"
+		"addMemberErrorTips": "添加成员信息失败",
+		"DNSServersTips": "多个IP以,分割"
 	},
 	"peers": {
 		"expand": "展开",
