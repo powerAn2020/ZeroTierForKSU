@@ -30,6 +30,7 @@ jobs:
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           zerotier_version=$(cat zerotier_version)
+          echo "${zerotier_version}=${zerotier_latest_version}"
           if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule"]; then
             exit 0
           fi
@@ -118,13 +119,6 @@ jobs:
           npm run build
           mv dist/* ../webroot/
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        if:  ${{ env.COMMIT == '1' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main 
-
       - name: Generate module for arm64/arm
         run: |
           mv zerotier-one-arm64 zerotier-one
@@ -165,3 +159,10 @@ jobs:
           files: |
             ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
             ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        if:  ${{ env.COMMIT == '1' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main 

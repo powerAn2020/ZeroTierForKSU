@@ -27,7 +27,7 @@ SECRETFILE=$ZTPATH/authtoken.secret
       touch $TOKENAUTH
     fi
     ${MODDIR}/zerotier.sh inotifyd
-#    inotifyd ${MODDIR}/build.inotify /sdcard/Download/dist &
+    # inotifyd "${MODDIR}/build.inotify" "/sdcard/Download/dist" &
     if [ ! -f "${MANUAL}" ]; then
       sh ${MODDIR}/zerotier.sh start
     else

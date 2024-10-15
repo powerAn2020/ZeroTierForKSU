@@ -61,7 +61,6 @@ start_inotifyd() {
   echo "inotifyd ${ZTPATH}/state"
   sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | inotifyd is running ] /g" $MODDIR/module.prop
   inotifyd "${MODDIR}/zerotier.inotify" "${ZTPATH}/state" >>/dev/null 2>&1 &
-  inotifyd "/data/adb/modules/ZeroTierForKSU/build.inotify" "/sdcard/Download/dist" &
 }
 
 stop_service() {
