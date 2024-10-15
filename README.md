@@ -2,6 +2,7 @@
 
 基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能。
 Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)使用
+自1.14.0之后KSU版本需要在`11928`以上才能正常使用UI,或者使用[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)
 
 ## BUG
 
