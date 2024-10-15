@@ -1,7 +1,7 @@
-Module Changelog
-更新 README.md
+## Module Changelog
+Merge pull request #30 from powerAn2020/dev BUG修复
  ===================
- Zerotier Changelog
+## Zerotier Changelog
 # 2024-09-12 -- Version 1.14.1
 
   * Multithreaded packet I/O support! Currently this is just for Linux and must
