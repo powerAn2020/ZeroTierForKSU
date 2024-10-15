@@ -94,7 +94,8 @@
     "deleteMemberSuccessTips": "Delete member information complete",
     "deleteMemberErrorTips": "Failed to delete member information",
     "addMemberSuccessTips": "Add member information complete",
-    "addMemberErrorTips": "Failed to add member information"
+    "addMemberErrorTips": "Failed to add member information",
+		"DNSServersTips": "Multiple IP usage `,` segmentation"
   },
   "peers": {
     "expand": "Expand",

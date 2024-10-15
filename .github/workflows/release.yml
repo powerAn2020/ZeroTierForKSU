@@ -4,7 +4,7 @@ name: release
 on:
   workflow_dispatch:
   schedule:
-    - cron: '35 9 * * 1'
+    - cron: '40 7 * * 2'
   # push:
 
 permissions:
@@ -29,9 +29,11 @@ jobs:
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           module_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/powerAn2020/ZeroTierOneForKSU/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          if [ "$zerotier_latest_version" = "$module_latest_version" -a "${{github.event_name }}" = "schedule"]; then
+          zerotier_version=$(cat zerotier_version)
+          if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule"]; then
             exit 0
           fi
+          echo ${zerotier_latest_version}>zerotier_version
           echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
           download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-musl-${latest_version}.tar.xz"
           echo ${download_link}
@@ -84,7 +86,7 @@ jobs:
               echo "${{ env.VERSION }}" > zerotier_version
               git add zerotier_version
             fi
-            git add module.prop update_arm64.json update_arm.json changelog.md
+            git add module.prop update_arm64.json update_arm.json changelog.md zerotier_version
             git commit -m "update config"
             echo "COMMIT=1" >> $GITHUB_ENV
           else
@@ -107,7 +109,6 @@ jobs:
           cd ZeroTierOne_ARM
           make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
-
 
       - name: Build UI
         run: |

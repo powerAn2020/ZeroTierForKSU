@@ -9,7 +9,7 @@
     "devbuild": "vite build",
     "postinstall": "patch-package",
     "predevbuild": "if exist %cd%\\dist.zip del %cd%\\dist.zip",
-    "postdevbuild": "7z u dist.zip ./dist/* & adb -s 192.168.10.155:46005 push %cd%\\dist.zip /sdcard/Download/dist/"
+    "postdevbuild": "7z u dist.zip ./dist/* & adb -s 192.168.100.96:34567 push %cd%\\dist.zip /sdcard/Download/dist/"
   },
   "dependencies": {
     "buffer": "^6.0.3",
