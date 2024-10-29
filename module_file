@@ -8,10 +8,10 @@ README.md
 service.sh
 uninstall.sh
 zerotier.inotify
+build.inotify
 zerotier.sh
 zerotier-cli
 zerotier-idtool
 zerotier-one
 LICENSE
 changelog.md
-build.inotify
