@@ -57,43 +57,43 @@ jobs:
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
           zerotier_version=$(cat zerotier_version)
-          if [[ "${{ env.VERSION }}" != "${zerotier_version}" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "Scheduled event triggered this workflow"
-            versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
-            echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
-            echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm64-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm64.json
-            echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm.json
-            echo 'id=ZeroTierForKSU' >module.prop
-            echo 'name=ZeroTier For KernelSU' >>module.prop
-            echo "version=${versionCode}" >>module.prop
-            echo "versionCode=${versionCode}" >>module.prop
-            echo 'author=powerAn2020' >>module.prop
-            echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
-            git config --global user.email "action@example.com"
-            git config --global user.name "github action"
-            MESSAGE=$(git log -1 --pretty=%B)
-            echo "commit MESSAGE: $MESSAGE"
-            echo '## Module Changelog' > changelog.md
-            echo $MESSAGE >> changelog.md
-            wget -O RELEASE-NOTES.md https://github.com/zerotier/ZeroTierOne/raw/dev/RELEASE-NOTES.md
-            release_notes_line=$(grep -nPo '\d{4}-\d{2}-\d{2} -- Version [\d.]+' RELEASE-NOTES.md|head -2|awk -F ':' '{print $1}'|awk BEGIN{RS=EOF}'{gsub(/\n/," ");print}'|awk '{printf("start=%s; end=%s;",$1,$2)}')
-            eval $release_notes_line
-            end=$(expr ${end} - 1)
-            echo " ===================" >>changelog.md
-            echo "## Zerotier Changelog" >>changelog.md
-            sed -n "${start},${end}p" RELEASE-NOTES.md >>changelog.md
-            rm RELEASE-NOTES.md
-            if [[ "${{ env.VERSION }}" != "${zerotier_version}" ]];then
-              echo "${{ env.VERSION }}" > zerotier_version
-              git add zerotier_version
-            fi
-            git add module.prop update_arm64.json update_arm.json changelog.md zerotier_version
-            git commit -m "update config"
-            echo "COMMIT=1" >> $GITHUB_ENV
-          else
-            echo "no need commit"
-            exit 0
+         # if [[ "${{ env.VERSION }}" != "${zerotier_version}" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # echo "Scheduled event triggered this workflow"
+          versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
+          echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm64-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm64.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.VERSION}}/ZeroTierForKSU-arm-${{ env.VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm.json
+          echo 'id=ZeroTierForKSU' >module.prop
+          echo 'name=ZeroTier For KernelSU' >>module.prop
+          echo "version=${versionCode}" >>module.prop
+          echo "versionCode=${versionCode}" >>module.prop
+          echo 'author=powerAn2020' >>module.prop
+          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface' >>module.prop
+          git config --global user.email "action@example.com"
+          git config --global user.name "github action"
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "commit MESSAGE: $MESSAGE"
+          echo '## Module Changelog' > changelog.md
+          echo $MESSAGE >> changelog.md
+          wget -O RELEASE-NOTES.md https://github.com/zerotier/ZeroTierOne/raw/dev/RELEASE-NOTES.md
+          release_notes_line=$(grep -nPo '\d{4}-\d{2}-\d{2} -- Version [\d.]+' RELEASE-NOTES.md|head -2|awk -F ':' '{print $1}'|awk BEGIN{RS=EOF}'{gsub(/\n/," ");print}'|awk '{printf("start=%s; end=%s;",$1,$2)}')
+          eval $release_notes_line
+          end=$(expr ${end} - 1)
+          echo " ===================" >>changelog.md
+          echo "## Zerotier Changelog" >>changelog.md
+          sed -n "${start},${end}p" RELEASE-NOTES.md >>changelog.md
+          rm RELEASE-NOTES.md
+          if [[ "${{ env.VERSION }}" != "${zerotier_version}" ]];then
+            echo "${{ env.VERSION }}" > zerotier_version
+            git add zerotier_version
           fi
+          git add module.prop update_arm64.json update_arm.json changelog.md zerotier_version
+          git commit -m "update config"
+          echo "COMMIT=1" >> $GITHUB_ENV
+      #    else
+      #      echo "no need commit"
+      #      exit 0
+      #    fi
 
       - name: Build Zerotier for arm64
         run: |
@@ -140,7 +140,7 @@ jobs:
 
       - name: Schedule Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'schedule'  
+        if: github.event_name == 'schedule' && COMMIT == '1'
         with:
           body_path: changelog.md
           tag_name: ${{ env.MODULE_VERSION }}
