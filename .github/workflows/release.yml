@@ -32,6 +32,7 @@ jobs:
           zerotier_version=$(cat zerotier_version)
           echo "${zerotier_version}=${zerotier_latest_version}"
           if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule" ]; then
+            echo "COMMIT=0" >> $GITHUB_ENV
             exit 0
           fi
           echo ${zerotier_latest_version}>zerotier_version
@@ -57,7 +58,7 @@ jobs:
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
           zerotier_version=$(cat zerotier_version)
-         # if [[ "${{ env.VERSION }}" != "${zerotier_version}" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # if [[ "${{ env.VERSION }}" != "${zerotier_version}" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           # echo "Scheduled event triggered this workflow"
           versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
           echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
@@ -140,7 +141,7 @@ jobs:
 
       - name: Schedule Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'schedule' && COMMIT == '1'
+        if: github.event_name == 'schedule' && ${{ env.COMMIT == '1' }}
         with:
           body_path: changelog.md
           tag_name: ${{ env.MODULE_VERSION }}
