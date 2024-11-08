@@ -1,5 +1,5 @@
 ## Module Changelog
-update config
+Update release.yml
  ===================
 ## Zerotier Changelog
 # 2024-10-23 -- Version 1.14.2
