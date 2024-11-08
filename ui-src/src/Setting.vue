@@ -5,6 +5,11 @@
       <van-switch v-model="enable" @update:model-value="enableSwitch" :loading="enableLoading" />
     </template>
   </van-cell>
+  <van-cell center :title="t('setting.autoStart')">
+    <template #right-icon>
+      <van-switch v-model="autoStart" @update:model-value="autoStartSwitch" :loading="autoStartLoading" />
+    </template>
+  </van-cell>
   <van-cell center :title="t('setting.allow9993')">
     <template #right-icon>
       <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="firewallLoading" />
@@ -19,25 +24,20 @@
         </van-popover>
       </template>
     </van-cell> -->
-  <van-cell center :title="t('setting.autoStart')">
-    <template #right-icon>
-      <van-switch v-model="autoStart" @update:model-value="autoStartSwitch" :loading="autoStartLoading" />
-    </template>
-  </van-cell>
   <van-cell center :title="t('setting.uninstallKeep')">
     <template #right-icon>
       <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
     </template>
   </van-cell>
-  <van-cell center :title="t('setting.switchBranch')">
-    <template #right-icon>
-      <van-switch v-model="branch" @update:model-value="branchSwitch" :loading="branchLoading" />
-    </template>
-  </van-cell>
+  <van-field v-model="defaultUpdateChannel" input-align="right" is-link readonly :label="t('setting.branch')" :placeholder="defaultUpdateChannel" @click="showPicker = true" />
+
   <van-cell title="API Token" :value="hideKey(apiToken)" clickable @click="tokenEditor = true" />
-  <van-cell :title="t('setting.sourceCode')" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
-  <van-cell :title="t('setting.apiDocument')" is-link
-    url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
+  <van-cell :title="t('setting.sourceCode')" is-link @click="openUrl('https://github.com/powerAn2020/ZeroTierOneForKSU')"/>
+  <van-cell :title="t('setting.apiDocument')" is-link @click="openUrl('https://docs.zerotier.com/api/tokens/#zerotier-central-token')" />
+
+  <van-popup v-model:show="showPicker" round position="bottom">
+    <van-picker :columns="updateChannelActions" @cancel="showPicker = false" @confirm="onChannelSelect" />
+  </van-popup>
 
   <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
     <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central API Token" />
@@ -46,7 +46,7 @@
 
 <script setup>
 // import { ref } from 'vue';
-import { MODDIR, ZTPATH, execCmd } from './tools'
+import { MODDIR, ZTPATH, execCmd,spawnCmdWithCallback } from './tools'
 import { useI18n } from './locales'; // 导入所有翻译信息
 const { t } = useI18n();
 
@@ -55,6 +55,7 @@ const firewall = ref(true);
 const autoStart = ref(true);
 const uninstallKeep = ref(false);
 const branch = ref(false);
+const showPicker = ref(false);
 const enableLoading = ref(false);
 const tokenEditor = ref(false);
 const firewallLoading = ref(false);
@@ -62,6 +63,7 @@ const autoStartLoading = ref(false);
 const branchLoading = ref(false);
 const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
+const showUpdateChannelPopover = ref(false);
 const cliStatusText = ref();
 const apiToken = ref('');
 
@@ -70,7 +72,29 @@ const actions = [
   { text: t('setting.routeMode_rule'), value: '0', disabled: true },
   { text: t('setting.routeMode_main'), value: '1' },
 ];
+const updateChannelActions = [
+  { text: 'dev', value: 'dev' },
+  { text: 'main', value: 'main' },
+];
+const onChannelSelect = ({ selectedOptions  }) => {
+  showPicker.value = false;
+  defaultUpdateChannel.value = selectedOptions[0].value;
+  console.info(selectedOptions)
+  if (selectedOptions[0].value == 'dev') {
+
+    console.info('DEV分支')
+    execCmd(`sh ${MODDIR}/zerotier.sh switch dev`).then(v => {
+      console.info(v)
+    })
+  } else {
+    console.info('MAIN分支')
+    execCmd(`sh ${MODDIR}/zerotier.sh switch main`).then(v => {
+      console.info(v)
+    })
+  }
+}
 const defaultRoterMode = ref(actions[1].text);
+const defaultUpdateChannel = ref('');
 // 绑定路由选择事件
 // const onSelect = (action) => {
 //   defaultRoterMode.value = action.text;
@@ -90,7 +114,10 @@ const defaultRoterMode = ref(actions[1].text);
 //   localStorage.setItem('defaultRoterMode', action.value)
 // }
 const hideKey = (key) => {
-  return key.substring(0,4)+"***********"+key.substring(key.length-2)
+  if (key.length == 0) {
+    return key;
+  }
+  return key.substring(0, 4) + "***********" + key.substring(key.length - 2)
 }
 const init = () => {
   showLoadingToast({
@@ -104,6 +131,7 @@ const init = () => {
     execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
       const statusObj = JSON.parse(v);
       enable.value = statusObj.enable == "" ? false : true;
+      defaultUpdateChannel.value = statusObj.branch
       branch.value = statusObj.branch == "dev" ? true : false;
       firewall.value = statusObj.firewall;
       autoStart.value = statusObj.autoStart;
@@ -144,20 +172,6 @@ const autoStartSwitch = (newValue) => {
     console.info('关闭开机自启服务')
     execCmd(`touch ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
-    })
-  }
-};
-const branchSwitch = (newValue) => {
-  branchLoading.value = true;
-  if (newValue === true) {
-    console.info('接收测试版更新')
-    execCmd(`sh ${MODDIR}/zerotier.sh switch dev`).then(v => {
-      branchLoading.value = false;
-    })
-  } else {
-    console.info('接收主线更新')
-    execCmd(`sh ${MODDIR}/zerotier.sh switch main`).then(v => {
-      branchLoading.value = false;
     })
   }
 };
@@ -203,7 +217,6 @@ const enableSwitch = (newValue) => {
   enableLoading.value = true;
   if (newValue === true) {
     console.info('启动zerotier')
-    // const cacheRoterMode = localStorage.getItem('ZerotierForKSU.defaultRoterMode');
     execCmd(`sh ${MODDIR}/api.sh local service start`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
@@ -219,5 +232,8 @@ const enableSwitch = (newValue) => {
     })
   }
 };
+const openUrl=(url)=>{
+  spawnCmdWithCallback({cmd: `am start -a android.intent.action.VIEW -d "${url}"`})
+}
 init()
 </script>

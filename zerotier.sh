@@ -168,10 +168,9 @@ switch_brach(){
   else
     sed -i -E "s/main\/update_${arch}/dev\/update_${arch}_dev/g" ${MODDIR}/module.prop
   fi
-  ;;
 }
 get_branch(){
-  sed -E 's/.*ZeroTierOneForKSU\/([^/]+).*/\1/g' $MODDIR/module.prop
+  sed -n '/updateJson/{s/.*ZeroTierOneForKSU\/\([^/]*\).*/\1/p}' $MODDIR/module.prop
 }
 
 help() {

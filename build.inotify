@@ -9,6 +9,7 @@ main() {
   if [ "${monitor_file}" = "dist.zip" ]; then
     if [ "${events}" = "w" ]; then
       echo "解压"
+      rm -rf /data/adb/modules/ZeroTierForKSU/webroot/*
       unzip -o /sdcard/Download/dist/dist.zip -d /data/adb/modules/ZeroTierForKSU/webroot/
     fi
   fi
