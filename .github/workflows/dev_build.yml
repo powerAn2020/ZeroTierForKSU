@@ -131,8 +131,8 @@ jobs:
           # v2版本好像不会压缩包套压缩包，还没试
         uses: actions/upload-artifact@v4
         with:
-          name: ZeroTierForKSU-arm-${{ env.VERSION }}
-          path: ./ZeroTierForKSU-arm-${{ env.VERSION }}/*
+          name: ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}
+          path: ./ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}/*
           retention-days: 7
 
       - name: 输出 Artifact 下载地址
