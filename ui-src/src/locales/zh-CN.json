@@ -111,6 +111,9 @@
 		"apiDocument": "从哪里获取API Token?",
 		"routeMode_main": "main表优先模式",
 		"routeMode_rule": "自建路由模式",
-		"cliStatusText": "启动服务查看节点信息"
+		"cliStatusText": "启动服务查看节点信息",
+		"branch": "更新渠道",
+		"switchBranchDev": "接收测试版更新",
+		"switchBranchMain": "接收正式版更新"
 	}
 }
