@@ -62,8 +62,8 @@ jobs:
           # echo "Scheduled event triggered this workflow"
           versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
           echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.MODULE_VERSION}}/ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm64.json
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/${{env.MODULE_VERSION}}/ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/'${versionCode}'/ZeroTierForKSU-arm64-'${versionCode}'.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm64.json
+          echo '{"version":"${{ env.VERSION }}","versionCode":'${versionCode}',"zipUrl":"https://github.com/powerAn2020/ZeroTierOneForKSU/releases/download/'${versionCode}'/ZeroTierForKSU-arm-'${versionCode}'.zip","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/changelog.md"}' >update_arm.json
           echo 'id=ZeroTierForKSU' >module.prop
           echo 'name=ZeroTier For KernelSU' >>module.prop
           echo "version=${{ env.VERSION }}(${versionCode})" >>module.prop
