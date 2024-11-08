@@ -1,5 +1,5 @@
 ## Module Changelog
-Merge pull request #31 from powerAn2020/dev 修复流水线错误
+update config
  ===================
 ## Zerotier Changelog
 # 2024-10-23 -- Version 1.14.2
