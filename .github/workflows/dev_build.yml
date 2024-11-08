@@ -65,7 +65,7 @@ jobs:
           echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
           echo 'id=ZeroTierForKSU' >module.prop
           echo 'name=ZeroTier For KernelSU' >>module.prop
-          echo "version=${versionCode}" >>module.prop
+          echo "version=${{ env.VERSION }}(${versionCode})" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn2020' >>module.prop
           echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
@@ -107,11 +107,13 @@ jobs:
           mv zerotier-one-arm64 zerotier-one
           ls -la
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
+          echo 'arch=arm64' >>module.prop
           bash build.sh ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
           mv -f curl bin/curl
           sed -i "s/update_arm64/update_arm/g" module.prop
+          sed -i "s/arm64/arm/g" module.prop
           bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 

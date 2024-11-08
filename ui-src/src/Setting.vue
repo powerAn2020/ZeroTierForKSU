@@ -29,10 +29,16 @@
       <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
     </template>
   </van-cell>
-  <van-cell title="API Token" :value="apiToken" clickable @click="tokenEditor = true" />
+  <van-cell center :title="t('setting.switchBranch')">
+    <template #right-icon>
+      <van-switch v-model="branch" @update:model-value="branchSwitch" :loading="branchLoading" />
+    </template>
+  </van-cell>
+  <van-cell title="API Token" :value="hideKey(apiToken)" clickable @click="tokenEditor = true" />
   <van-cell :title="t('setting.sourceCode')" is-link url="https://github.com/powerAn2020/ZeroTierOneForKSU" />
   <van-cell :title="t('setting.apiDocument')" is-link
     url="https://docs.zerotier.com/api/tokens/#zerotier-central-token" />
+
   <van-popup v-model:show="tokenEditor" round :style="{ width: '90%', maxHeight: '85%' }" @close="saveToken()">
     <van-field v-model="apiToken" label="API Token" placeholder="ZeroTier Central API Token" />
   </van-popup>
@@ -48,10 +54,12 @@ const enable = ref(true);
 const firewall = ref(true);
 const autoStart = ref(true);
 const uninstallKeep = ref(false);
+const branch = ref(false);
 const enableLoading = ref(false);
 const tokenEditor = ref(false);
 const firewallLoading = ref(false);
 const autoStartLoading = ref(false);
+const branchLoading = ref(false);
 const uninstallKeepLoading = ref(false);
 const showPopover = ref(false);
 const cliStatusText = ref();
@@ -81,7 +89,9 @@ const defaultRoterMode = ref(actions[1].text);
 //   }
 //   localStorage.setItem('defaultRoterMode', action.value)
 // }
-
+const hideKey = (key) => {
+  return key.substring(0,4)+"***********"+key.substring(key.length-2)
+}
 const init = () => {
   showLoadingToast({
     duration: 0,
@@ -90,16 +100,14 @@ const init = () => {
     loadingType: 'spinner',
   });
   cliStatusText.value = t('setting.cliStatusText');
-  const lApiToken = localStorage.getItem('ZerotierForKSU.apiToken');
-  if (lApiToken) {
-    apiToken.value = lApiToken;
-  }
   setTimeout(() => {
     execCmd(`sh ${MODDIR}/zerotier.sh status`).then(v => {
       const statusObj = JSON.parse(v);
       enable.value = statusObj.enable == "" ? false : true;
+      branch.value = statusObj.branch == "dev" ? true : false;
       firewall.value = statusObj.firewall;
       autoStart.value = statusObj.autoStart;
+      apiToken.value = statusObj.apiToken;
       uninstallKeep.value = statusObj.uninstallKeep;
       localStorage.setItem('ZerotierForKSU.defaultRoterMode', statusObj.routerRuleNew)
       defaultRoterMode.value = actions[parseInt(statusObj.routerRuleNew)].text;
@@ -120,9 +128,7 @@ const saveToken = () => {
   apiToken.value = apiToken.value.trim()
   if (apiToken.value.length == 0) {
     showToast('移除API Token')
-    localStorage.removeItem('ZerotierForKSU.apiToken')
   } else {
-    localStorage.setItem('ZerotierForKSU.apiToken', apiToken.value)
     showToast('更新API Token')
   }
   execCmd(`sh ${MODDIR}/api.sh apiToken update ${apiToken.value}`)
@@ -138,6 +144,20 @@ const autoStartSwitch = (newValue) => {
     console.info('关闭开机自启服务')
     execCmd(`touch ${ZTPATH}/MANUAL`).then(v => {
       autoStartLoading.value = false;
+    })
+  }
+};
+const branchSwitch = (newValue) => {
+  branchLoading.value = true;
+  if (newValue === true) {
+    console.info('接收测试版更新')
+    execCmd(`sh ${MODDIR}/zerotier.sh switch dev`).then(v => {
+      branchLoading.value = false;
+    })
+  } else {
+    console.info('接收主线更新')
+    execCmd(`sh ${MODDIR}/zerotier.sh switch main`).then(v => {
+      branchLoading.value = false;
     })
   }
 };

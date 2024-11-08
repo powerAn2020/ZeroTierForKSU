@@ -15,6 +15,7 @@
 ###   token                                      -- Show Local Service Token
 ###   apiToken                                   -- Show Remote Service apiToken
 ###   inotifyd                                   -- Start inotifyd Service
+###   switch   [ main,dev ]                      -- Switch module version
 ###
 ### Example:
 ###   help
@@ -26,6 +27,7 @@
 ###     sh zerotier.sh token
 ###     sh zerotier.sh apiToken
 ###     sh zerotier.sh inotifyd
+###     sh zerotier.sh switch dev
 ###
 
 MODDIR=${0%/*}
@@ -105,7 +107,15 @@ status_service() {
   if [ $? != 0 ]; then
     cliStatus=''
   fi
-  data='{ "enable": "'${zpid}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "uninstallKeep": '${uninstallKeep}',"routerRuleNew": '${routerRuleNew}', "cliStatus": "'${cliStatus}'" }'
+  apiToken=$(get_apiToken)
+  if [ $? != 0 ]; then
+    apiToken=''
+  fi
+  branch=$(get_branch)
+  if [ $? != 0 ]; then
+    branch=''
+  fi
+  data='{ "enable": "'${zpid}'","branch": "'${branch}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "apiToken": "'${apiToken}'", "uninstallKeep": '${uninstallKeep}',"routerRuleNew": '${routerRuleNew}', "cliStatus": "'${cliStatus}'" }'
   echo $data
 }
 start_service() {
@@ -140,27 +150,42 @@ get_token() {
   echo "$(cat ${SECRETFILE})"
 }
 get_apiToken() {
-  apiToken=$(grep '[^[:space:]]' $ZTPATH/TOKENAUTH)
-  if [ -f $ZTPATH/TOKENAUTH -a -z "$apiToken" ]; then
+  apiToken=$(grep -v '^[[:space:]]*$' $ZTPATH/TOKENAUTH)
+  if [ -f $ZTPATH/TOKENAUTH -a -n "$apiToken" ]; then
     echo $apiToken
   else
-    echo "The api token was not found. Use "api.sh update xxxx" to add it. "
+    {
+      echo "The api token was not found. Use 'api.sh update xxxx' to add it." 1>&2
+      exit 1
+    }
   fi
 }
+switch_brach(){
+  version=$1
+  arch=$(sed -n '/arch=/s/arch=\(.*\)/\1/p' ${MODDIR}/module.prop)
+  if [ "$version" = "main" ];then
+    sed -i -E "s/dev\/update_${arch}_dev/main\/update_${arch}/g" ${MODDIR}/module.prop
+  else
+    sed -i -E "s/main\/update_${arch}/dev\/update_${arch}_dev/g" ${MODDIR}/module.prop
+  fi
+  ;;
+}
+get_branch(){
+  sed -E 's/.*ZeroTierOneForKSU\/([^/]+).*/\1/g' $MODDIR/module.prop
+}
+
 help() {
   sed -rn 's/^### ?//;T;p;' "$0"
 }
+
 case $1 in
 start)
-  shift
   start_service
   ;;
 stop)
-  shift
   stop_service
   ;;
 restart)
-  shift
   stop_service
   start_service
   ;;
@@ -175,6 +200,10 @@ apiToken)
   ;;
 inotifyd)
   start_inotifyd
+  ;;
+switch)
+  shift
+  switch_brach $1
   ;;
 *)
   help

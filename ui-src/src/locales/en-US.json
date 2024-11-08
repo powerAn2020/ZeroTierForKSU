@@ -111,6 +111,7 @@
     "apiDocument": "Where can I get API Tokens?",
     "routeMode_main": "Main table",
     "routeMode_rule": "Rule table",
-    "cliStatusText": "Start the service to view node information"
+    "cliStatusText": "Start the service to view node information",
+		"switchBranch": "Receive beta updates"
   }
 }
