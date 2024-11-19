@@ -33,6 +33,7 @@ jobs:
           echo "${zerotier_version}=${zerotier_latest_version}"
           if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule" ]; then
             echo "COMMIT=0" >> $GITHUB_ENV
+            echo "SKIP_NEXT=true" >> $GITHUB_ENV
             exit 0
           fi
           echo ${zerotier_latest_version}>zerotier_version
@@ -54,6 +55,7 @@ jobs:
           rm -f arm64.tar  arm.tar curl.tar.xz curl32.tar.xz
 
       - name: Update versionCode
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
@@ -97,6 +99,7 @@ jobs:
       #    fi
 
       - name: Build Zerotier for arm64
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
@@ -113,6 +116,7 @@ jobs:
           cp -rf zerotier-one ../zerotier-one-arm
 
       - name: Build UI
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
           cd ui-src
           npm install
@@ -121,6 +125,7 @@ jobs:
           mv dist/* ../webroot/
 
       - name: Generate module for arm64/arm
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
           mv zerotier-one-arm64 zerotier-one
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/update_arm64.json' >>module.prop
@@ -134,6 +139,7 @@ jobs:
           bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 
       - name: Upload artifact
+        if: ${{ env.SKIP_NEXT != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU
@@ -154,7 +160,7 @@ jobs:
 
       - name: Manual Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' 
         with:
           generate_release_notes: true
           tag_name: ${{ env.MODULE_VERSION }}

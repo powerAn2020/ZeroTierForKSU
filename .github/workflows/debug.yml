@@ -1,10 +1,10 @@
-name: release
+name: debug
 # description:
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '40 7 * * 2'
+    - cron: '25 9 * * 2'
   # push:
 
 permissions:
@@ -24,7 +24,6 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          set -x
           sudo apt install -y xz-utils make git wget zip 
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
@@ -34,6 +33,7 @@ jobs:
           echo "${zerotier_version}=${zerotier_latest_version}"
           if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule" ]; then
             echo "COMMIT=0" >> $GITHUB_ENV
+            echo "SKIP_NEXT=true" >> $GITHUB_ENV
             exit 0
           fi
           echo ${zerotier_latest_version}>zerotier_version
@@ -55,8 +55,8 @@ jobs:
           rm -f arm64.tar  arm.tar curl.tar.xz curl32.tar.xz
 
       - name: Update versionCode
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
-          set -x
           module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
           module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
           zerotier_version=$(cat zerotier_version)
@@ -99,8 +99,8 @@ jobs:
       #    fi
 
       - name: Build Zerotier for arm64
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
-          set -x
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
           git clone https:///github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
           cp -rf ZeroTierOne ZeroTierOne_ARM
@@ -110,15 +110,14 @@ jobs:
 
       - name: Build Zerotier for arm
         run: |
-          set -x
           export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
           cd ZeroTierOne_ARM
           make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
 
       - name: Build UI
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
-          set -x
           cd ui-src
           npm install
           npm audit fix
@@ -126,8 +125,8 @@ jobs:
           mv dist/* ../webroot/
 
       - name: Generate module for arm64/arm
+        if: ${{ env.SKIP_NEXT != 'true' }}
         run: |
-          set -x
           mv zerotier-one-arm64 zerotier-one
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/main/update_arm64.json' >>module.prop
           echo 'arch=arm64' >>module.prop
