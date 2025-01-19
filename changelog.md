@@ -1,5 +1,5 @@
 ## Module Changelog
-Merge pull request #36 from powerAn2020/dev 合并代码
+功能增强 1. MIUI14Pad上白屏问题修复 2. 依赖包更新
  ===================
 ## Zerotier Changelog
 # 2024-10-23 -- Version 1.14.2
