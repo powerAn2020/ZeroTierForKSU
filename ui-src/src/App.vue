@@ -52,7 +52,7 @@
 <script setup>
 // import { ref, watch } from 'vue';
 // import { useRouter } from 'vue-router';
-import { execCmd } from './tools'
+import { execCmd,isEmpty } from './tools'
 import { vantLocales, useI18n, i18n } from './locales'; // 导入所有翻译信息
 const { t, locale } = useI18n();
 
@@ -91,26 +91,21 @@ const initTheme = () => {
     // 2 表示关闭了 Dark Mode（白天模式）.
     if (v == '1') {
       theme.value = true;
-    } else if (v == '2') {
-      theme.value = false;
-    }
-    // 返回值竟然有null
-    if (v == null) {
+    } else {
       theme.value = false;
     }
     localStorage.setItem('ZerotierForKSU.theme', theme.value)
   });
   const cacheTheme = localStorage.getItem('ZerotierForKSU.theme');
-  if (typeof cacheTheme != "undefined" && cacheTheme != null) {
+  if (!isEmpty(cacheTheme)) {
     theme.value = JSON.parse(cacheTheme);
   } else {
     localStorage.setItem('ZerotierForKSU.theme', false)
   }
 }
 const initI18n = () => {
-  
   const cacheLocale = localStorage.getItem('ZerotierForKSU.locale')
-  if (typeof cacheLocale != "undefined" && cacheLocale != null) {
+  if (!isEmpty(cacheLocale)) {
     i18n.global.locale = cacheLocale
     return
   }
