@@ -1,23 +1,23 @@
 import { exec, spawn } from 'kernelsu';
-import {Buffer} from 'buffer'
+import { Buffer } from 'buffer'
 export const MODDIR = '/data/adb/modules/ZeroTierForKSU'
 export const ZTPATH = '/data/adb/zerotier'
 
 export const execCmd = async (cmd) => {
   console.info(cmd)
-  const {errno, stdout,stderr} = await exec(cmd, {cwd: '/'})
+  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/' })
   if (errno === 0) {
-      // success
-      console.log(stdout)
-      return stdout
-  }else {
+    // success
+    console.log(stdout)
+    return stdout
+  } else {
     console.error(stderr)
   }
 }
 // console.info(moduleInfo())
 export const execCmdWithErrno = async (cmd) => {
   console.info(cmd)
-  const { errno, stdout, stderr} = await exec(cmd, { cwd: '/' });
+  const { errno, stdout, stderr } = await exec(cmd, { cwd: '/' });
   if (errno === 0) {
     // success
     console.log(stdout);
@@ -27,7 +27,7 @@ export const execCmdWithErrno = async (cmd) => {
   return errno;
 }
 
-export const execCmdWithCallback = async ({cmd, options = { cwd: '/' }, onSuccess, onError}) => {
+export const execCmdWithCallback = async ({ cmd, options = { cwd: '/' }, onSuccess, onError }) => {
   console.info(cmd)
   const { errno, stdout, stderr } = await exec(cmd, options);
   if (errno === 0) {
@@ -44,7 +44,7 @@ export const execCmdWithCallback = async ({cmd, options = { cwd: '/' }, onSucces
   }
 }
 
-export const spawnCmdWithCallback = ({cmd, args = [], onSuccess, onError}) => {
+export const spawnCmdWithCallback = ({ cmd, args = [], onSuccess, onError }) => {
   console.info(cmd)
   const childProcess = spawn(cmd, args);
   childProcess.stdout.on('data', (data) => {
@@ -70,4 +70,16 @@ export const readFile = async (filePath) => {
 
 export const saveFile = (content, filePath) => {
   return execCmd(`echo ${Buffer.from(content).toString("base64")} | base64 -d > ${filePath}`);
+}
+
+/**
+  * 判断字符串是否为空
+  * @param obj 
+  * @returns 
+  */
+export const isEmpty = (obj) => {
+  if(typeof(obj) == "undefined" || obj == null || obj == "null" || obj.length == 0){
+    return true;
+  }
+  return false;
 }

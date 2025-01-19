@@ -4,7 +4,7 @@ name: release
 on:
   workflow_dispatch:
   schedule:
-    - cron: '40 7 * * 2'
+    - cron: '40 15 * * *'
   # push:
 
 permissions:
@@ -13,6 +13,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SKIP_NEXT: false
+      VERSION: 
+      MODULE_VERSION:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +36,6 @@ jobs:
           zerotier_version=$(cat zerotier_version)
           echo "${zerotier_version}=${zerotier_latest_version}"
           if [ "$zerotier_latest_version" = "$zerotier_version" -a "${{github.event_name }}" = "schedule" ]; then
-            echo "COMMIT=0" >> $GITHUB_ENV
             echo "SKIP_NEXT=true" >> $GITHUB_ENV
             exit 0
           fi
@@ -92,7 +95,6 @@ jobs:
           fi
           git add module.prop update_arm64.json update_arm.json changelog.md zerotier_version
           git commit -m "update config"
-          echo "COMMIT=1" >> $GITHUB_ENV
       #    else
       #      echo "no need commit"
       #      exit 0
@@ -148,9 +150,9 @@ jobs:
             ./ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
             ./ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 
-      - name: Schedule Release
+      - name: Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'schedule' && ${{ env.COMMIT == '1' }}
+        if: ${{ env.SKIP_NEXT != 'true' }}
         with:
           body_path: changelog.md
           tag_name: ${{ env.MODULE_VERSION }}
@@ -159,20 +161,9 @@ jobs:
             ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
             ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 
-      - name: Manual Release
-        uses: softprops/action-gh-release@v2
-        if: github.event_name == 'workflow_dispatch' 
-        with:
-          generate_release_notes: true
-          tag_name: ${{ env.MODULE_VERSION }}
-          name: ZeroTierForKSU-${{ env.MODULE_VERSION }}
-          files: |
-            ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
-            ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
-
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if:  ${{ env.COMMIT == '1' }}
+        if:  ${{ env.SKIP_NEXT != 'true' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main 
+          branch: main

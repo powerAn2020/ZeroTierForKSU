@@ -220,6 +220,7 @@ const enableSwitch = (newValue) => {
     execCmd(`sh ${MODDIR}/api.sh local service start`).then(v => {
       setTimeout(() => {
         enableLoading.value = false;
+        init()
       }, 1000);
     })
   } else {

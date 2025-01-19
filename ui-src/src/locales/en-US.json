@@ -74,7 +74,7 @@
     "zt_v4": "Auto-Assign from Range (IPv4)",
     "zt_v6": "Auto-Assign from Range (IPv6)",
     "v6AssignModeRfc4193": "ZeroTier RFC4193(IPv6)",
-    "v6AssignMode6plane": "ZeroTier 6PLANE(IPv4)",
+    "v6AssignMode6plane": "ZeroTier 6PLANE(IPv6)",
     "ipPoolManage": "IPv4/IPv6 Address Pool Config",
     "DNSManage": "DNS configuration",
     "DNSDomain": "DNS domain",

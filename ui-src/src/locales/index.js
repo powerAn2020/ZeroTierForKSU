@@ -37,6 +37,8 @@ const i18n = createI18n({
   legacy: false,
   // 全局注册 $t方法
   globalInjection: true,
+  // 允许组合式
+  allowComposition: true,
   //设置初始化语言
   locale: language,
   // 设置备用语言

@@ -32,7 +32,7 @@
     </van-collapse-item>
     <van-collapse-item :title="t('networkDetail.member')" name="member">
       <van-collapse v-model="nodeId" @change="changeMember" accordion>
-        <van-collapse-item v-for="(item, index) in memberList" :title="item.nodeId" :key="index" :name="item.nodeId">
+        <van-collapse-item v-for="(item, index) in memberList" :title="(item.name==''?item.nodeId:item.name)" :key="index" :name="item.nodeId">
           <van-field name="checkbox" :label="t('networkDetail.allowAuth')" input-align="right">
             <template #input>
               <van-checkbox v-model="item.config.authorized" shape="square"
@@ -179,7 +179,7 @@
         <van-cell clickable is-link center @click="dnsEditor = true">
           <template #title>
             {{ t('networkDetail.DNSServers') }}
-            <van-icon name="info-o" @click="showTips('2')" />
+            <!-- <van-icon name="info-o" @click="showTips('2')" /> -->
           </template>
           <template #right-icon>
             <!-- v-show="networkObj.config.enableBroadcast"  -->
@@ -298,7 +298,7 @@
   <van-popup v-model:show="dnsEditor" round :style="{ width: '90%', maxHeight: '85%' }" :before-close="checkDNS">
     <van-cell title="DNS Servers" title-style="max-width:100%;" center>
       <template #right-icon>
-        <van-icon size="1.2rem" name="plus" @click='addNetworkDNS' />
+        <van-icon size="1.2rem" name="plus" @click="networkObj.value.config.dns.servers.push('')" />
       </template>
     </van-cell>
     <van-form>
@@ -372,16 +372,9 @@ const nodeId = ref(['']);
 
 const asyncIPv4Validator = (val) =>
   new Promise((resolve) => {
-    
     resolve(IPV4Pattern.test(val));
   });
 
-const addNetworkDNS = () => {
-  if (!networkObj.value.config.dns.servers) {
-    networkObj.value.config.dns.servers = [];
-  }
-  networkObj.value.config.dns.servers.push('')
-}
 const asyncIPPoolValidator = (val) =>
   new Promise((resolve) => {
     const ipArr = val.split('-');
@@ -813,6 +806,10 @@ const init = () => {
   execCmdWithCallback({
     cmd: `sh ${MODDIR}/api.sh central network list ${route.params.id}`, onSuccess: (data) => {
       networkObj.value = JSON.parse(data);
+      if(networkObj.value.config.dns.servers==null){
+        networkObj.value.config.dns.servers=[]
+      }
+      debugger
       if (!networkObj.value) {
         closeToast();
         router.push('/center/network')
