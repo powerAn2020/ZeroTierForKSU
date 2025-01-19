@@ -1,1 +1,1 @@
-界面优化 1.网络管理详情页成员默认展示短昵称 2.设置页面启动服务后刷新顶部状态栏 3. 调整流水线检查时间
+Merge pull request #41 from powerAn2020/dependabot/npm_and_yarn/ui-src/dev/unplugin-auto-import-19.0.0 Bump unplugin-auto-import from 0.18.6 to 19.0.0 in /ui-src
