@@ -157,11 +157,11 @@ const newAdd = (index) => {
     readonly.value = true;
     const editObj = JSON.parse(JSON.stringify(items[index]));
     info.allowDNS = editObj.allowDNS,
-      info.allowDefault = editObj.allowDefault,
-      info.allowManaged = editObj.allowManaged,
-      info.allowGlobal = editObj.allowGlobal,
-      info.name = editObj.name,
-      info.id = editObj.id
+    info.allowDefault = editObj.allowDefault,
+    info.allowManaged = editObj.allowManaged,
+    info.allowGlobal = editObj.allowGlobal,
+    info.name = editObj.name,
+    info.id = editObj.id
   } else {
     readonly.value = false;
     reset()
