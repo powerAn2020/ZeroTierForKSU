@@ -22,7 +22,7 @@
     <router-view v-slot="{ Component }">
       <component ref="routerViewRef" :is="Component" :theme="theme" />
     </router-view>
-    <div style="height: 0.1rem;"></div>
+    <div style="height: 0.1rem;padding-bottom:50px;"></div>
     <van-tabbar route safe-area-inset-bottom>
       <van-tabbar-item replace to="/" icon="home-o">{{ t('common.dash') }}</van-tabbar-item>
       <van-tabbar-item replace to="/peers" icon="friends-o">{{ t('common.peers') }}</van-tabbar-item>

@@ -1,8 +1,12 @@
 # ZeroTier for KSU
 
+[![GitHub Release](https://img.shields.io/github/v/release/powerAn2020/ZeroTierForKSU)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
+[![GitHub Download](https://img.shields.io/github/downloads/powerAn2020/ZeroTierForKSU/total)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
+
 基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能。
 Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)使用。
-~~自1.14.0之后KSU版本需要在`11928`以上才能正常使用UI~~
+
+自1.14.0之后KSU版本需要在`11928`以上才能正常使用UI
 
 ## BUG
 
@@ -15,7 +19,7 @@ Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWeb
 ## TODO
 
 1. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
-2. [X] 增加管理页面，需要自行准备[API Token](https://docs.zerotier.com/api/tokens/#zerotier-central-token)
+2. [x] 增加管理页面，需要自行准备[API Token](https://docs.zerotier.com/api/tokens/#zerotier-central-token)
 3. [x] 国际化
 
 ## 免责声明
