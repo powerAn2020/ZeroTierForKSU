@@ -115,7 +115,7 @@ status_service() {
   if [ $? != 0 ]; then
     branch=''
   fi
-  data='{ "enable": "'${zpid}'","branch": "'${branch}'", "firewall": '${firewall}', "autoStart": '${autoStart}', "apiToken": "'${apiToken}'", "uninstallKeep": '${uninstallKeep}',"routerRuleNew": '${routerRuleNew}', "cliStatus": "'${cliStatus}'" }'
+  data="{\"enable\": \"$zpid\", \"branch\": \"$branch\", \"firewall\": $firewall, \"autoStart\": $autoStart, \"apiToken\": \"$apiToken\", \"uninstallKeep\": $uninstallKeep, \"routerRuleNew\": $routerRuleNew, \"cliStatus\": \"$cliStatus\"}"
   echo $data
 }
 start_service() {

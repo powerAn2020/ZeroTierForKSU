@@ -36,17 +36,6 @@ if [ ! -d "/data/adb/zerotier" ]; then
 fi
 
 ui_print "- Setting permissions"
-set_perm_recursive $MODPATH 0 0 0755 0644
-set_perm $MODPATH/zerotier 0 0 0755
-set_perm $MODPATH/zerotier-one 0 0 0755
-set_perm $MODPATH/zerotier-idtool 0 0 0755
-set_perm $MODPATH/zerotier-cli 0 0 0755
-set_perm $MODPATH/zerotier.sh 0 0 0755
-set_perm $MODPATH/zerotier.inotify 0 0 0755
-set_perm $MODPATH/build.inotify 0 0 0755
-set_perm $MODPATH/api.sh 0 0 0755
-set_perm $MODPATH/uninstall.sh 0 0 0755
-set_perm $MODPATH/bin/curl 0 0 0755
-set_perm $MODPATH/service.sh 0 0 0755
+set_perm_recursive $MODPATH 0 0 0755 0755
 
 ui_print "- Installation is complete, reboot your device"
