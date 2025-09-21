@@ -102,7 +102,7 @@ jobs:
         run: |
           cd ui-src
           npm install
-          npm audit fix
+          npm audit
           npm run build
           mv dist/* ../webroot/
 
