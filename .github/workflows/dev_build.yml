@@ -62,24 +62,28 @@ jobs:
           rm -f arm64.tar  arm.tar curl.tar.xz curl32.tar.xz
 
       - name: Update versionCode
+        id: set_module
         run: |
-          module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}')
-          module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}')
+          module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}') || true
+          module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}') || true
           echo "Scheduled event triggered this workflow"
           versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
           echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
           echo 'id=ZeroTierForKSU' >module.prop
           echo 'name=ZeroTier For KernelSU' >>module.prop
-          echo "version=${{ env.VERSION }}(${versionCode})" >>module.prop
+          echo "version=${VERSION}(${versionCode})" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn2020' >>module.prop
-          echo 'description=ZeroTier(${{ env.VERSION }}) with UI interface (DEV)' >>module.prop
+          echo 'description=ZeroTier(${VERSION}) with UI interface (DEV)' >>module.prop
           git config --global user.email "action@example.com"
           MESSAGE=$(git log -1 --pretty=%B)
           echo "commit MESSAGE: $MESSAGE"
           echo $MESSAGE > changelog_dev.md
           git config --global user.name "github action"
           git add changelog_dev.md 
+          # export outputs for downstream job
+          echo "module_version=${versionCode}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Build Zerotier for arm64
@@ -98,6 +102,11 @@ jobs:
           make -j -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
           cp -rf zerotier-one ../zerotier-one-arm
 
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Build UI
         run: |
           cd ui-src
@@ -105,9 +114,41 @@ jobs:
           npm run build
           mv dist/* ../webroot/
 
+      - name: Upload build artifacts for next job
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: |
+            zerotier-one-arm64
+            zerotier-one-arm
+            bin
+            module.prop
+            webroot
+
+      # ...remaining packaging/publishing steps moved to separate job 'package'
+    outputs:
+      MODULE_VERSION: ${{ steps.set_module.outputs.module_version }}
+      VERSION: ${{ steps.set_module.outputs.version }}
+
+  package:
+    name: Package and Release
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      MODULE_VERSION: ${{ needs.build.outputs.MODULE_VERSION }}
+      VERSION: ${{ needs.build.outputs.VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: .
+
       - name: Generate module for arm64/arm
         run: |
-          # rm -rf ZeroTierOne ZeroTierOne_ARM toolchain ui-src update_arm64.json update_arm.json update_arm64_dev.json update_arm_dev.json build.sh changelog_dev.md
           mv zerotier-one-arm64 zerotier-one
           ls -la
           echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
@@ -115,12 +156,11 @@ jobs:
           bash build.sh ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           mv -f zerotier-one-arm zerotier-one
-          mv -f curl bin/curl
+          mv -f curl bin/curl || true
           sed -i "s/update_arm64/update_arm/g" module.prop
           sed -i "s/arm64/arm/g" module.prop
           bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
-
 
       - name: Upload artifact
         id: arm64-zip
@@ -132,7 +172,6 @@ jobs:
 
       - name: Upload artifact
         id: arm-zip
-          # v2版本好像不会压缩包套压缩包，还没试
         uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}
@@ -143,13 +182,13 @@ jobs:
         run: |
           echo "Artifact1 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
           echo "Artifact2 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"${{ steps.arm64-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
-          echo '{"version":"${{ env.VERSION }}","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"${{ steps.arm-zip.outputs.artifact-url }}","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
-      
+          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"'${{ steps.arm64-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
+          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"'${{ steps.arm-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
+
       - name: update json
         run: |
           git add update_arm64_dev.json update_arm_dev.json changelog_dev.md 
-          git commit -m "update Zerotier version:${{env.VERSION}}"
+          git commit -m "update Zerotier version:${{env.VERSION}}" || true
           echo "COMMIT=1" >> $GITHUB_ENV
 
       - name: Push changes
