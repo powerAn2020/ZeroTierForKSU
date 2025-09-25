@@ -74,7 +74,7 @@ jobs:
           echo "version=${VERSION}(${versionCode})" >>module.prop
           echo "versionCode=${versionCode}" >>module.prop
           echo 'author=powerAn2020' >>module.prop
-          echo 'description=ZeroTier(${VERSION}) with UI interface (DEV)' >>module.prop
+          echo 'description=ZeroTier(${{env.VERSION}}) with UI interface (DEV)' >>module.prop
           # export outputs for downstream job
           echo "module_version=${versionCode}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
