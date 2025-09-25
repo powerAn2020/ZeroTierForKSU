@@ -7,6 +7,7 @@ module.prop
 README.md
 service.sh
 uninstall.sh
+action.sh
 zerotier.inotify
 build.inotify
 zerotier.sh
