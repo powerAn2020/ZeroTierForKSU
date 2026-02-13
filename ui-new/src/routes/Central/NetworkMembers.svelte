@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import { pop } from "@/lib/router";
   import { t } from "svelte-i18n";
   import {
@@ -7,13 +7,10 @@
     Check,
     X,
     Trash2,
-    Clock,
-    Monitor,
-    Hash,
-    MoreHorizontal,
     Plus,
     RefreshCw,
     Box,
+    Save,
   } from "lucide-svelte";
   import Button from "@/lib/components/ui/button/Button.svelte";
   import Input from "@/lib/components/ui/input/Input.svelte";
@@ -29,8 +26,11 @@
 
   let members: CentralMember[] = [];
   let loading = true;
-  let processingId = "";
+  let saving = false;
   let networkName = "";
+
+  // Track modified members by ID
+  let dirtyMembers = new Set<string>();
 
   async function loadMembers() {
     loading = true;
@@ -40,6 +40,8 @@
       const networks = await CentralApi.getNetworks();
       const network = networks.find((n: any) => n.id === params.id);
       if (network) networkName = network.config.name;
+      dirtyMembers.clear();
+      dirtyMembers = dirtyMembers; // Trigger reactivity
     } catch (e: any) {
       toast.error("Failed to load members: " + e.message);
     } finally {
@@ -47,71 +49,61 @@
     }
   }
 
-  async function updateMemberInfo(
+  function markDirty(memberId: string) {
+    dirtyMembers.add(memberId);
+    dirtyMembers = dirtyMembers; // Trigger reactivity
+  }
+
+  async function saveChanges() {
+    if (dirtyMembers.size === 0) return;
+    saving = true;
+
+    try {
+      const updates = Array.from(dirtyMembers).map(async (memberId) => {
+        const member = members.find((m) => m.nodeId === memberId);
+        if (!member) return;
+
+        const payload = {
+          name: member.name,
+          description: member.description,
+          config: {
+            authorized: member.config.authorized,
+            activeBridge: member.config.activeBridge,
+            ipAssignments: member.config.ipAssignments,
+          },
+        };
+        await CentralApi.updateMember(params.id, memberId, payload);
+      });
+
+      await Promise.all(updates);
+      toast.success($t("common.success"));
+      await loadMembers();
+    } catch (e: any) {
+      toast.error("Failed to save changes: " + e.message);
+    } finally {
+      saving = false;
+    }
+  }
+
+  function updateMemberInfo(
     member: CentralMember,
     updates: Partial<CentralMember>,
   ) {
-    const original = { ...member };
     Object.assign(member, updates);
     members = [...members];
-
-    try {
-      const payload: any = { ...updates };
-      await CentralApi.updateMember(params.id, member.nodeId, payload);
-      toast.success($t("common.success"));
-    } catch (e: any) {
-      toast.error("Failed to update member: " + e.message);
-      Object.assign(member, original);
-      members = [...members];
-    }
+    markDirty(member.nodeId);
   }
 
-  async function toggleAuth(member: CentralMember) {
-    const newStatus = !member.config.authorized;
-    member.config.authorized = newStatus;
+  function toggleAuth(member: CentralMember) {
+    member.config.authorized = !member.config.authorized;
     members = [...members];
-
-    try {
-      await CentralApi.updateMember(params.id, member.nodeId, {
-        config: { authorized: newStatus },
-      });
-      toast.success(newStatus ? "Member authorized" : "Member de-authorized");
-    } catch (e: any) {
-      member.config.authorized = !newStatus;
-      members = [...members];
-      toast.error("Failed to update member: " + e.message);
-    }
+    markDirty(member.nodeId);
   }
 
-  async function toggleBridge(member: CentralMember) {
-    const newBridge = !member.config.activeBridge;
-    member.config.activeBridge = newBridge;
+  function toggleBridge(member: CentralMember) {
+    member.config.activeBridge = !member.config.activeBridge;
     members = [...members];
-
-    try {
-      await CentralApi.updateMember(params.id, member.nodeId, {
-        config: { activeBridge: newBridge },
-      });
-      toast.success($t("common.success"));
-    } catch (e: any) {
-      member.config.activeBridge = !newBridge;
-      members = [...members];
-      toast.error("Failed update bridge: " + e.message);
-    }
-  }
-
-  async function saveIps(member: CentralMember) {
-    processingId = member.nodeId;
-    try {
-      await CentralApi.updateMember(params.id, member.nodeId, {
-        config: { ipAssignments: member.config.ipAssignments },
-      });
-      toast.success($t("common.success"));
-    } catch (e: any) {
-      toast.error("Failed to save IPs: " + e.message);
-    } finally {
-      processingId = "";
-    }
+    markDirty(member.nodeId);
   }
 
   function updateIp(member: CentralMember, index: number, value: string) {
@@ -119,6 +111,21 @@
     newIps[index] = value;
     member.config.ipAssignments = newIps;
     members = [...members];
+    markDirty(member.nodeId);
+  }
+
+  function addIp(member: CentralMember) {
+    member.config.ipAssignments = [...member.config.ipAssignments, ""];
+    members = [...members];
+    markDirty(member.nodeId);
+  }
+
+  function removeIp(member: CentralMember, index: number) {
+    member.config.ipAssignments = member.config.ipAssignments.filter(
+      (_, idx) => idx !== index,
+    );
+    members = [...members];
+    markDirty(member.nodeId);
   }
 
   async function deleteMember(memberId: string) {
@@ -131,6 +138,8 @@
         try {
           await CentralApi.deleteMember(params.id, memberId);
           members = members.filter((m) => m.nodeId !== memberId);
+          dirtyMembers.delete(memberId);
+          dirtyMembers = dirtyMembers;
           toast.success($t("common.success"));
         } catch (e: any) {
           toast.error("Failed to delete member: " + e.message);
@@ -172,14 +181,39 @@
         {params.id}
       </p>
     </div>
-    <Button
-      variant="outline"
-      size="icon"
-      on:click={loadMembers}
-      disabled={loading}
-    >
-      <RefreshCw class={cn("h-4 w-4", loading && "animate-spin")} />
-    </Button>
+    <div class="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        on:click={loadMembers}
+        disabled={loading || saving}
+      >
+        <RefreshCw class={cn("h-4 w-4", loading && "animate-spin")} />
+      </Button>
+      <Button
+        disabled={saving || loading || dirtyMembers.size === 0}
+        on:click={saveChanges}
+      >
+        {#if saving}
+          {$t("common.saving")}
+        {:else}
+          <div class="relative">
+            <Save class="h-4 w-4 mr-2" />
+            {#if dirtyMembers.size > 0}
+              <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-red-500"
+                ></span>
+              </span>
+            {/if}
+          </div>
+          {$t("common.save")}
+        {/if}
+      </Button>
+    </div>
   </div>
 
   {#if loading && members.length === 0}
@@ -196,7 +230,10 @@
     <div class="grid gap-3">
       {#each members as member (member.nodeId)}
         <div
-          class="bg-card text-card-foreground border rounded-lg p-4 space-y-3 relative overflow-hidden"
+          class={cn(
+            "bg-card text-card-foreground border rounded-lg p-4 space-y-3 relative overflow-hidden transition-colors",
+            dirtyMembers.has(member.nodeId) && "border-primary/50 bg-primary/5",
+          )}
         >
           <!-- Header & Basic Info -->
           <div class="space-y-4">
@@ -222,7 +259,7 @@
                       "bg-green-600 hover:bg-green-700 text-white",
                   )}
                   on:click={() => toggleAuth(member)}
-                  disabled={!!processingId}
+                  disabled={loading || saving}
                 >
                   {#if member.config.authorized}
                     <Check class="h-3 w-3" /> {$t("centralMembers.auth")}
@@ -235,6 +272,7 @@
                   variant="ghost"
                   class="h-8 w-8 text-destructive"
                   on:click={() => deleteMember(member.nodeId)}
+                  disabled={loading || saving}
                 >
                   <Trash2 class="h-4 w-4" />
                 </Button>
@@ -251,7 +289,7 @@
                   class="h-8"
                   value={member.name || ""}
                   placeholder={$t("centralMembers.fields.name")}
-                  on:change={(e) =>
+                  on:input={(e) =>
                     updateMemberInfo(member, {
                       name: (e.target as HTMLInputElement).value,
                     })}
@@ -265,7 +303,7 @@
                   class="h-8"
                   value={member.description || ""}
                   placeholder={$t("centralMembers.fields.desc")}
-                  on:change={(e) =>
+                  on:input={(e) =>
                     updateMemberInfo(member, {
                       description: (e.target as HTMLInputElement).value,
                     })}
@@ -310,13 +348,7 @@
                   size="sm"
                   variant="ghost"
                   class="h-6 text-xs"
-                  on:click={() => {
-                    member.config.ipAssignments = [
-                      ...member.config.ipAssignments,
-                      "",
-                    ];
-                    members = [...members];
-                  }}
+                  on:click={() => addIp(member)}
                 >
                   <Plus class="h-3 w-3 mr-1" />
                   {$t("centralMembers.managedIps.add")}
@@ -334,29 +366,12 @@
                     size="icon"
                     variant="ghost"
                     class="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    on:click={() => {
-                      member.config.ipAssignments =
-                        member.config.ipAssignments.filter(
-                          (_, idx) => idx !== i,
-                        );
-                      members = [...members];
-                    }}
+                    on:click={() => removeIp(member, i)}
                   >
                     <X class="h-3 w-3" />
                   </Button>
                 </div>
               {/each}
-              {#if member.config.ipAssignments.length > 0}
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  class="w-full h-7 mt-1"
-                  on:click={() => saveIps(member)}
-                  disabled={!!processingId}
-                >
-                  {$t("centralMembers.managedIps.save")}
-                </Button>
-              {/if}
             </div>
 
             <!-- Bridge Mode -->
@@ -368,7 +383,7 @@
               <Switch
                 checked={member.config.activeBridge}
                 onCheckedChange={() => toggleBridge(member)}
-                disabled={!!processingId}
+                disabled={loading || saving}
               />
             </div>
           </div>

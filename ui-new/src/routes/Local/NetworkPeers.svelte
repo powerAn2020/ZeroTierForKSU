@@ -149,7 +149,7 @@
                         </span>
                       </div>
                       <div class="text-xs text-muted-foreground">
-                        v{peer.version}
+                        {peer.version}
                       </div>
                     </div>
 

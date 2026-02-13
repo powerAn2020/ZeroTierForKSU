@@ -412,7 +412,9 @@
           <div>
             <div class="font-medium">{$t("settings.about.coreVersion")}</div>
             <div class="text-xs text-muted-foreground">
-              v{$appStore.version || "Unknown"}
+              {$appStore.moduleVersion
+                ? $appStore.moduleVersion.split("(")[0].trim()
+                : $appStore.version || "Unknown"}
             </div>
           </div>
         </div>
