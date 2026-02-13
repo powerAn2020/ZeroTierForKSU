@@ -15,7 +15,7 @@
       <van-switch v-model="firewall" @update:model-value="firewallSwitch" :loading="firewallLoading" />
     </template>
   </van-cell>
-  <!-- <van-cell center :title="t('setting.routeMode')">
+  <van-cell center :title="t('setting.routeMode')">
       <template #right-icon>
         <van-popover v-model:show="showPopover" :actions="actions" @select="onSelect">
           <template #reference>
@@ -23,7 +23,7 @@
           </template>
         </van-popover>
       </template>
-    </van-cell> -->
+    </van-cell>
   <van-cell center :title="t('setting.uninstallKeep')">
     <template #right-icon>
       <van-switch v-model="uninstallKeep" @update:model-value="uninstallKeepSwitch" :loading="uninstallKeepLoading" />
@@ -96,23 +96,23 @@ const onChannelSelect = ({ selectedOptions  }) => {
 const defaultRoterMode = ref(actions[1].text);
 const defaultUpdateChannel = ref('');
 // 绑定路由选择事件
-// const onSelect = (action) => {
-//   defaultRoterMode.value = action.text;
-//   showToast(action.text)
-//   console.info(action)
-//   if (action.value == '1') {
-//     console.info('main表优先模式')
-//     execCmd(`rm ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
-//       console.info(v)
-//     })
-//   } else {
-//     console.info('自建路由模式')
-//     execCmd(`touch ${ZTPATH}/ROUTER_RULE_NEW`).then(v => {
-//       console.info(v)
-//     })
-//   }
-//   localStorage.setItem('defaultRoterMode', action.value)
-// }
+const onSelect = (action) => {
+  defaultRoterMode.value = action.text;
+  showToast(action.text)
+  console.info(action)
+  if (action.value == '1') {
+    console.info('main表优先模式')
+    execCmd(`rm ${ZTPATH}/state/rule_new`).then(v => {
+      console.info(v)
+    })
+  } else {
+    console.info('自建路由模式')
+    execCmd(`touch ${ZTPATH}/state/rule_new`).then(v => {
+      console.info(v)
+    })
+  }
+  localStorage.setItem('defaultRoterMode', action.value)
+}
 const hideKey = (key) => {
   if (key.length == 0) {
     return key;

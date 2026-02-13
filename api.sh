@@ -21,7 +21,7 @@
 ###       firewall                                  -- Control the firewall to allow traffic into port 9993
 ###         action     value:[ A | D ]
 ###       router                                    -- Set the Zerotier traffic routing method
-###         router     value:[ routing (unrealized) | main ]
+###         router     value:[ routing | main ]
 ###         action     value:[ A | D ]
 ###       orbit                                     -- Join Private Root Servers
 ###         moonid     value:[ moonid ]
@@ -51,8 +51,8 @@
 ###     sh api.sh local peer
 ###     sh api.sh local firewall A
 ###     sh api.sh local firewall D
-###     sh api.sh local router routing A (unrealized)
-###     sh api.sh local router routing D (unrealized)
+###     sh api.sh local router routing A
+###     sh api.sh local router routing D
 ###     sh api.sh local router main A
 ###     sh api.sh local router main D
 ###     sh api.sh local orbit yourMoonid
@@ -139,17 +139,89 @@ local_orbit() {
 }
 
 local_router() {
+  # Custom routing table ID for ZeroTier routes
+  ZT_TABLE_ID=7993
+  ZT_RULE_PREF=8000
+
   if [ "$1" = "routing" ]; then
-    echo "Unrealized"
-    #TODO android默认ip rule不走main表 除了提升main表优先级,是否还有其它解决方案?
+    touch ${ZTPATH}/ROUTER_RULE_NEW
     # Reference https://yotam.net/posts/network-management-in-android-routing/
     # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
     # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
+    #
+    # Instead of elevating the main table priority, use a dedicated routing table
+    # with only ZeroTier managed routes. This avoids side effects on other apps.
+    #
+    # Steps:
+    #   1. Query joined networks from local API to get interface and managed routes
+    #   2. Add/remove routes in custom table (7993)
+    #   3. Add/remove ip rule to direct matching traffic to that table
 
-    # ip route add table $your_selected_table_id $cide/$prefix dev $zt_iface_name proto kernel scope link
+    if [ "$2" = "A" ]; then
+      # Fetch joined networks
+      networks_json=$($CurlBIN -H "X-ZT1-Auth: $TOKEN" ${localAPIBase}/network)
+      if [ -z "$networks_json" ]; then
+        echo "Error: failed to query local networks"
+        exit 1
+      fi
+      # Add ip rule to lookup custom ZeroTier routing table
+      ip rule add from all lookup ${ZT_TABLE_ID} pref ${ZT_RULE_PREF} 2>/dev/null
+
+      # Extract network IDs using tr to split JSON, then simple awk
+      nwids=$(echo "$networks_json" | tr '{}[],' '\n' | $busybox awk -F: '/"nwid"/ { gsub(/"/,"",$2); print $2 }')
+
+      for nwid in $nwids; do
+        # Query individual network for clean per-network JSON
+        net_json=$($CurlBIN -H "X-ZT1-Auth: $TOKEN" ${localAPIBase}/network/${nwid})
+
+        # Extract portDeviceName
+        zt_dev=$(echo "$net_json" | tr '{}[],' '\n' | $busybox awk -F: '/"portDeviceName"/ { gsub(/"/,"",$2); print $2 }')
+        if [ -z "$zt_dev" ]; then
+          continue
+        fi
+
+        # Extract route target and via (gateway) pairs, then add to custom table
+        # Extract assigned IP (take the first one)
+        zt_ip=$(echo "$net_json" | tr '{}[],' '\n' | $busybox awk -F: '/"assignedAddresses"/ { getline; gsub(/[ \t"]/,"",$1); split($1,a,"/"); print a[1]; exit }')
+
+        # Extract route target and via (gateway) pairs, then add to custom table
+        # awk pairs "target" and "via" lines (they are adjacent in the JSON)
+        echo "$net_json" | tr '{}[],' '\n' | $busybox awk -F: '
+          /"target"/ { gsub(/"/,"",$2); target=$2 }
+          /"via"/ { gsub(/"/,"",$2); via=$2; if (target != "") { print target, via; target="" } }
+        ' | while read route_target route_via; do
+          if [ -n "$route_target" ]; then
+            CMD="ip route add table ${ZT_TABLE_ID} ${route_target}"
+            if [ -n "$route_via" ] && [ "$route_via" != "null" ]; then
+              CMD="$CMD via ${route_via}"
+            fi
+            CMD="$CMD dev ${zt_dev}"
+            if [ -n "$zt_ip" ]; then
+              CMD="$CMD src ${zt_ip}"
+            fi
+            if [ -z "$route_via" ] || [ "$route_via" = "null" ]; then
+               CMD="$CMD proto kernel scope link"
+            fi
+            $CMD 2>/dev/null
+            echo "Added route: $CMD"
+          fi
+        done
+      done
+    elif [ "$2" = "D" ]; then
+      # Flush all routes in the custom ZeroTier routing table
+      ip route flush table ${ZT_TABLE_ID} 2>/dev/null
+      # Remove the ip rule
+      ip rule del from all lookup ${ZT_TABLE_ID} pref ${ZT_RULE_PREF} 2>/dev/null
+      echo "Removed ZeroTier routing table and rule"
+    else
+      echo "only [A,D]"
+      exit 1
+    fi
   else
+    rm ${ZTPATH}/ROUTER_RULE_NEW
+    # "main" mode: elevate main table priority
     # Reference https://blog.csdn.net/G_Rookie/article/details/109679262
-    if [ "$2" = "add" ]; then
+    if [ "$2" = "A" ]; then
       ip rule add from all lookup main pref 9000
     else
       ip rule del from all lookup main pref 9000
@@ -204,12 +276,22 @@ check_apiToken() {
 help() {
   sed -rn 's/^### ?//;T;p;' "$0"
 }
+check_local_pid() {
+  zpid=$(pgrep -f "zerotier-one")
+    if [ -z $zpid ]; then
+      {
+        echo "{}" 1>&2
+        exit 1
+      }
+    fi
+}
 # =========================== main ===========================
 case $1 in
 local)
   shift
   case $1 in
   status)
+    check_local_pid
     local_status
     ;;
   service)
@@ -217,6 +299,7 @@ local)
     local_service $1
     ;;
   network)
+    check_local_pid
     shift
     action=$1
     networkid=$2
@@ -240,6 +323,7 @@ local)
     esac
     ;;
   peer)
+    check_local_pid
     local_peer
     ;;
   firewall)
@@ -251,6 +335,7 @@ local)
     local_router $@
     ;;
   orbit)
+    check_local_pid
     shift
     local_orbit $@
     ;;

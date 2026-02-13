@@ -696,33 +696,6 @@ const onClickLeft = () => {
   router.push('/center/network');
 }
 
-// 删除网络回调
-const beforeCloseForNetwork = (action) => {
-  new Promise((resolve) => {
-    
-    if (action == 'confirm') {
-
-    } else {
-      resolve(true);
-    }
-  });
-}
-// 删除网络成员回调
-const beforeCloseForMember = () => {
-  new Promise((resolve) => {
-    setTimeout(() => {
-      execCmdWithCallback({
-        cmd: `sh ${MODDIR}/api.sh central member remove ${networkObj.value.id} ${memberId.value} `, onSuccess: (data) => {
-          memberList.value.splice(memberIndex.value, 1);
-          showToast(t('networkDetail.deleteMemberSuccessTips'));
-        }, onError: (data) => {
-          showToast(t('networkDetail.deleteMemberErrorTips') + data);
-        }
-      })
-      resolve(true);
-    }, 50);
-  });
-}
 // 新增成员
 const addNetworkMember = () => {
   execCmdWithCallback({
@@ -756,6 +729,19 @@ const deleteNetworkMember = (index, nwid, mbId) => {
   showConfirmDialog({
     message: `NodeID:${mbId},${t('common.deleteConfirm')}`,
     beforeCloseForMember,
+  }).then(() => {
+    setTimeout(() => {
+      execCmdWithCallback({
+        cmd: `sh ${MODDIR}/api.sh central member remove ${networkObj.value.id} ${memberId.value} `, onSuccess: (data) => {
+          memberList.value.splice(memberIndex.value, 1);
+          showToast(t('networkDetail.deleteMemberSuccessTips'));
+        }, onError: (data) => {
+          showToast(t('networkDetail.deleteMemberErrorTips') + data);
+        }
+      })
+    }, 50);
+  }).catch(() => {
+    resolve(true);
   });
 }
 
@@ -764,7 +750,6 @@ const deleteNetwork = (nwid) => {
   showConfirmDialog({
     message: `networkid:${nwid},${t('common.deleteConfirm')}`,
   }).then(() => {
-
     setTimeout(() => {
       execCmdWithCallback({
         cmd: `sh ${MODDIR}/api.sh central network remove ${networkObj.value.id}`, onSuccess: (data) => {
@@ -809,7 +794,7 @@ const init = () => {
       if(networkObj.value.config.dns.servers==null){
         networkObj.value.config.dns.servers=[]
       }
-      debugger
+
       if (!networkObj.value) {
         closeToast();
         router.push('/center/network')

@@ -17,11 +17,9 @@ current_time=$(date +"%I:%M %P")
 
 zpid=$( $busybox pgrep -f "zerotier-one")
 if [ -z $zpid ]; then
-  start_service
   echo "${current_time} start service"
   $MODDIR/zerotier.sh start
 else
   echo "${current_time} stop service"
   $MODDIR/zerotier.sh stop
 fi
-sleep 3

@@ -16,7 +16,33 @@ service_control() {
     elif [ "${events}" = "n" ]; then
       ${MODDIR}/zerotier.sh stop >>${ZTPATH}/inotify.log
     fi
+  elif [ "${monitor_file}" = "rule_new" ]; then
+    echo "${events} - ${monitor_dir} - ${monitor_file}" >>${ZTPATH}/inotify.log
+    
+    if [ "${events}" = "d" ]; then
+      # 删除规则文件则清除routing规则
+      ${MODDIR}/api.sh local router routing D
+    elif [ "${events}" = "n" ]; then
+      # 新增规则文件则清除main规则
+      ${MODDIR}/api.sh local router main D
+    fi
+  elif [ "${monitor_file}" = "debug" ]; then
+    echo "${events} - ${monitor_dir} - ${monitor_file}" >>${ZTPATH}/inotify.log
+    
+    if [ "${events}" = "d" ]; then
+      PIDs=$(pgrep -f inotifyd)
+      for PID in "${PIDs[@]}"; do
+        if grep -q "build.inotify" "/proc/$PID/cmdline"; then
+          kill -9 "$PID"
+        fi
+      done
+    elif [ "${events}" = "n" ]; then
+        inotifyd "${MODDIR}/build.inotify" "/sdcard/Download/dist/" >>/dev/null 2>&1 &
+    fi
+    # 重启服务
+    ${MODDIR}/zerotier.sh restart >>${ZTPATH}/inotify.log
   fi
 }
+
 
 service_control

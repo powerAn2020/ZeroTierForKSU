@@ -79,7 +79,9 @@ stop_service() {
   sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ❌ service is stop ] /g" $MODDIR/module.prop
 
   if [ ! -f ${ROUTER_RULE_NEW} ]; then
-    sh ${MODDIR}/api.sh local router main del
+    sh ${MODDIR}/api.sh local router main D
+  else
+    sh ${MODDIR}/api.sh local router routing D
   fi
   # /data/adb/ksu/bin/ksud module disable ZeroTierForKSU
   echo done.
@@ -138,7 +140,9 @@ start_service() {
     fi
     sed -Ei "s/^description=(\[.*][[:space:]]*)?/description=[ $current_time | ✔︎ service is running ] /g" $MODDIR/module.prop
     if [ ! -f ${ROUTER_RULE_NEW} ]; then
-      sh ${MODDIR}/api.sh local router main add
+      sh ${MODDIR}/api.sh local router main A
+    else
+      sh ${MODDIR}/api.sh local router routing A
     fi
   else
     echo "service is running,pid:$zpid"
