@@ -1,0 +1,244 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "取消",
+    "delete": "删除",
+    "confirm": "确认",
+    "copy": "复制",
+    "error": "错误",
+    "success": "成功",
+    "unknown": "未知",
+    "time": {
+      "justNow": "刚刚",
+      "ago": "前",
+      "seconds": "秒",
+      "minutes": "分",
+      "hours": "小时",
+      "days": "天"
+    }
+  },
+  "nav": {
+    "dashboard": "仪表盘",
+    "local": "本地网络",
+    "central": "Central",
+    "settings": "设置"
+  },
+  "settings": {
+    "title": "设置",
+    "appearance": "外观",
+    "theme": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "language": "语言",
+    "general": {
+      "title": "常规",
+      "startOnBoot": "开机自启",
+      "startOnBootDesc": "设备启动时自动启动 ZeroTier 服务",
+      "allowPort": "允许端口 9993",
+      "allowPortDesc": "允许 9993 端口的入站 UDP 流量（防火墙）",
+      "keepData": "保留数据",
+      "keepDataDesc": "卸载后保留配置数据",
+      "customRouting": "自定义路由",
+      "customRoutingDesc": "使用自定义路由表 (7993) 而非主路由表",
+      "updateChannel": "更新通道",
+      "updateChannelDesc": "选择更新源分支",
+      "stable": "稳定版 (Main)",
+      "dev": "开发版 (Dev)"
+    },
+    "api": {
+      "title": "ZeroTier Central API",
+      "token": "API 令牌",
+      "placeholder": "输入您的 API 令牌",
+      "desc": "Central 管理功能需要。获取令牌："
+    },
+    "about": {
+      "title": "关于",
+      "version": "版本",
+      "coreVersion": "核心版本",
+      "moduleVersion": "模块版本",
+      "github": "GitHub",
+      "sourceCode": "源代码"
+    },
+    "developer": {
+      "title": "开发者",
+      "debugMode": "调试模式",
+      "debugModeDesc": "在控制台记录 KSU 交互日志"
+    },
+    "footer": "ZeroTier for KernelSU"
+  },
+  "dashboard": {
+    "title": "仪表盘",
+    "service": {
+      "starting": "启动中...",
+      "stopping": "停止中...",
+      "running": "运行中",
+      "stopped": "已停止"
+    },
+    "cards": {
+      "nodeId": "节点 ID",
+      "peersLeaf": "节点 (Leaf)",
+      "moonNodes": "Moon 节点",
+      "networks": "网络",
+      "central": "Central"
+    },
+    "copied": "节点 ID 已复制到剪贴板"
+  },
+  "local": {
+    "title": "本地网络",
+    "joinNetwork": "加入网络",
+    "joinMoon": "加入 Moon",
+    "join": "加入",
+    "orbit": "Orbit",
+    "networkId": "网络 ID (16 字符)",
+    "moonId": "Moon ID (10 字符)",
+    "noNetworks": "未加入任何网络。",
+    "leave": {
+      "title": "离开网络",
+      "message": "确定要离开此网络吗？此操作无法撤销。",
+      "confirm": "离开"
+    }
+  },
+  "moons": {
+    "title": "Moon 节点",
+    "noMoons": "未加入任何 Moon 节点。",
+    "unorbit": {
+      "title": "取消 Orbit",
+      "message": "确定要取消 Orbit Moon {id} 吗？",
+      "confirm": "取消 Orbit"
+    },
+    "version": "版本",
+    "latency": "延迟",
+    "paths": "路径",
+    "active": "活跃",
+    "pref": "首选",
+    "ago": "前"
+  },
+  "peers": {
+    "title": "网络节点",
+    "loading": "加载节点中...",
+    "none": "未发现节点。",
+    "sections": {
+      "planet": "Planets",
+      "moon": "Moons",
+      "leaf": "Leafs"
+    },
+    "active": "活跃",
+    "noPaths": "无活跃路径",
+    "latency": "延迟"
+  },
+  "localSettings": {
+    "title": "设置",
+    "notFound": "本地未找到网络。",
+    "managed": {
+      "title": "允许被管地址",
+      "desc": "允许 ZeroTier 为此设备分配 IP 地址。"
+    },
+    "global": {
+      "title": "允许分配全球 IP",
+      "desc": "允许分配公网/全球 IP 地址。"
+    },
+    "default": {
+      "title": "允许默认路由覆盖",
+      "desc": "允许此网络覆盖系统默认路由 (全隧道)。"
+    },
+    "dns": {
+      "title": "允许 DNS 配置",
+      "desc": "允许此网络管理 DNS 设置。"
+    }
+  },
+  "centralList": {
+    "title": "Central 网络",
+    "auth": {
+      "required": "需要 API 令牌",
+      "desc": "输入您的 ZeroTier Central API 令牌以管理网络。",
+      "placeholder": "API 令牌",
+      "save": "保存令牌",
+      "stored": "令牌存储在 /data/adb/modules..."
+    },
+    "create": {
+      "placeholder": "新网络名称",
+      "button": "创建"
+    },
+    "delete": {
+      "title": "删除网络",
+      "message": "确定要从 Central 删除此网络吗？此操作无法撤销。",
+      "confirm": "删除"
+    },
+    "stats": {
+      "online": "在线",
+      "authorized": "已授权",
+      "total": "总计"
+    },
+    "type": {
+      "private": "私有",
+      "public": "公开"
+    }
+  },
+  "centralMembers": {
+    "title": "成员",
+    "none": "未发现成员。",
+    "auth": "授权",
+    "fields": {
+      "name": "名称",
+      "desc": "描述",
+      "lastSeen": "最近在线",
+      "version": "版本",
+      "physAddr": "物理地址"
+    },
+    "managedIps": {
+      "title": "分配 IP",
+      "add": "添加",
+      "save": "保存 IP"
+    },
+    "bridge": "允许以太网桥接",
+    "delete": {
+      "title": "删除成员",
+      "message": "确定要从网络中移除此成员吗？",
+      "confirm": "删除"
+    }
+  },
+  "centralSettings": {
+    "title": "网络设置",
+    "general": {
+      "title": "常规",
+      "name": "名称",
+      "desc": "描述",
+      "private": "私有网络",
+      "privateDesc": "新成员需要授权"
+    },
+    "ipv4": {
+      "title": "IPv4 分配",
+      "ztManaged": "ZeroTier 管理",
+      "pools": "分配池",
+      "addCidr": "通过 CIDR 添加池"
+    },
+    "ipv6": {
+      "title": "IPv6 分配",
+      "ztManaged": "ZeroTier 管理",
+      "6plane": "6PLANE",
+      "rfc4193": "RFC4193"
+    },
+    "routes": {
+      "title": "管理路由",
+      "target": "目标 (CIDR)",
+      "via": "网关 (可选)"
+    },
+    "dns": {
+      "title": "DNS 配置",
+      "domain": "搜索域",
+      "servers": "域名服务器",
+      "add": "添加服务器"
+    },
+    "advanced": {
+      "title": "高级",
+      "mtu": "MTU",
+      "multicast": "组播接收限制",
+      "broadcast": "启用广播 (组播)",
+      "broadcastDesc": "允许广播和组播流量"
+    }
+  }
+}

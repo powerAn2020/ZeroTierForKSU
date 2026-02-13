@@ -1,0 +1,244 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "copy": "Copy",
+    "error": "Error",
+    "success": "Success",
+    "unknown": "Unknown",
+    "time": {
+      "justNow": "Just now",
+      "ago": "ago",
+      "seconds": "s",
+      "minutes": "m",
+      "hours": "h",
+      "days": "d"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "local": "Local",
+    "central": "Central",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": "Language",
+    "general": {
+      "title": "General",
+      "startOnBoot": "Start on Boot",
+      "startOnBootDesc": "Automatically start ZeroTier service on device boot",
+      "allowPort": "Allow Port 9993",
+      "allowPortDesc": "Allow incoming UDP traffic on port 9993 (Firewall)",
+      "keepData": "Keep Data",
+      "keepDataDesc": "Retain configuration data after uninstallation",
+      "customRouting": "Custom Routing",
+      "customRoutingDesc": "Use custom routing table (7993) instead of main table",
+      "updateChannel": "Update Channel",
+      "updateChannelDesc": "Select the update source branch",
+      "stable": "Stable (Main)",
+      "dev": "Dev"
+    },
+    "api": {
+      "title": "ZeroTier Central API",
+      "token": "API Token",
+      "placeholder": "Enter your API Token",
+      "desc": "Required for Central managed features. Get your token from"
+    },
+    "about": {
+      "title": "About",
+      "version": "Version",
+      "coreVersion": "Core Version",
+      "moduleVersion": "Module Version",
+      "github": "GitHub",
+      "sourceCode": "Source Code"
+    },
+    "developer": {
+      "title": "Developer",
+      "debugMode": "Debug Mode",
+      "debugModeDesc": "Log KSU interactions to console"
+    },
+    "footer": "ZeroTier for KernelSU"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "service": {
+      "starting": "Starting...",
+      "stopping": "Stopping...",
+      "running": "Running",
+      "stopped": "Stopped"
+    },
+    "cards": {
+      "nodeId": "Node ID",
+      "peersLeaf": "Peers (Leaf)",
+      "moonNodes": "Moon Nodes",
+      "networks": "Networks",
+      "central": "Central"
+    },
+    "copied": "Node ID copied to clipboard"
+  },
+  "local": {
+    "title": "Local Networks",
+    "joinNetwork": "Join Network",
+    "joinMoon": "Join Moon",
+    "join": "Join",
+    "orbit": "Orbit",
+    "networkId": "Network ID (16 chars)",
+    "moonId": "Moon ID (10 chars)",
+    "noNetworks": "No networks joined.",
+    "leave": {
+      "title": "Leave Network",
+      "message": "Are you sure you want to leave this network? This action cannot be undone.",
+      "confirm": "Leave"
+    }
+  },
+  "moons": {
+    "title": "Moon Nodes",
+    "noMoons": "No moons joined.",
+    "unorbit": {
+      "title": "Unorbit Moon",
+      "message": "Are you sure you want to unorbit moon {id}?",
+      "confirm": "Unorbit"
+    },
+    "version": "Version",
+    "latency": "Latency",
+    "paths": "Paths",
+    "active": "ACTIVE",
+    "pref": "PREF",
+    "ago": "ago"
+  },
+  "peers": {
+    "title": "Network Peers",
+    "loading": "Loading peers...",
+    "none": "No peers found.",
+    "sections": {
+      "planet": "Planets",
+      "moon": "Moons",
+      "leaf": "Leafs"
+    },
+    "active": "Active",
+    "noPaths": "No active paths",
+    "latency": "Latency"
+  },
+  "localSettings": {
+    "title": "Settings",
+    "notFound": "Network not found locally.",
+    "managed": {
+      "title": "Allow Managed Addresses",
+      "desc": "Allow ZeroTier to assign IP addresses to this device."
+    },
+    "global": {
+      "title": "Allow Assignment of Global IPs",
+      "desc": "Allow assignment of public/global IP addresses."
+    },
+    "default": {
+      "title": "Allow Default Route Override",
+      "desc": "Allow this network to override the system default route (Full Tunnel)."
+    },
+    "dns": {
+      "title": "Allow DNS Configuration",
+      "desc": "Allow this network to manage DNS settings."
+    }
+  },
+  "centralList": {
+    "title": "Central Networks",
+    "auth": {
+      "required": "API Token Required",
+      "desc": "Enter your ZeroTier Central API Token to manage networks.",
+      "placeholder": "API Token",
+      "save": "Save Token",
+      "stored": "Token is stored locally in /data/adb/modules..."
+    },
+    "create": {
+      "placeholder": "New Network Name",
+      "button": "Create"
+    },
+    "delete": {
+      "title": "Delete Network",
+      "message": "Are you sure you want to delete this network from Central? This action cannot be undone.",
+      "confirm": "Delete"
+    },
+    "stats": {
+      "online": "Online",
+      "authorized": "Authorized",
+      "total": "Total"
+    },
+    "type": {
+      "private": "PRIVATE",
+      "public": "PUBLIC"
+    }
+  },
+  "centralMembers": {
+    "title": "Members",
+    "none": "No members found.",
+    "auth": "Auth",
+    "fields": {
+      "name": "Name",
+      "desc": "Description",
+      "lastSeen": "Last Seen",
+      "version": "Version",
+      "physAddr": "Physical Address"
+    },
+    "managedIps": {
+      "title": "Managed IPs",
+      "add": "Add",
+      "save": "Save IPs"
+    },
+    "bridge": "Allow Ethernet Bridging",
+    "delete": {
+      "title": "Delete Member",
+      "message": "Are you sure you want to remove this member from the network?",
+      "confirm": "Delete"
+    }
+  },
+  "centralSettings": {
+    "title": "Network Settings",
+    "general": {
+      "title": "General",
+      "name": "Name",
+      "desc": "Description",
+      "private": "Private Network",
+      "privateDesc": "Requires authorization for new members"
+    },
+    "ipv4": {
+      "title": "IPv4 Assignment",
+      "ztManaged": "ZeroTier Managed",
+      "pools": "Assignment Pools",
+      "addCidr": "Add Pool via CIDR"
+    },
+    "ipv6": {
+      "title": "IPv6 Assignment",
+      "ztManaged": "ZeroTier Managed",
+      "6plane": "6PLANE",
+      "rfc4193": "RFC4193"
+    },
+    "routes": {
+      "title": "Managed Routes",
+      "target": "Target (CIDR)",
+      "via": "Via (Optional)"
+    },
+    "dns": {
+      "title": "DNS Configuration",
+      "domain": "Search Domain",
+      "servers": "Nameservers",
+      "add": "Add Server"
+    },
+    "advanced": {
+      "title": "Advanced",
+      "mtu": "MTU",
+      "multicast": "Multicast Recipient Limit",
+      "broadcast": "Enable Broadcast (Multicast)",
+      "broadcastDesc": "Allow broadcast and multicast traffic"
+    }
+  }
+}

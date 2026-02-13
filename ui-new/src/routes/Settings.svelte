@@ -1,0 +1,488 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import {
+    Moon,
+    Sun,
+    Smartphone,
+    Github,
+    Info,
+    Globe,
+    HardDrive,
+    Bug,
+  } from "lucide-svelte";
+  import Button from "@/lib/components/ui/button/Button.svelte";
+  import Switch from "@/lib/components/ui/switch/Switch.svelte";
+  import Label from "@/lib/components/ui/label/Label.svelte";
+  import Input from "@/lib/components/ui/input/Input.svelte";
+  import { appStore } from "@/stores/app";
+  import { cn } from "@/lib/utils";
+  import { KsuApi } from "@/api/ksu";
+  import { toast } from "@/stores/toast";
+  import { t, locale } from "svelte-i18n";
+
+  const MODDIR = "/data/adb/modules/ZeroTierForKSU";
+
+  let loading = false;
+  let settings = {
+    autoStart: false,
+    firewall: false,
+    uninstallKeep: false,
+    branch: "main",
+    apiToken: "",
+    routerRuleNew: false, // 0 = true (file exists), 1 = false (file missing)
+  };
+
+  function setLanguage(lang: string) {
+    locale.set(lang);
+    localStorage.setItem("locale", lang);
+  }
+
+  function setTheme(theme: "light" | "dark" | "system") {
+    appStore.setTheme(theme);
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else if (theme === "light") {
+      document.documentElement.classList.remove("dark");
+    } else {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+    localStorage.setItem("theme", theme);
+  }
+
+  let debugMode = KsuApi.getDebug();
+
+  async function toggleDebug(v: boolean) {
+    debugMode = v;
+    KsuApi.setDebug(v);
+    localStorage.setItem("debugMode", String(v));
+    toast.success(`Debug Mode ${v ? "Enabled" : "Disabled"}`);
+  }
+
+  async function loadSettings() {
+    loading = true;
+    try {
+      // Load debug mode
+      // Debug mode is now initialized globally in App.svelte, but we sync local state here
+      const savedDebug = localStorage.getItem("debugMode") === "true";
+      if (savedDebug) {
+        debugMode = true;
+      }
+
+      const status = await KsuApi.getSystemStatus();
+      if (debugMode) console.log("[Settings] Loaded status:", status);
+
+      // status = { enable, branch, firewall, autoStart, apiToken, uninstallKeep, ... }
+      // Use loose equality or explicit Boolean conversion for safety against shell JSON variations
+      settings.autoStart = !!status.autoStart;
+      settings.firewall = !!status.firewall;
+      settings.uninstallKeep = !!status.uninstallKeep;
+      settings.branch = status.branch || "main";
+      settings.apiToken = status.apiToken || "";
+
+      // zerotier.sh: if file exists -> 0, else 1.
+      // Loose equality (== 0) handles both number 0 and string "0"
+      settings.routerRuleNew = status.routerRuleNew == 0;
+    } catch (e: any) {
+      toast.error("Failed to load settings: " + e.message);
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function toggleAutoStart(v: boolean) {
+    settings.autoStart = v; // Optimistic
+    try {
+      await KsuApi.toggleAutoStart(v);
+      toast.success(`Auto Start ${v ? "enabled" : "disabled"}`);
+    } catch (e: any) {
+      settings.autoStart = !v;
+      toast.error("Failed to update auto start: " + e.message);
+    }
+  }
+
+  async function toggleFirewall(v: boolean) {
+    settings.firewall = v;
+    try {
+      await KsuApi.toggleFirewall(v);
+      toast.success(`Port 9993 ${v ? "allowed" : "blocked"}`);
+    } catch (e: any) {
+      settings.firewall = !v;
+      toast.error("Failed to update firewall: " + e.message);
+    }
+  }
+
+  async function toggleKeepData(v: boolean) {
+    settings.uninstallKeep = v;
+    try {
+      await KsuApi.toggleKeepData(v);
+      toast.success(`Keep Data ${v ? "enabled" : "disabled"}`);
+    } catch (e: any) {
+      settings.uninstallKeep = !v;
+      toast.error("Failed to update keep data: " + e.message);
+    }
+  }
+
+  async function toggleCustomRouting(v: boolean) {
+    settings.routerRuleNew = v;
+    try {
+      await KsuApi.toggleCustomRouting(v);
+      toast.success(`Custom Routing ${v ? "enabled" : "disabled"}`);
+    } catch (e: any) {
+      settings.routerRuleNew = !v;
+      toast.error("Failed to update routing: " + e.message);
+    }
+  }
+
+  async function switchChannel(c: "main" | "dev") {
+    if (settings.branch === c) return;
+    const old = settings.branch;
+    settings.branch = c;
+    try {
+      await KsuApi.switchChannel(c);
+      toast.success(`Switched to ${c} channel`);
+    } catch (e: any) {
+      settings.branch = old;
+      toast.error("Failed to switch channel: " + e.message);
+    }
+  }
+
+  async function updateApiToken(v: string) {
+    settings.apiToken = v;
+    try {
+      await KsuApi.updateApiToken(v);
+      toast.success("API Token updated");
+    } catch (e: any) {
+      toast.error("Failed to update token: " + e.message);
+    }
+  }
+
+  onMount(() => {
+    loadSettings();
+  });
+</script>
+
+<div class="p-4 space-y-6 pb-24">
+  <div
+    class="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 -mt-4 -mx-4 px-4 border-b mb-6"
+  >
+    <h1 class="text-2xl font-bold tracking-tight">{$t("settings.title")}</h1>
+  </div>
+
+  <!-- Appearance -->
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.appearance")}
+    </h2>
+    <div class="grid grid-cols-3 gap-2 bg-muted/40 p-1 rounded-lg">
+      <button
+        class={cn(
+          "flex flex-col items-center gap-2 p-3 rounded-md transition-all",
+          $appStore.theme === "light"
+            ? "bg-background shadow-sm text-foreground"
+            : "text-muted-foreground hover:bg-background/50",
+        )}
+        on:click={() => setTheme("light")}
+      >
+        <Sun class="h-5 w-5" />
+        <span class="text-xs font-medium">{$t("settings.theme.light")}</span>
+      </button>
+      <button
+        class={cn(
+          "flex flex-col items-center gap-2 p-3 rounded-md transition-all",
+          $appStore.theme === "dark"
+            ? "bg-background shadow-sm text-foreground"
+            : "text-muted-foreground hover:bg-background/50",
+        )}
+        on:click={() => setTheme("dark")}
+      >
+        <Moon class="h-5 w-5" />
+        <span class="text-xs font-medium">{$t("settings.theme.dark")}</span>
+      </button>
+      <button
+        class={cn(
+          "flex flex-col items-center gap-2 p-3 rounded-md transition-all",
+          $appStore.theme === "system"
+            ? "bg-background shadow-sm text-foreground"
+            : "text-muted-foreground hover:bg-background/50",
+        )}
+        on:click={() => setTheme("system")}
+      >
+        <Smartphone class="h-5 w-5" />
+        <span class="text-xs font-medium">{$t("settings.theme.system")}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.language")}
+    </h2>
+    <div class="grid grid-cols-2 gap-2 bg-muted/40 p-1 rounded-lg">
+      <button
+        class={cn(
+          "flex flex-col items-center gap-2 p-3 rounded-md transition-all",
+          $locale === "zh"
+            ? "bg-background shadow-sm text-foreground"
+            : "text-muted-foreground hover:bg-background/50",
+        )}
+        on:click={() => setLanguage("zh")}
+      >
+        <span class="text-xs font-medium">中文</span>
+      </button>
+      <button
+        class={cn(
+          "flex flex-col items-center gap-2 p-3 rounded-md transition-all",
+          $locale === "en"
+            ? "bg-background shadow-sm text-foreground"
+            : "text-muted-foreground hover:bg-background/50",
+        )}
+        on:click={() => setLanguage("en")}
+      >
+        <span class="text-xs font-medium">English</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.general.title")}
+    </h2>
+    <div
+      class="rounded-xl border bg-card text-card-foreground shadow-sm divide-y"
+    >
+      <!-- Start on Boot -->
+      <div class="p-4 flex items-center justify-between">
+        <Label class="flex flex-col gap-1">
+          <span>{$t("settings.general.startOnBoot")}</span>
+          <span class="text-xs font-normal text-muted-foreground"
+            >{$t("settings.general.startOnBootDesc")}</span
+          >
+        </Label>
+        <Switch
+          checked={settings.autoStart}
+          on:checkedChange={(e) => toggleAutoStart(e.detail)}
+          disabled={loading}
+        />
+      </div>
+
+      <!-- Allow Port 9993 -->
+      <div class="p-4 flex items-center justify-between">
+        <Label class="flex flex-col gap-1">
+          <span>{$t("settings.general.allowPort")}</span>
+          <span class="text-xs font-normal text-muted-foreground"
+            >{$t("settings.general.allowPortDesc")}</span
+          >
+        </Label>
+        <Switch
+          checked={settings.firewall}
+          on:checkedChange={(e) => toggleFirewall(e.detail)}
+          disabled={loading}
+        />
+      </div>
+
+      <!-- Keep Data on Uninstall -->
+      <div class="p-4 flex items-center justify-between">
+        <Label class="flex flex-col gap-1">
+          <span>{$t("settings.general.keepData")}</span>
+          <span class="text-xs font-normal text-muted-foreground"
+            >{$t("settings.general.keepDataDesc")}</span
+          >
+        </Label>
+        <Switch
+          checked={settings.uninstallKeep}
+          on:checkedChange={(e) => toggleKeepData(e.detail)}
+          disabled={loading}
+        />
+      </div>
+
+      <!-- Custom Routing -->
+      <div class="p-4 flex items-center justify-between">
+        <Label class="flex flex-col gap-1">
+          <span>{$t("settings.general.customRouting")}</span>
+          <span class="text-xs font-normal text-muted-foreground"
+            >{$t("settings.general.customRoutingDesc")}</span
+          >
+        </Label>
+        <Switch
+          checked={settings.routerRuleNew}
+          on:checkedChange={(e) => toggleCustomRouting(e.detail)}
+          disabled={loading}
+        />
+      </div>
+
+      <!-- Update Channel -->
+      <div class="p-4 flex items-center justify-between">
+        <Label class="flex flex-col gap-1">
+          <span>{$t("settings.general.updateChannel")}</span>
+          <span class="text-xs font-normal text-muted-foreground"
+            >{$t("settings.general.updateChannelDesc")}</span
+          >
+        </Label>
+        <div class="flex items-center gap-2">
+          <Button
+            variant={settings.branch === "main" ? "secondary" : "ghost"}
+            size="sm"
+            class="h-7 text-xs"
+            on:click={() => switchChannel("main")}
+            disabled={loading}
+          >
+            {$t("settings.general.stable")}
+          </Button>
+          <Button
+            variant={settings.branch === "dev" ? "secondary" : "ghost"}
+            size="sm"
+            class="h-7 text-xs"
+            on:click={() => switchChannel("dev")}
+            disabled={loading}
+          >
+            {$t("settings.general.dev")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Token -->
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.api.title")}
+    </h2>
+    <div
+      class="rounded-xl border bg-card text-card-foreground shadow-sm p-4 space-y-4"
+    >
+      <div class="grid gap-2">
+        <Label>{$t("settings.api.token")}</Label>
+        <div class="flex gap-2">
+          <Input
+            type="password"
+            placeholder={$t("settings.api.placeholder")}
+            value={settings.apiToken}
+            class="font-mono flex-1"
+            on:change={(e) =>
+              updateApiToken((e.target as HTMLInputElement).value)}
+          />
+          <Button
+            on:click={() => updateApiToken(settings.apiToken)}
+            disabled={loading}
+          >
+            {$t("common.save")}
+          </Button>
+        </div>
+        <p class="text-xs text-muted-foreground">
+          {$t("settings.api.desc")}👉
+          <button
+            class="text-primary hover:underline"
+            on:click={() =>
+              KsuApi.openUrl("https://my.zerotier.com/account#tokens")}
+          >
+            my.zerotier.com
+          </button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.about.title")}
+    </h2>
+    <div
+      class="rounded-xl border bg-card text-card-foreground shadow-sm divide-y"
+    >
+      <div class="p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-full text-primary">
+            <Info class="h-5 w-5" />
+          </div>
+          <div>
+            <div class="font-medium">{$t("settings.about.coreVersion")}</div>
+            <div class="text-xs text-muted-foreground">
+              v{$appStore.version || "Unknown"}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-full text-primary">
+            <HardDrive class="h-5 w-5" />
+          </div>
+          <div>
+            <div class="font-medium">{$t("settings.about.moduleVersion")}</div>
+            <div class="text-xs text-muted-foreground">
+              {$appStore.moduleVersionCode
+                ? `${$appStore.moduleVersionCode}`
+                : $appStore.moduleVersion || $t("common.unknown")}
+            </div>
+          </div>
+        </div>
+      </div>
+      <button
+        class="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors text-left"
+        on:click={() =>
+          KsuApi.openUrl("https://github.com/powerAn2020/ZeroTierForKSU")}
+      >
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-full text-primary">
+            <Github class="h-5 w-5" />
+          </div>
+          <div>
+            <div class="font-medium">{$t("settings.about.github")}</div>
+            <div class="text-xs text-muted-foreground">
+              {$t("settings.about.sourceCode")}
+            </div>
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Developer -->
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.developer.title")}
+    </h2>
+    <div class="bg-card rounded-lg border shadow-sm overflow-hidden">
+      <!-- Debug Mode -->
+      <div class="p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-primary/10 p-2 rounded-full text-primary">
+            <Bug class="h-5 w-5" />
+          </div>
+          <div>
+            <div class="font-medium">{$t("settings.developer.debugMode")}</div>
+            <div class="text-xs text-muted-foreground">
+              {$t("settings.developer.debugModeDesc")}
+            </div>
+          </div>
+        </div>
+        <Switch
+          checked={debugMode}
+          on:checkedChange={(e) => toggleDebug(e.detail)}
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-xs text-muted-foreground pt-8">
+    <p>{$t("settings.footer")}</p>
+    <p class="font-mono mt-1">{MODDIR}</p>
+  </div>
+</div>

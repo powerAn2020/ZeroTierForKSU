@@ -1,0 +1,36 @@
+{
+  "name": "ui-new",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && bestzip dist.zip dist/*",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@tsconfig/svelte": "^5.0.6",
+    "@types/node": "^24.10.1",
+    "autoprefixer": "^10.4.24",
+    "bestzip": "^2.2.1",
+    "postcss": "^8.5.6",
+    "svelte": "^5.45.2",
+    "svelte-check": "^4.3.4",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "bits-ui": "^2.15.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "kernelsu": "^3.0.2",
+    "lucide-svelte": "^0.563.0",
+    "svelte-i18n": "^4.0.1",
+    "svelte-spa-router": "^4.0.1",
+    "tailwind-merge": "^3.4.0"
+  }
+}
