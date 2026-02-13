@@ -5,16 +5,24 @@ on:
   workflow_dispatch:
     inputs:
       zt_version:
-        description: 'zt标签/Tag'
+        description: "zt标签/Tag"
         required: false
         type: string
-        default: ''
+        default: ""
+      ui_path:
+        description: "UI Path"
+        required: true
+        default: "ui-src"
+        type: choice
+        options:
+          - ui-src
+          - ui-new
   # push:
   #   branches:
   #     - dev
 
 permissions:
-  contents: write  
+  contents: write
 
 jobs:
   build:
@@ -22,8 +30,8 @@ jobs:
     env:
       COMMIT: 0
       SKIP_NEXT: false
-      VERSION: ''
-      MODULE_VERSION: ''
+      VERSION: ""
+      MODULE_VERSION: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,11 +39,18 @@ jobs:
           ref: dev
           fetch-depth: 0
 
+      - name: Cache Toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: toolchain
+          key: ${{ runner.os }}-toolchain-gcc-arm-11.2
+
       - name: Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt install -y xz-utils make git wget zip bash
+          sudo apt install -y xz-utils make
           echo "${{ github.action_path }}"
           latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           zerotier_latest_version=${{ inputs.zt_version }}
@@ -52,14 +67,22 @@ jobs:
           tar -xJf curl.tar.xz -C $PWD/bin curl
           tar -xJf curl32.tar.xz curl
           wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
-          mkdir $PWD/toolchain 
-          wget -O arm64.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
-          wget -O arm.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
-          xz -d arm64.tar.xz
-          xz -d arm.tar.xz
-          tar -xvf arm64.tar -C $PWD/toolchain 
-          tar -xvf arm.tar -C $PWD/toolchain 
-          rm -f arm64.tar  arm.tar curl.tar.xz curl32.tar.xz
+          wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
+
+          if [ ! -d "toolchain" ]; then
+            mkdir -p $PWD/toolchain
+            echo "Downloading toolchains..."
+            wget -O arm64.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
+            wget -O arm.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
+            xz -d arm64.tar.xz
+            xz -d arm.tar.xz
+            tar -xvf arm64.tar -C $PWD/toolchain 
+            tar -xvf arm.tar -C $PWD/toolchain 
+            rm -f arm64.tar arm.tar
+          else
+            echo "Toolchain cache hit, skipping download."
+          fi
+          rm -f curl.tar.xz curl32.tar.xz
 
       - name: Update versionCode
         id: set_module
@@ -99,14 +122,14 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Build UI
         run: |
-          cd ui-src
+          cd ${{ inputs.ui_path }}
           npm install
           npm run build
-          mv dist/* ../webroot/
+          mv dist ../webroot
 
       - name: Upload build artifacts for next job
         uses: actions/upload-artifact@v4
@@ -192,7 +215,7 @@ jobs:
 
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if:  ${{ env.COMMIT == '1' }}
+        if: ${{ env.COMMIT == '1' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: dev
@@ -208,4 +231,3 @@ jobs:
           files: |
             ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
             ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
-  
