@@ -25,10 +25,12 @@
       onConfirm: async () => {
         try {
           await LocalApi.leaveMoon(moonId);
-          toast.success(`Unorbited moon ${moonId}`);
+          toast.success($t("moons.unorbitSuccess", { values: { id: moonId } }));
           await zerotierStore.loadPeers();
         } catch (e: any) {
-          toast.error("Failed to unorbit: " + (e.message || e));
+          toast.error(
+            $t("moons.unorbitFailed", { values: { error: e.message || e } }),
+          );
         }
       },
     });

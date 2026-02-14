@@ -3,36 +3,36 @@
 [![GitHub Release](https://img.shields.io/github/v/release/powerAn2020/ZeroTierForKSU)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
 [![GitHub Download](https://img.shields.io/github/downloads/powerAn2020/ZeroTierForKSU/total)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
 
-基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能。
+基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能，需要自行准备[API Token](https://my.zerotier.com/account#tokens)。
+
 Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)使用。
 
 自1.14.0之后KSU版本需要在`11928`以上才能正常使用UI
 
-## BUG
-
-- [x] ~~通过UI启动的zerotier进程会随着KSU Manager的结束而退出~~
-- [x] 在模块禁用的情况下依然可以操作服务启用和停用(实际上不应该能操作，毕竟都禁用了)，这将导致下次启用模块的时候要启停服务两次才能使用zerotier进程正确启动。**ps:模块禁用功能是特地保留的，我不想在停用模块的情况下还占用系统资源。**
-- [x] 服务停止的情况下，有概率会在首页显示已经禁用的节点。
-- ~~[zt切换网络导致全局断网的问题](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)~~ ZerotierOne 1.14.0版本已修复
-- [ ] 管理页在处理Member的时候需要等待处理完才能展开下一个Member的信息，否则后一个会覆盖前一个的配置，导致第一个Member修改的配置不生效。可以提前缓存下要修改的信息，一次发送请求，下次再改。
-
-## TODO
-
-1. [x] 流水线增加自定义zerotier版本编译。[~~据说1.8.9版本没有zt切换网络导致全局断网的问题~~](https://github.com/eventlOwOp/zerotier-magisk/issues/7#issuecomment-2069526989)，经过测试，依然复现，而且还有漏洞，官方推荐1.12.x版本以上有安全补丁，别降级了。
-2. [x] 增加管理页面，需要自行准备[API Token](https://my.zerotier.com/account#tokens)
-3. [x] 国际化
 
 ## 免责声明
 
 本项目不对以下情况负责：设备变砖、SD 卡损坏或 SoC 烧毁。
 
-## 使用方法
+## 模块截图
 
-用UI界面
-
-![List](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/a20e0eeb-2813-40dd-892c-c3f44fff77c2)
-![Peers](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/61040bcb-8b51-4521-a35a-a2e793df3bb1)
-![Setting](https://github.com/powerAn2020/ZeroTierOneForKSU/assets/25736019/05f3e070-6fd7-48a3-9afb-22fb4cfff56a)
+<table>
+  <tr>
+    <td><img src="./imgs/Dashboard.png"/></td>
+    <td><img src="./imgs/Dashboard-Moons.png"/></td>
+    <td><img src="./imgs/Local.png"/></td>
+  </tr>
+  <tr>
+    <td><img src="./imgs/Local-Peers.png"/></td>
+    <td><img src="./imgs/Local-Settings.png"/></td>
+    <td><img src="./imgs/Central.png"/></td>
+  </tr>
+  <tr>
+    <td><img src="./imgs/Central-Peers.png"/></td>
+    <td><img src="./imgs/Central-Settings.png"/></td>
+    <td><img src="./imgs/Settings.png"/></td>
+  </tr>
+</table>
 
 ## 一些可选操作说明
 
@@ -41,8 +41,11 @@ Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWeb
 #### Zerotier数据目录:`/data/adb/zerotier`；在该目录下创建以下文件可以做到
 
   创建文件`/data/adb/zerotier/KEEP_ON_UNINSTALL`，卸载模块可保留数据目录
+
   创建文件`/data/adb/zerotier/MANMANUAL`，关闭开机自启
+
   创建文件`/data/adb/zerotier/ALLOW_9993`，iptables放行UDP 9993入端口
+  
   创建文件`/data/adb/zerotier/ROUTER_RULE_NEW`，zerotier流量路由模式改为新建路由规则表，删除该文件则是提升main表优先级模式
 
 ### 执行脚本说明
@@ -102,7 +105,7 @@ Options:
       firewall                                  -- Control the firewall to allow traffic into port 9993
         action     value:[ A | D ]
       router                                    -- Set the Zerotier traffic routing method
-        router     value:[ routing (unrealized) | main ]
+        router     value:[ routing  | main ]
         action     value:[ A | D ]
       orbit                                     -- Join Private Root Servers
         moonid     value:[ moonid ]
@@ -132,8 +135,8 @@ Example:
     sh api.sh local peer
     sh api.sh local firewall A
     sh api.sh local firewall D
-    sh api.sh local router routing A (unrealized)
-    sh api.sh local router routing D (unrealized)
+    sh api.sh local router routing A 
+    sh api.sh local router routing D 
     sh api.sh local router main A
     sh api.sh local router main D
     sh api.sh local orbit yourMoonid

@@ -23,7 +23,8 @@
 ###       router                                    -- Set the Zerotier traffic routing method
 ###         router     value:[ routing | main ]
 ###         action     value:[ A | D ]
-###       orbit                                     -- Join Private Root Servers
+###       moon                                      -- Join Private Root Servers
+###         action     value:[ orbit | deorbit ]
 ###         moonid     value:[ moonid ]
 ###     central
 ###       status                                    -- Show Center Status
@@ -55,7 +56,8 @@
 ###     sh api.sh local router routing D
 ###     sh api.sh local router main A
 ###     sh api.sh local router main D
-###     sh api.sh local orbit yourMoonid
+###     sh api.sh local moon orbit yourMoonid
+###     sh api.sh local moon deorbit yourMoonid
 ###     sh api.sh local network list
 ###     sh api.sh local network leave yourNetworkid (suggest: use command `zerotier-cli leave yourNetworkid`)
 ###     sh api.sh local network join  yourNetworkid {} (suggest: use command `zerotier-cli join yourNetworkid`)
@@ -133,9 +135,18 @@ local_firewall() {
   iptables -$1 INPUT -p udp --dport 9993 -j ACCEPT
   ip6tables -$1 INPUT -p udp --dport 9993 -j ACCEPT
 }
-# join moon
-local_orbit() {
-  sh ${MODDIR}/zerotier-cli orbit $1 $1
+# moon action
+local_moon() {
+  action=$1
+  moonid=$2
+  if [ "$action" = "orbit" ]; then
+    sh ${MODDIR}/zerotier-cli orbit $moonid $moonid
+  elif [ "$action" = "deorbit" ]; then
+    sh ${MODDIR}/zerotier-cli deorbit $moonid
+  else
+    echo "Usage: api.sh local moon [orbit|deorbit] <moonid>"
+    exit 1
+  fi
 }
 
 local_router() {
@@ -144,7 +155,6 @@ local_router() {
   ZT_RULE_PREF=8000
 
   if [ "$1" = "routing" ]; then
-    touch ${ZTPATH}/ROUTER_RULE_NEW
     # Reference https://yotam.net/posts/network-management-in-android-routing/
     # Reference https://unix.stackexchange.com/questions/424314/changing-default-ip-rule-priority-for-main-table
     # Reference https://github.com/zerotier/ZeroTierOne/issues/1715#issuecomment-1780625754
@@ -218,7 +228,7 @@ local_router() {
       exit 1
     fi
   else
-    rm ${ZTPATH}/ROUTER_RULE_NEW
+    
     # "main" mode: elevate main table priority
     # Reference https://blog.csdn.net/G_Rookie/article/details/109679262
     if [ "$2" = "A" ]; then
@@ -334,10 +344,10 @@ local)
     shift
     local_router $@
     ;;
-  orbit)
+  moon)
     check_local_pid
     shift
-    local_orbit $@
+    local_moon $@
     ;;
   esac
   ;;

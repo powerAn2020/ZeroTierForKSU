@@ -71,6 +71,7 @@
     {/if}
     <Router {routes} />
     <ToastContainer />
+    <ConfirmDialog />
     <BottomNav />
   </main>
 {/if}

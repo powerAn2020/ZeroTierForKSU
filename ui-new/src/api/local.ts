@@ -82,7 +82,8 @@ export class LocalApi {
   }
 
   static async leaveMoon(moonId: string): Promise<any> {
-    return this.leaveNetwork(moonId);
+    // Calling unorbit (deorbit)
+    return KsuApi.unorbit(moonId);
   }
 
   static async updateNetwork(networkId: string, config: Partial<LocalNetwork>): Promise<any> {

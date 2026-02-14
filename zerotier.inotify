@@ -22,9 +22,13 @@ service_control() {
     if [ "${events}" = "d" ]; then
       # 删除规则文件则清除routing规则
       ${MODDIR}/api.sh local router routing D
+      ${MODDIR}/api.sh local router main A
+      rm ${ZTPATH}/ROUTER_RULE_NEW
     elif [ "${events}" = "n" ]; then
       # 新增规则文件则清除main规则
       ${MODDIR}/api.sh local router main D
+      ${MODDIR}/api.sh local router routing A
+      touch ${ZTPATH}/ROUTER_RULE_NEW
     fi
   elif [ "${monitor_file}" = "debug" ]; then
     echo "${events} - ${monitor_dir} - ${monitor_file}" >>${ZTPATH}/inotify.log

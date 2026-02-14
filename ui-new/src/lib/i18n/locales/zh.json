@@ -68,7 +68,28 @@
       "debugMode": "调试模式",
       "debugModeDesc": "在控制台记录 KSU 交互日志"
     },
-    "footer": "ZeroTier for KernelSU"
+    "footer": "ZeroTier for KernelSU",
+    "toasts": {
+      "loadFailed": "加载设置失败: {error}",
+      "debugEnabled": "调试模式已启用",
+      "debugDisabled": "调试模式已禁用",
+      "autoStartEnabled": "开机自启已启用",
+      "autoStartDisabled": "开机自启已禁用",
+      "autoStartFailed": "更新开机自启失败: {error}",
+      "portAllowed": "端口 9993 已允许",
+      "portBlocked": "端口 9993 已封锁",
+      "firewallFailed": "更新防火墙失败: {error}",
+      "keepDataEnabled": "保留数据已启用",
+      "keepDataDisabled": "保留数据已禁用",
+      "keepDataFailed": "更新保留数据失败: {error}",
+      "routingEnabled": "自定义路由已启用",
+      "routingDisabled": "自定义路由已禁用",
+      "routingFailed": "更新路由失败: {error}",
+      "channelSwitched": "已切换到 {channel} 通道",
+      "channelFailed": "切换通道失败: {error}",
+      "tokenUpdated": "API 令牌已更新",
+      "tokenFailed": "更新令牌失败: {error}"
+    }
   },
   "dashboard": {
     "title": "仪表盘",
@@ -92,7 +113,7 @@
     "joinNetwork": "加入网络",
     "joinMoon": "加入 Moon",
     "join": "加入",
-    "orbit": "Orbit",
+    "orbit": "加入",
     "networkId": "网络 ID (16 字符)",
     "moonId": "Moon ID (10 字符)",
     "noNetworks": "未加入任何网络。",
@@ -106,10 +127,12 @@
     "title": "Moon 节点",
     "noMoons": "未加入任何 Moon 节点。",
     "unorbit": {
-      "title": "取消 Orbit",
-      "message": "确定要取消 Orbit Moon {id} 吗？",
-      "confirm": "取消 Orbit"
+      "title": "退出 Moon",
+      "message": "确定要退出 Moon {id} 吗？",
+      "confirm": "退出"
     },
+    "unorbitSuccess": "已退出 Moon {id}",
+    "unorbitFailed": "退出 Moon 失败: {error}",
     "version": "版本",
     "latency": "延迟",
     "paths": "路径",

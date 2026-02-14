@@ -156,7 +156,11 @@ export class KsuApi {
   }
 
   static async orbit(moonId: string): Promise<void> {
-    await this.exec(`sh /data/adb/modules/ZeroTierForKSU/api.sh local orbit ${moonId}`);
+    await this.exec(`sh /data/adb/modules/ZeroTierForKSU/api.sh local moon orbit ${moonId}`);
+  }
+
+  static async unorbit(moonId: string): Promise<void> {
+    await this.exec(`sh /data/adb/modules/ZeroTierForKSU/api.sh local moon deorbit ${moonId}`);
   }
 
   static async updateApiToken(token: string): Promise<void> {

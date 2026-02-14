@@ -77,7 +77,7 @@ const getContent = (arr) => {
 const addBtn = (action) =>
   new Promise((resolve) => {
     if (action === 'confirm') {
-      execCmd(`sh ${MODDIR}/api.sh local orbit ${moonId.value}`).then(v => {
+      execCmd(`sh ${MODDIR}/api.sh local moon orbit ${moonId.value}`).then(v => {
         resolve(true);
       })
 

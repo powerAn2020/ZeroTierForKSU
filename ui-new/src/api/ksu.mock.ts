@@ -52,8 +52,10 @@ export class KsuApiMock {
           resolve("Keep data updated");
         } else if (cmd.includes('touch ') && cmd.includes('/KEEP_ON_UNINSTALL')) {
           resolve("Keep data updated");
-        } else if (cmd.includes('api.sh local orbit')) {
-          resolve("Orbit/Moon joined");
+        } else if (cmd.includes('api.sh local moon orbit')) {
+          resolve("Moon orbited");
+        } else if (cmd.includes('api.sh local moon deorbit')) {
+          resolve("Moon deorbited");
         } else if (cmd.includes('api.sh local service start') || cmd.includes('zerotier-one -d')) {
           // Start service
           KsuApiMock.mockRunning = true;

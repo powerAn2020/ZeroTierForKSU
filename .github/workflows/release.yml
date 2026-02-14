@@ -109,7 +109,6 @@ jobs:
           release_notes_line=$(grep -nPo '\d{4}-\d{2}-\d{2} -- Version [\d.]+' RELEASE-NOTES.md|head -2|awk -F ':' '{print $1}'|awk BEGIN{RS=EOF}'{gsub(/\n/," ");print}'|awk '{printf("start=%s; end=%s;",$1,$2)}')
           eval $release_notes_line
           end=$(expr ${end} - 1)
-          echo " ===================" >>changelog.md
           echo "## Zerotier Changelog" >>changelog.md
           sed -n "${start},${end}p" RELEASE-NOTES.md >>changelog.md
           rm RELEASE-NOTES.md

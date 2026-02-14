@@ -59,7 +59,9 @@
     debugMode = v;
     KsuApi.setDebug(v);
     localStorage.setItem("debugMode", String(v));
-    toast.success(`Debug Mode ${v ? "Enabled" : "Disabled"}`);
+    toast.success(
+      $t(v ? "settings.toasts.debugEnabled" : "settings.toasts.debugDisabled"),
+    );
   }
 
   async function loadSettings() {
@@ -87,7 +89,9 @@
       // Loose equality (== 0) handles both number 0 and string "0"
       settings.routerRuleNew = status.routerRuleNew == 0;
     } catch (e: any) {
-      toast.error("Failed to load settings: " + e.message);
+      toast.error(
+        $t("settings.toasts.loadFailed", { values: { error: e.message } }),
+      );
     } finally {
       loading = false;
     }
@@ -97,10 +101,18 @@
     settings.autoStart = v; // Optimistic
     try {
       await KsuApi.toggleAutoStart(v);
-      toast.success(`Auto Start ${v ? "enabled" : "disabled"}`);
+      toast.success(
+        $t(
+          v
+            ? "settings.toasts.autoStartEnabled"
+            : "settings.toasts.autoStartDisabled",
+        ),
+      );
     } catch (e: any) {
       settings.autoStart = !v;
-      toast.error("Failed to update auto start: " + e.message);
+      toast.error(
+        $t("settings.toasts.autoStartFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -108,10 +120,14 @@
     settings.firewall = v;
     try {
       await KsuApi.toggleFirewall(v);
-      toast.success(`Port 9993 ${v ? "allowed" : "blocked"}`);
+      toast.success(
+        $t(v ? "settings.toasts.portAllowed" : "settings.toasts.portBlocked"),
+      );
     } catch (e: any) {
       settings.firewall = !v;
-      toast.error("Failed to update firewall: " + e.message);
+      toast.error(
+        $t("settings.toasts.firewallFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -119,10 +135,18 @@
     settings.uninstallKeep = v;
     try {
       await KsuApi.toggleKeepData(v);
-      toast.success(`Keep Data ${v ? "enabled" : "disabled"}`);
+      toast.success(
+        $t(
+          v
+            ? "settings.toasts.keepDataEnabled"
+            : "settings.toasts.keepDataDisabled",
+        ),
+      );
     } catch (e: any) {
       settings.uninstallKeep = !v;
-      toast.error("Failed to update keep data: " + e.message);
+      toast.error(
+        $t("settings.toasts.keepDataFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -130,10 +154,18 @@
     settings.routerRuleNew = v;
     try {
       await KsuApi.toggleCustomRouting(v);
-      toast.success(`Custom Routing ${v ? "enabled" : "disabled"}`);
+      toast.success(
+        $t(
+          v
+            ? "settings.toasts.routingEnabled"
+            : "settings.toasts.routingDisabled",
+        ),
+      );
     } catch (e: any) {
       settings.routerRuleNew = !v;
-      toast.error("Failed to update routing: " + e.message);
+      toast.error(
+        $t("settings.toasts.routingFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -143,10 +175,14 @@
     settings.branch = c;
     try {
       await KsuApi.switchChannel(c);
-      toast.success(`Switched to ${c} channel`);
+      toast.success(
+        $t("settings.toasts.channelSwitched", { values: { channel: c } }),
+      );
     } catch (e: any) {
       settings.branch = old;
-      toast.error("Failed to switch channel: " + e.message);
+      toast.error(
+        $t("settings.toasts.channelFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -154,9 +190,11 @@
     settings.apiToken = v;
     try {
       await KsuApi.updateApiToken(v);
-      toast.success("API Token updated");
+      toast.success($t("settings.toasts.tokenUpdated"));
     } catch (e: any) {
-      toast.error("Failed to update token: " + e.message);
+      toast.error(
+        $t("settings.toasts.tokenFailed", { values: { error: e.message } }),
+      );
     }
   }
 
@@ -414,7 +452,7 @@
             <div class="text-xs text-muted-foreground">
               {$appStore.moduleVersion
                 ? $appStore.moduleVersion.split("(")[0].trim()
-                : $appStore.version || "Unknown"}
+                : $appStore.version || $t("common.unknown")}
             </div>
           </div>
         </div>
