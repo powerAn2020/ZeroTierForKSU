@@ -63,21 +63,32 @@
 
   async function refreshStatus() {
     try {
-      const moduleInfo = await KsuApi.getModuleInfo();
-      appStore.setModuleInfo(
-        moduleInfo.version || moduleInfo.versionOfModule || "Unknown",
-        moduleInfo.versionCode || 0,
-      );
-    } catch (e) {
-      console.error("Failed to load module info", e);
-    }
+      // Parallelize module info and service status
+      const [moduleInfoResult] = await Promise.all([
+        KsuApi.getModuleInfo(),
+        zerotierStore.loadStatus(),
+      ]);
 
-    await zerotierStore.loadStatus();
-    // Only load networks if service is running to avoid errors
-    if ($appStore.serviceRunning) {
-      await zerotierStore.loadLocalNetworks();
-      await zerotierStore.loadCentralNetworks();
-      await zerotierStore.loadPeers();
+      if (moduleInfoResult) {
+        appStore.setModuleInfo(
+          moduleInfoResult.version ||
+            moduleInfoResult.versionOfModule ||
+            "Unknown",
+          moduleInfoResult.versionCode || 0,
+        );
+      }
+
+      // Only load networks if service is running to avoid errors
+      if ($appStore.serviceRunning) {
+        // Parallelize remaining data fetches
+        await Promise.all([
+          zerotierStore.loadLocalNetworks(),
+          zerotierStore.loadCentralNetworks(),
+          zerotierStore.loadPeers(),
+        ]);
+      }
+    } catch (e) {
+      console.error("Failed to refresh status", e);
     }
   }
 

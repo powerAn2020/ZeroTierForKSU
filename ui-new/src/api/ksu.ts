@@ -76,6 +76,7 @@ export class KsuApi {
     }
   }
 
+
   static async spawn(cmd: string, args: string[]): Promise<any> {
     try {
       // @ts-ignore
@@ -96,6 +97,48 @@ export class KsuApi {
       console.error(`[KSU] Error spawning ${cmd}:`, error);
       throw error;
     }
+  }
+
+  static async spawnAsync(cmd: string, args: string[], timeout: number = 5000): Promise<string> {
+    return new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      let timer: any;
+
+      const finish = (result: string, isError: boolean) => {
+        if (timer) clearTimeout(timer);
+        if (isError) reject(new Error(result));
+        else resolve(result);
+      };
+
+      this.spawn(cmd, args).then((child) => {
+        if (!child) {
+          resolve("");
+          return;
+        }
+
+        timer = setTimeout(() => {
+          if (child.kill) child.kill();
+          finish(`Command timeout: ${cmd} ${args.join(' ')}`, true);
+        }, timeout);
+
+        child.on('stdout', (data: string) => {
+          stdout += data;
+        });
+
+        child.on('stderr', (data: string) => {
+          stderr += data;
+        });
+
+        child.on('exit', (code: number) => {
+          if (code === 0) {
+            finish(stdout, false);
+          } else {
+            finish(stderr || `Process exited with code ${code}`, true);
+          }
+        });
+      }).catch(reject);
+    });
   }
 
   static async getSystemStatus(): Promise<any> {

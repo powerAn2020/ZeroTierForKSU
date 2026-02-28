@@ -154,6 +154,7 @@ jobs:
     env:
       MODULE_VERSION: ${{ needs.build.outputs.MODULE_VERSION }}
       VERSION: ${{ needs.build.outputs.VERSION }}
+      COMMIT: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -210,8 +211,7 @@ jobs:
           echo "commit MESSAGE: $MESSAGE"
           echo $MESSAGE > changelog_dev.md
           git add update_arm64_dev.json update_arm_dev.json changelog_dev.md 
-          git commit -m "update Zerotier version:${{env.VERSION}}" || true
-          echo "COMMIT=1" >> $GITHUB_ENV
+          git commit -m "update Zerotier version:${{env.VERSION}}" && echo "COMMIT=1" >> $GITHUB_ENV || echo "No changes to commit"
 
       - name: Push changes
         uses: ad-m/github-push-action@master

@@ -38,16 +38,14 @@ function createZeroTierStore() {
           appStore.setNodeInfo("", "");
         } else {
           appStore.setNodeInfo(status.version, status.address);
-          // If we got a valid status object (with address), the service is running.
-          // 'online' field in ZeroTier status means "connected to controller/root", not "service running".
           appStore.setServiceStatus(true);
         }
+        return status;
       } catch (e) {
         console.error("Failed to load status", e);
-        // If it's a critical error not handled by api layer, we might still want to show it,
-        // but for now let's assume valid error means something else is wrong.
         appStore.setError("Failed to load status");
         appStore.setServiceStatus(false);
+        throw e;
       } finally {
         appStore.setLoading(false);
       }
@@ -58,8 +56,10 @@ function createZeroTierStore() {
       try {
         const networks = await LocalApi.getNetworks();
         update(s => ({ ...s, localNetworks: networks }));
+        return networks;
       } catch (e) {
         console.error(e);
+        throw e;
       } finally {
         update(s => ({ ...s, loading: false }));
       }
@@ -70,8 +70,10 @@ function createZeroTierStore() {
       try {
         const peers = await LocalApi.getPeers();
         update(s => ({ ...s, peers: peers }));
+        return peers;
       } catch (e) {
         console.error(e);
+        throw e;
       } finally {
         update(s => ({ ...s, loading: false }));
       }
@@ -82,8 +84,10 @@ function createZeroTierStore() {
       try {
         const networks = await CentralApi.getNetworks();
         update(s => ({ ...s, centralNetworks: networks }));
+        return networks;
       } catch (e) {
         console.error(e);
+        throw e;
       } finally {
         appStore.setLoading(false);
       }
