@@ -1,1 +1,1 @@
-1.更新README添加新UI的截图 2.设置页面国际化 3.自定义路由联动失效的问题修复 4.Moon节点只能加入不能删除的问题修复（老UI要弃用，不添加删除功能了）
+feat: Add bottom navigation, ZeroTier Central API integration, and pages for network members, settings, and local peers.
