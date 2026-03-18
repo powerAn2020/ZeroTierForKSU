@@ -5,6 +5,7 @@
   import { ArrowLeft, Globe, Zap, Cpu } from "lucide-svelte";
   import Button from "@/lib/components/ui/button/Button.svelte";
   import { LocalApi } from "@/api/local";
+  import { memberCache } from "@/stores/memberCache";
   import type { LocalPeer } from "@/types/zerotier";
   import { cn } from "@/lib/utils";
 
@@ -135,6 +136,12 @@
                         <span class="font-mono font-bold text-lg"
                           >{peer.id}</span
                         >
+                        {#if $memberCache[peer.id]}
+                          <span
+                            class="text-sm font-bold text-muted-foreground mr-1"
+                            >({$memberCache[peer.id]})</span
+                          >
+                        {/if}
                         <span
                           class={cn(
                             "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase",

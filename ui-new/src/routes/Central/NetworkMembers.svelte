@@ -19,6 +19,7 @@
   import { CentralApi } from "@/api/central";
   import { toast } from "@/stores/toast";
   import { confirm as confirmStore } from "@/stores/confirm";
+  import { memberCache } from "@/stores/memberCache";
   import { cn } from "@/lib/utils";
   import type { CentralMember } from "@/types/zerotier";
 
@@ -40,6 +41,10 @@
       const networks = await CentralApi.getNetworks();
       const network = networks.find((n: any) => n.id === params.id);
       if (network) networkName = network.config.name;
+
+      // Update cache
+      memberCache.setNames(members);
+
       dirtyMembers.clear();
       dirtyMembers = dirtyMembers; // Trigger reactivity
     } catch (e: any) {
@@ -76,6 +81,9 @@
       });
 
       await Promise.all(updates);
+      // Cache saved names
+      memberCache.setNames(members);
+
       toast.success($t("common.success"));
       await loadMembers();
     } catch (e: any) {
@@ -382,7 +390,7 @@
               </span>
               <Switch
                 checked={member.config.activeBridge}
-                onCheckedChange={() => toggleBridge(member)}
+                on:checkedChange={() => toggleBridge(member)}
                 disabled={loading || saving}
               />
             </div>

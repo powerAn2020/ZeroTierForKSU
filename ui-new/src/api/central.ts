@@ -46,17 +46,18 @@ export class CentralApi {
     const res = await KsuApi.exec(`sh ${MODDIR}/api.sh central network add`);
     const network = JSON.parse(res);
     if (name && network.id) {
-      const body = JSON.stringify({ config: { name } });
+      const body = JSON.stringify({ config: { name } }).replace(/'/g, "'\\''");
       await KsuApi.exec(`sh ${MODDIR}/api.sh central network modify ${network.id} '${body}'`);
     }
     return network;
   }
 
   static async updateNetwork(networkId: string, config: any): Promise<void> {
-    const body = JSON.stringify(config);
+    const body = JSON.stringify(config).replace(/'/g, "'\\''");
     // api.sh: central network modify <id> <body>
     await KsuApi.exec(`sh ${MODDIR}/api.sh central network modify ${networkId} '${body}'`);
   }
+
 
 
   static async getMembers(networkId: string): Promise<CentralMember[]> {
@@ -72,7 +73,7 @@ export class CentralApi {
   }
 
   static async updateMember(networkId: string, memberId: string, config: any): Promise<void> {
-    const body = JSON.stringify(config);
+    const body = JSON.stringify(config).replace(/'/g, "'\\''");
     await KsuApi.exec(`sh ${MODDIR}/api.sh central member modify ${networkId} ${memberId} '${body}'`);
   }
 

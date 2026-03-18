@@ -33,6 +33,9 @@
     ipAssignmentPools: [] as { ipRangeStart: string; ipRangeEnd: string }[],
   };
 
+  let initialConfig = "";
+  $: hasChanges = initialConfig !== JSON.stringify(config);
+
   // Route input state
   let newRoute = { target: "", via: "" };
   let newCidr = "";
@@ -63,6 +66,7 @@
           enableBroadcast: network.config.enableBroadcast || false,
           ipAssignmentPools: network.config.ipAssignmentPools || [],
         };
+        initialConfig = JSON.stringify(config);
       }
     } catch (e: any) {
       toast.error("Failed to load network: " + e.message);
@@ -72,7 +76,7 @@
   }
 
   async function saveSettings() {
-    if (!network) return;
+    if (!network || !hasChanges) return;
     saving = true;
     try {
       // Construct API payload structure
@@ -205,14 +209,31 @@
         {params.id}
       </p>
     </div>
-    <Button disabled={saving || loading} on:click={saveSettings}>
-      {#if saving}
-        {$t("common.saving")}
-      {:else}
-        <Save class="h-4 w-4 mr-2" />
-        {$t("common.save")}
-      {/if}
-    </Button>
+    <div class="flex items-center gap-2">
+      <Button
+        disabled={saving || loading || !hasChanges}
+        on:click={saveSettings}
+      >
+        {#if saving}
+          {$t("common.saving")}
+        {:else}
+          <div class="relative">
+            <Save class="h-4 w-4 mr-2" />
+            {#if hasChanges}
+              <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-red-500"
+                ></span>
+              </span>
+            {/if}
+          </div>
+          {$t("common.save")}
+        {/if}
+      </Button>
+    </div>
   </div>
 
   {#if loading}

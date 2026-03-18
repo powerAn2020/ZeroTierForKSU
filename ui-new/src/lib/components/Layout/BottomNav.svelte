@@ -2,12 +2,13 @@
   import { location, push } from "@/lib/router";
   import { Home, HardDrive, Globe, Settings } from "lucide-svelte";
   import { cn } from "@/lib/utils";
+  import { t } from "svelte-i18n";
 
   const navItems = [
-    { href: "/", icon: Home, label: "Dash" },
-    { href: "/local", icon: HardDrive, label: "Local" },
-    { href: "/central", icon: Globe, label: "Central" },
-    { href: "/settings", icon: Settings, label: "Settings" },
+    { href: "/", icon: Home, labelKey: "nav.dashboard" },
+    { href: "/local", icon: HardDrive, labelKey: "nav.local" },
+    { href: "/central", icon: Globe, labelKey: "nav.central" },
+    { href: "/settings", icon: Settings, labelKey: "nav.settings" },
   ];
 
   function isActive(path: string, currentPath: string) {
@@ -29,7 +30,7 @@
         on:click={() => push(item.href)}
       >
         <svelte:component this={item.icon} class="h-5 w-5" />
-        <span class="text-xs">{item.label}</span>
+        <span class="text-xs">{$t(item.labelKey)}</span>
       </button>
     {/each}
   </div>
