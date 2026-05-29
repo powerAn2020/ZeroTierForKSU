@@ -1,6 +1,6 @@
 id=ZeroTierForKSU
 name=ZeroTier For KernelSU
-version=1.16.0(10516)
-versionCode=10516
+version=1.16.2(10517)
+versionCode=10517
 author=powerAn2020
-description=ZeroTier(1.16.0) with UI interface
+description=ZeroTier(1.16.2) with UI interface
