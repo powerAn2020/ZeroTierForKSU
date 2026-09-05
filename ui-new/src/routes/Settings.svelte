@@ -29,6 +29,7 @@
     uninstallKeep: false,
     branch: "main",
     apiToken: "",
+    dns: "",
     routerRuleNew: false, // 0 = true (file exists), 1 = false (file missing)
   };
 
@@ -84,6 +85,7 @@
       settings.uninstallKeep = !!status.uninstallKeep;
       settings.branch = status.branch || "main";
       settings.apiToken = status.apiToken || "";
+      settings.dns = status.dns || "";
 
       // zerotier.sh: if file exists -> 0, else 1.
       // Loose equality (== 0) handles both number 0 and string "0"
@@ -196,6 +198,22 @@
         $t("settings.toasts.tokenFailed", { values: { error: e.message } }),
       );
     }
+  }
+
+  async function updateDns(v: string) {
+    settings.dns = v;
+    try {
+      await KsuApi.updateDns(v);
+      toast.success($t("settings.toasts.dnsUpdated"));
+    } catch (e: any) {
+      toast.error(
+        $t("settings.toasts.dnsFailed", { values: { error: e.message } }),
+      );
+    }
+  }
+
+  function setPresetDns(preset: string) {
+    settings.dns = preset;
   }
 
   onMount(() => {
@@ -423,10 +441,86 @@
           <button
             class="text-primary hover:underline"
             on:click={() =>
-              KsuApi.openUrl("https://my.zerotier.com/account#tokens")}
+              KsuApi.openUrl("https://docs.zerotier.com/tokens/#legacy-central-api-token")}
           >
-            my.zerotier.com
+            docs.zerotier.com
           </button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom DNS -->
+  <div class="space-y-3">
+    <h2
+      class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
+    >
+      {$t("settings.dns.title")}
+    </h2>
+    <div
+      class="rounded-xl border bg-card text-card-foreground shadow-sm p-4 space-y-4"
+    >
+      <div class="grid gap-2">
+        <Label>{$t("settings.dns.label")}</Label>
+        <div class="flex gap-2">
+          <Input
+            type="text"
+            placeholder={$t("settings.dns.placeholder")}
+            value={settings.dns}
+            class="font-mono flex-1"
+            on:input={(e) =>
+              (settings.dns = (e.target as HTMLInputElement).value)}
+            on:change={(e) =>
+              updateDns((e.target as HTMLInputElement).value)}
+          />
+          <Button
+            on:click={() => updateDns(settings.dns)}
+            disabled={loading}
+          >
+            {$t("common.save")}
+          </Button>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+          <button
+            type="button"
+            class="text-xs px-2 py-0.5 rounded border border-muted-foreground/30 hover:bg-muted text-muted-foreground transition-colors"
+            on:click={() => setPresetDns("1.1.1.1,1.0.0.1")}
+          >
+            Cloudflare
+          </button>
+          <button
+            type="button"
+            class="text-xs px-2 py-0.5 rounded border border-muted-foreground/30 hover:bg-muted text-muted-foreground transition-colors"
+            on:click={() => setPresetDns("8.8.8.8,8.8.4.4")}
+          >
+            Google
+          </button>
+          <button
+            type="button"
+            class="text-xs px-2 py-0.5 rounded border border-muted-foreground/30 hover:bg-muted text-muted-foreground transition-colors"
+            on:click={() => setPresetDns("223.5.5.5,223.6.6.6")}
+          >
+            AliDNS
+          </button>
+          <button
+            type="button"
+            class="text-xs px-2 py-0.5 rounded border border-muted-foreground/30 hover:bg-muted text-muted-foreground transition-colors"
+            on:click={() => setPresetDns("119.29.29.29")}
+          >
+            DNSPod
+          </button>
+          {#if settings.dns}
+            <button
+              type="button"
+              class="text-xs px-2 py-0.5 rounded border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors ml-auto"
+              on:click={() => updateDns("")}
+            >
+              {$t("settings.dns.clear")}
+            </button>
+          {/if}
+        </div>
+        <p class="text-xs text-muted-foreground">
+          {$t("settings.dns.desc")}
         </p>
       </div>
     </div>

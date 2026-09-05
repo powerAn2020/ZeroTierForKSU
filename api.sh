@@ -40,6 +40,9 @@
 ###     apiToken                                    -- Manage the tokenAuth for accessing the central API
 ###       action       value:[ show | update ]
 ###       key          value:[ apiToken ]
+###     dns                                         -- Manage the custom DNS servers for curl
+###       action       value:[ show | update ]
+###       servers      value:[ dns_servers ]
 ###
 ### Example:
 ###   help
@@ -76,6 +79,10 @@
 ###     sh api.sh apiToken show
 ###     sh api.sh apiToken update xxxxxxxxx
 ###
+###   dns
+###     sh api.sh dns show
+###     sh api.sh dns update 1.1.1.1,8.8.8.8
+###
 
 MODDIR=${0%/*}
 
@@ -99,7 +106,15 @@ SECRETFILE=$ZTPATH/authtoken.secret
 TOKENAUTH=$ZTPATH/TOKENAUTH
 TOKEN=$(cat ${SECRETFILE})
 apiToken=$(grep -v '^[[:space:]]*$' $TOKENAUTH)
-CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
+DNSFILE=$ZTPATH/DNS
+if [ -f "$DNSFILE" ]; then
+  DNS=$(grep -v '^[[:space:]]*$' "$DNSFILE" | tr -d '\r\n')
+fi
+if [ -n "$DNS" ]; then
+  CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5 --dns-servers ${DNS}"
+else
+  CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
+fi
 localAPIBase='http://localhost:9993'
 remoteAPIBase='https://api.zerotier.com/api/v1'
 export CURL_CA_BUNDLE=${MODDIR}/bin/cacert.pem
@@ -421,6 +436,26 @@ apiToken)
     ;;
   update)
     echo "${key}" >${TOKENAUTH}
+    echo "done"
+    ;;
+  esac
+  ;;
+dns)
+  shift
+  action=$1
+  servers=$2
+  case $action in
+  show)
+    if [ -f "$DNSFILE" ]; then
+      cat "$DNSFILE"
+    fi
+    ;;
+  update)
+    if [ -z "$servers" ]; then
+      rm -f "$DNSFILE"
+    else
+      echo "$servers" >"$DNSFILE"
+    fi
     echo "done"
     ;;
   esac

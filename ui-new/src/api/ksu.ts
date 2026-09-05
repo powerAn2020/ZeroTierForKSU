@@ -156,6 +156,7 @@ export class KsuApi {
           firewall: false,
           autoStart: false,
           apiToken: "",
+          dns: "",
           uninstallKeep: false,
           routerRuleNew: 1,
           cliStatus: ""
@@ -208,6 +209,10 @@ export class KsuApi {
 
   static async updateApiToken(token: string): Promise<void> {
     await this.exec(`sh /data/adb/modules/ZeroTierForKSU/api.sh apiToken update "${token}"`);
+  }
+
+  static async updateDns(dns: string): Promise<void> {
+    await this.exec(`sh /data/adb/modules/ZeroTierForKSU/api.sh dns update "${dns.trim()}"`);
   }
 
   static async openUrl(url: string): Promise<void> {

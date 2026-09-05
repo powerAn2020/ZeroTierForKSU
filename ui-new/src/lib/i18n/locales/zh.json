@@ -55,6 +55,13 @@
       "placeholder": "输入您的 API 令牌",
       "desc": "Central 管理功能需要。获取令牌："
     },
+    "dns": {
+      "title": "自定义 DNS",
+      "label": "DNS 服务器",
+      "placeholder": "1.1.1.1,8.8.8.8",
+      "desc": "指定 curl 请求 ZeroTier Central 远程 API 时使用的 DNS 服务器，多个服务器用英文逗号分隔。留空则使用系统默认 DNS。",
+      "clear": "清空"
+    },
     "about": {
       "title": "关于",
       "version": "版本",
@@ -88,7 +95,9 @@
       "channelSwitched": "已切换到 {channel} 通道",
       "channelFailed": "切换通道失败: {error}",
       "tokenUpdated": "API 令牌已更新",
-      "tokenFailed": "更新令牌失败: {error}"
+      "tokenFailed": "更新令牌失败: {error}",
+      "dnsUpdated": "DNS 配置已更新",
+      "dnsFailed": "更新 DNS 失败: {error}"
     }
   },
   "dashboard": {

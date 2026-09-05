@@ -55,6 +55,13 @@
       "placeholder": "Enter your API Token",
       "desc": "Required for Central managed features. Get your token from"
     },
+    "dns": {
+      "title": "Custom DNS",
+      "label": "DNS Servers",
+      "placeholder": "e.g. 1.1.1.1, 8.8.8.8",
+      "desc": "Specify custom DNS servers for curl when communicating with ZeroTier remote APIs. Multiple servers separated by commas. Leave empty to use system default DNS.",
+      "clear": "Clear"
+    },
     "about": {
       "title": "About",
       "version": "Version",
@@ -88,7 +95,9 @@
       "channelSwitched": "Switched to {channel} channel",
       "channelFailed": "Failed to switch channel: {error}",
       "tokenUpdated": "API Token updated",
-      "tokenFailed": "Failed to update token: {error}"
+      "tokenFailed": "Failed to update token: {error}",
+      "dnsUpdated": "DNS configuration updated",
+      "dnsFailed": "Failed to update DNS: {error}"
     }
   },
   "dashboard": {

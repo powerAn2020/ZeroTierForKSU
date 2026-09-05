@@ -117,7 +117,11 @@ status_service() {
   if [ $? != 0 ]; then
     branch=''
   fi
-  data="{\"enable\": \"$zpid\", \"branch\": \"$branch\", \"firewall\": $firewall, \"autoStart\": $autoStart, \"apiToken\": \"$apiToken\", \"uninstallKeep\": $uninstallKeep, \"routerRuleNew\": $routerRuleNew, \"cliStatus\": \"$cliStatus\"}"
+  dns=''
+  if [ -f "${ZTPATH}/DNS" ]; then
+    dns=$(grep -v '^[[:space:]]*$' "${ZTPATH}/DNS" | tr -d '\r\n')
+  fi
+  data="{\"enable\": \"$zpid\", \"branch\": \"$branch\", \"firewall\": $firewall, \"autoStart\": $autoStart, \"apiToken\": \"$apiToken\", \"dns\": \"$dns\", \"uninstallKeep\": $uninstallKeep, \"routerRuleNew\": $routerRuleNew, \"cliStatus\": \"$cliStatus\"}"
   echo $data
 }
 start_service() {

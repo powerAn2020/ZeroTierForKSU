@@ -1,5 +1,6 @@
 export class KsuApiMock {
   private static mockRunning = true;
+  private static mockDns = "1.1.1.1,8.8.8.8";
 
   static async getModuleInfo(): Promise<any> {
     return {
@@ -34,6 +35,7 @@ export class KsuApiMock {
             firewall: true,
             autoStart: true,
             apiToken: "mock_api_token_12345",
+            dns: KsuApiMock.mockDns,
             uninstallKeep: false,
             routerRuleNew: 1,
             cliStatus: KsuApiMock.mockRunning ? "200 info a1b2c3d4e5 1.10.6 ONLINE" : ""
@@ -44,6 +46,10 @@ export class KsuApiMock {
           resolve("Firewall updated");
         } else if (cmd.includes('api.sh apiToken update')) {
           resolve("Token updated");
+        } else if (cmd.includes('api.sh dns update')) {
+          const match = cmd.match(/api\.sh dns update\s+"(.*)"/);
+          KsuApiMock.mockDns = match ? match[1] : "";
+          resolve("DNS updated");
         } else if (cmd.includes('rm ') && cmd.includes('/MANUAL')) {
           resolve("Auto start updated");
         } else if (cmd.includes('touch ') && cmd.includes('/MANUAL')) {
