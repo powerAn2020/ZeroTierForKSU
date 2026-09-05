@@ -1,1 +1,1 @@
-update Zerotier version:1.16.2
+ci(workflow): add manual_release option to control GitHub release
