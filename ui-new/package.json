@@ -16,12 +16,12 @@
     "@types/node": "^24.10.1",
     "autoprefixer": "^10.4.24",
     "bestzip": "^2.2.1",
-    "postcss": "^8.5.6",
-    "svelte": "^5.45.2",
+    "postcss": "^8.5.28",
+    "svelte": "^5.57.0",
     "svelte-check": "^4.3.4",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.6"
   },
   "dependencies": {
     "bits-ui": "^2.15.5",
