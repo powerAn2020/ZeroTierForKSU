@@ -3,11 +3,16 @@
 [![GitHub Release](https://img.shields.io/github/v/release/powerAn2020/ZeroTierForKSU)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
 [![GitHub Download](https://img.shields.io/github/downloads/powerAn2020/ZeroTierForKSU/total)](https://github.com/powerAn2020/ZeroTierForKSU/releases)
 
-基于KSU WEBUI实现的Zertier客户端，同时支持部分zerotier服务端功能，需要自行准备[API Token](https://my.zerotier.com/account#tokens)。
+基于KSU WEBUI实现的Zertier客户端，同时支持部分ZerotierOne服务端功能，仅支持老版API(legacy-central-api)，需要自行准备[API Token](https://docs.zerotier.com/tokens/#legacy-central-api-token)。
 
 Magisk需要搭配[5ec1cff/KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone)使用。
 
 自1.14.0之后KSU版本需要在`11928`以上才能正常使用UI
+
+## 分支说明
+
+目前main分支已不在添加新功能，进入维护状态，新的版本开发在dev分支
+
 
 
 ## 免责声明

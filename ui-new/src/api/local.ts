@@ -6,8 +6,12 @@ const MODDIR = '/data/adb/modules/ZeroTierForKSU';
 export class LocalApi {
 
   static async getStatus(): Promise<ZeroTierStatus> {
-    const res = await KsuApi.exec(`sh ${MODDIR}/api.sh local status`);
-    return JSON.parse(res);
+    try {
+      const res = await KsuApi.exec(`sh ${MODDIR}/api.sh local status`);
+      return JSON.parse(res || "{}");
+    } catch (e) {
+      return {} as ZeroTierStatus;
+    }
   }
 
   static async getPeers(): Promise<any[]> {

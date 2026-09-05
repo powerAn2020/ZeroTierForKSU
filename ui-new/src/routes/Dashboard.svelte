@@ -22,31 +22,35 @@
   import { toast } from "@/stores/toast";
 
   let loadingService = false;
+  let serviceAction: "starting" | "stopping" | null = null;
 
   async function toggleService() {
+    const targetRunning = !$appStore.serviceRunning;
+    serviceAction = targetRunning ? "starting" : "stopping";
     loadingService = true;
+
     try {
-      // Create a delay promise to ensure minimum wait time
-      const delayPromise = new Promise((resolve) => setTimeout(resolve, 1500));
-
-      if ($appStore.serviceRunning) {
-        // Wait for both stop and delay
-        await Promise.all([LocalApi.stopService(), delayPromise]);
-
-        appStore.setServiceStatus(false);
-        await refreshStatus();
+      if (targetRunning) {
+        await LocalApi.startService();
       } else {
-        // Wait for both start and delay
-        await Promise.all([LocalApi.startService(), delayPromise]);
+        await LocalApi.stopService();
+      }
 
-        appStore.setServiceStatus(true);
+      // Poll and refresh status every 500ms until desired state is reached or timeout (max 10 tries, 5s)
+      const maxRetries = 10;
+      for (let i = 0; i < maxRetries; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
         await refreshStatus();
+        if ($appStore.serviceRunning === targetRunning) {
+          break;
+        }
       }
     } catch (e) {
       console.error("Service toggle failed", e);
       appStore.setError("Failed to toggle service");
     } finally {
       loadingService = false;
+      serviceAction = null;
     }
   }
 
@@ -73,7 +77,7 @@
         appStore.setModuleInfo(
           moduleInfoResult.version ||
             moduleInfoResult.versionOfModule ||
-            "Unknown",
+            "",
           moduleInfoResult.versionCode || 0,
         );
       }
@@ -126,7 +130,7 @@
       {#if loadingService}
         <Loader2 class="h-8 w-8 animate-spin" />
         <span>
-          {$appStore.serviceRunning
+          {serviceAction === "stopping"
             ? $t("dashboard.service.stopping")
             : $t("dashboard.service.starting")}
         </span>
@@ -163,7 +167,7 @@
       title={$t("settings.about.moduleVersion")}
       value={$appStore.moduleVersionCode
         ? `${$appStore.moduleVersion} `
-        : $appStore.moduleVersion || "Unknown"}
+        : $appStore.moduleVersion || $t("common.unknown")}
       icon={Info}
     />
 
@@ -226,7 +230,9 @@
     >
       <NetworkStatusCard
         title={$t("dashboard.cards.central")}
-        value={$zerotierStore.centralNetworks.length}
+        value={$zerotierStore.apiToken
+          ? $zerotierStore.centralNetworks.length
+          : "-"}
         icon={Globe}
       />
     </div>

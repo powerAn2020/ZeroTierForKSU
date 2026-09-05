@@ -53,7 +53,11 @@ export class KsuApi {
           return stdout;
         } else {
           // Handle specific case where service is stopped and api.sh returns "{}" on stderr
-          if (stderr && stderr.trim() === "{}") {
+          // or curl connection refused (errno 7) when service is stopped/stopping
+          if (
+            (stderr && (stderr.trim() === "{}" || stderr.includes("{}"))) ||
+            (cmd.includes("local status") && (errno === 7 || errno === 1))
+          ) {
             if (this.debug) console.log(`[KSU] <<< Service Stopped ({})`);
             return "{}";
           }

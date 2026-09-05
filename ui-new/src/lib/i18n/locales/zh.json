@@ -58,7 +58,7 @@
     "dns": {
       "title": "自定义 DNS",
       "label": "DNS 服务器",
-      "placeholder": "1.1.1.1,8.8.8.8",
+      "placeholder": "示例: 1.1.1.1,8.8.8.8",
       "desc": "指定 curl 请求 ZeroTier Central 远程 API 时使用的 DNS 服务器，多个服务器用英文逗号分隔。留空则使用系统默认 DNS。",
       "clear": "清空"
     },

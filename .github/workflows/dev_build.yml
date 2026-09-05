@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: false
+      release_notes:
+        description: "发版内容 / Release Notes (留空则使用最新 commit)"
+        required: false
+        type: string
+        default: ""
   # push:
   #   branches:
   #     - dev
@@ -37,7 +42,7 @@ jobs:
       module_version: ${{ steps.set_version.outputs.module_version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
@@ -68,7 +73,7 @@ jobs:
           cp -r dist/* ../webroot/
 
       - name: Upload UI Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: webroot
           path: webroot
@@ -97,7 +102,7 @@ jobs:
             extra_make_flags: ""
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: dev
 
@@ -108,7 +113,7 @@ jobs:
 
       - name: Cache Toolchain
         id: cache-toolchain
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: toolchain/${{ matrix.toolchain_dir }}
           key: ${{ runner.os }}-toolchain-${{ matrix.arch }}-gcc-arm-11.2
@@ -144,7 +149,7 @@ jobs:
           cd ..
 
       - name: Upload binary artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.arch }}
           path: |
@@ -162,25 +167,25 @@ jobs:
       VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
 
       - name: Download webroot
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: webroot
           path: webroot
 
       - name: Download arm64 binary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: binary-arm64
           path: build-arm64
 
       - name: Download arm binary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v4
         with:
           name: binary-arm
           path: build-arm
@@ -200,7 +205,7 @@ jobs:
           echo "versionCode=${MODULE_VERSION}" >> module.prop
           echo 'author=powerAn2020' >> module.prop
           echo "description=ZeroTier(${VERSION}) with UI interface (DEV)" >> module.prop
-          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >> module.prop
+          echo 'updateJson=https://github.com/powerAn2020/ZeroTierForKSU/releases/download/${{ env.MODULE_VERSION }}/update_arm64_dev.json' >> module.prop
           echo 'arch=arm64' >> module.prop
 
           bash build.sh ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
@@ -221,7 +226,7 @@ jobs:
           echo "versionCode=${MODULE_VERSION}" >> module.prop
           echo 'author=powerAn2020' >> module.prop
           echo "description=ZeroTier(${VERSION}) with UI interface (DEV)" >> module.prop
-          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm_dev.json' >> module.prop
+          echo 'updateJson=https://github.com/powerAn2020/ZeroTierForKSU/releases/download/${{ env.MODULE_VERSION }}/update_arm_dev.json' >> module.prop
           echo 'arch=arm' >> module.prop
 
           bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
@@ -229,7 +234,7 @@ jobs:
 
       - name: Upload artifact (arm64)
         id: arm64-zip
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}
           path: ./ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}/*
@@ -237,13 +242,15 @@ jobs:
 
       - name: Upload artifact (arm)
         id: arm-zip
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}
           path: ./ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}/*
           retention-days: 7
 
       - name: 输出 Artifact 下载地址并更新配置
+        env:
+          INPUT_RELEASE_NOTES: ${{ inputs.release_notes }}
         run: |
           echo "Artifact arm 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
           echo "Artifact arm64 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
@@ -258,9 +265,14 @@ jobs:
           fi
           echo "{\"version\":\"${{ env.VERSION }}\",\"versionCode\":${{ env.MODULE_VERSION }},\"zipUrl\":\"${ARM64_URL}\",\"changelog\":\"${CHANGELOG_URL}\"}" > update_arm64_dev.json
           echo "{\"version\":\"${{ env.VERSION }}\",\"versionCode\":${{ env.MODULE_VERSION }},\"zipUrl\":\"${ARM_URL}\",\"changelog\":\"${CHANGELOG_URL}\"}" > update_arm_dev.json
-          MESSAGE=$(git log -1 --pretty=%B)
-          echo "commit MESSAGE: $MESSAGE"
-          echo "$MESSAGE" > changelog_dev.md
+          if [ -n "$INPUT_RELEASE_NOTES" ]; then
+            echo "使用自定义发版内容作为 Release Notes"
+            printf '%s\n' "$INPUT_RELEASE_NOTES" > changelog_dev.md
+          else
+            MESSAGE=$(git log -1 --pretty=%B)
+            echo "commit MESSAGE: $MESSAGE"
+            echo "$MESSAGE" > changelog_dev.md
+          fi
 
       - name: Manual Release
         uses: softprops/action-gh-release@v2

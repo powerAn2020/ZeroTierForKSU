@@ -115,12 +115,17 @@ if [ -n "$DNS" ]; then
 else
   CurlBIN="${MODDIR}/bin/curl -s -A 'ZerotierForKSU' --connect-timeout 5"
 fi
-localAPIBase='http://localhost:9993'
+localAPIBase='http://127.0.0.1:9993'
 remoteAPIBase='https://api.zerotier.com/api/v1'
 export CURL_CA_BUNDLE=${MODDIR}/bin/cacert.pem
 # =========================== local service ===========================
 local_status() {
-  $CurlBIN -H "X-ZT1-Auth: $TOKEN" ${localAPIBase}/status
+  res=$($CurlBIN -H "X-ZT1-Auth: $TOKEN" ${localAPIBase}/status 2>/dev/null)
+  if [ $? -ne 0 ] || [ -z "$res" ]; then
+    echo "{}"
+    return 0
+  fi
+  echo "$res"
 }
 
 local_networks() {
@@ -303,12 +308,10 @@ help() {
 }
 check_local_pid() {
   zpid=$(pgrep -f "zerotier-one")
-    if [ -z $zpid ]; then
-      {
-        echo "{}" 1>&2
-        exit 1
-      }
-    fi
+  if [ -z "$zpid" ]; then
+    echo "{}"
+    exit 0
+  fi
 }
 # =========================== main ===========================
 case $1 in

@@ -82,12 +82,30 @@ function createZeroTierStore() {
     loadCentralNetworks: async () => {
       appStore.setLoading(true);
       try {
+        let currentToken = '';
+        update(s => {
+          currentToken = s.apiToken;
+          return s;
+        });
+
+        if (!currentToken) {
+          currentToken = await CentralApi.getApiToken();
+          if (currentToken) {
+            update(s => ({ ...s, apiToken: currentToken }));
+          }
+        }
+
+        if (!currentToken) {
+          update(s => ({ ...s, centralNetworks: [] }));
+          return [];
+        }
+
         const networks = await CentralApi.getNetworks();
         update(s => ({ ...s, centralNetworks: networks }));
         return networks;
       } catch (e) {
-        console.error(e);
-        throw e;
+        console.error("Failed to load central networks", e);
+        return [];
       } finally {
         appStore.setLoading(false);
       }
