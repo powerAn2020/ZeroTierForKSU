@@ -1,5 +1,4 @@
 name: dev build
-# description:
 
 on:
   workflow_dispatch:
@@ -25,13 +24,12 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  prepare:
+    name: Prepare Environment & UI
     runs-on: ubuntu-latest
-    env:
-      COMMIT: 0
-      SKIP_NEXT: false
-      VERSION: ""
-      MODULE_VERSION: ""
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+      module_version: ${{ steps.set_version.outputs.module_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,85 +37,17 @@ jobs:
           ref: dev
           fetch-depth: 0
 
-      - name: Cache Toolchain
-        id: cache-toolchain
-        uses: actions/cache@v4
-        with:
-          path: toolchain
-          key: ${{ runner.os }}-toolchain-gcc-arm-11.2
-
-      - name: Initialization environment
-        env:
-          DEBIAN_FRONTEND: noninteractive
+      - name: Determine Versions
+        id: set_version
         run: |
-          sudo apt install -y xz-utils make
-          echo "${{ github.action_path }}"
-          latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
-          zerotier_latest_version=${{ inputs.zt_version }}
-          if [ -z ${zerotier_latest_version} ];then
+          zerotier_latest_version="${{ inputs.zt_version }}"
+          if [ -z "${zerotier_latest_version}" ]; then
             zerotier_latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/zerotier/ZeroTierOne/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
           fi
-          # 将zt最新版写入到环境变量
-          echo "VERSION=$zerotier_latest_version" >> $GITHUB_ENV
-
-          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-aarch64-musl-${latest_version}.tar.xz"
-          echo ${download_link}
-          wget -O curl.tar.xz ${download_link}
-          wget -O curl32.tar.xz https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-armv7-musl-${latest_version}.tar.xz
-          tar -xJf curl.tar.xz -C $PWD/bin curl
-          tar -xJf curl32.tar.xz curl
-          wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
-          wget -O $PWD/bin/cacert.pem https://curl.se/ca/cacert.pem
-
-          if [ ! -d "toolchain" ]; then
-            mkdir -p $PWD/toolchain
-            echo "Downloading toolchains..."
-            wget -O arm64.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz" 
-            wget -O arm.tar.xz "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz" 
-            xz -d arm64.tar.xz
-            xz -d arm.tar.xz
-            tar -xvf arm64.tar -C $PWD/toolchain 
-            tar -xvf arm.tar -C $PWD/toolchain 
-            rm -f arm64.tar arm.tar
-          else
-            echo "Toolchain cache hit, skipping download."
-          fi
-          rm -f curl.tar.xz curl32.tar.xz
-
-      - name: Update versionCode
-        id: set_module
-        run: |
-          module_version=$(grep -w 'version' module.prop |awk -F'=' '{print $2}') || true
-          module_versionCode=$(grep -w 'versionCode' module.prop |awk -F'=' '{print $2}') || true
-          echo "Scheduled event triggered this workflow"
           versionCode=$(expr 10000 + $(git rev-list --count HEAD) + 200)
-          echo "MODULE_VERSION=$versionCode" >> $GITHUB_ENV
-          echo 'id=ZeroTierForKSU' >module.prop
-          echo 'name=ZeroTier For KernelSU' >>module.prop
-          echo "version=${VERSION}(${versionCode})" >>module.prop
-          echo "versionCode=${versionCode}" >>module.prop
-          echo 'author=powerAn2020' >>module.prop
-          echo 'description=ZeroTier(${{env.VERSION}}) with UI interface (DEV)' >>module.prop
-          # export outputs for downstream job
+          echo "version=${zerotier_latest_version}" >> $GITHUB_OUTPUT
           echo "module_version=${versionCode}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "COMMIT=1" >> $GITHUB_ENV
-
-      - name: Build Zerotier for arm64
-        run: |
-          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu/bin/:${PATH}"
-          git clone https://github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ env.VERSION }}
-          cp -rf ZeroTierOne ZeroTierOne_ARM
-          cd ZeroTierOne
-          make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 ZT_SSO_SUPPORTED=0 CC=aarch64-none-linux-gnu-gcc CXX=aarch64-none-linux-gnu-g++ LDFLAGS="-s"
-          cp -rf zerotier-one ../zerotier-one-arm64
-
-      - name: Build Zerotier for arm
-        run: |
-          export PATH="$PWD/toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf/bin/:${PATH}"
-          cd ZeroTierOne_ARM
-          make -j -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 CC=arm-none-linux-gnueabihf-gcc CXX=arm-none-linux-gnueabihf-g++ LDFLAGS="-s"
-          cp -rf zerotier-one ../zerotier-one-arm
+          echo "Building ZeroTier ${zerotier_latest_version} with versionCode ${versionCode}"
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -129,58 +59,171 @@ jobs:
           cd ${{ inputs.ui_path }}
           npm install
           npm run build
-          mv dist ../webroot
+          mkdir -p ../webroot
+          cp -r dist/* ../webroot/
 
-      - name: Upload build artifacts for next job
+      - name: Upload UI Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-files
-          path: |
-            zerotier-one-arm64
-            zerotier-one-arm
-            bin
-            module.prop
-            webroot
+          name: webroot
+          path: webroot
+          retention-days: 1
 
-      # ...remaining packaging/publishing steps moved to separate job 'package'
-    outputs:
-      MODULE_VERSION: ${{ steps.set_module.outputs.module_version }}
-      VERSION: ${{ steps.set_module.outputs.version }}
+  build:
+    name: Build ZeroTier (${{ matrix.arch }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            curl_arch: aarch64-musl
+            toolchain_url: "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz"
+            toolchain_dir: "gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu"
+            cc: "aarch64-none-linux-gnu-gcc"
+            cxx: "aarch64-none-linux-gnu-g++"
+            extra_make_flags: "ZT_SSO_SUPPORTED=0"
+          - arch: arm
+            curl_arch: armv7-musl
+            toolchain_url: "https://dl.armbian.com/_toolchain/gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz"
+            toolchain_dir: "gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf"
+            cc: "arm-none-linux-gnueabihf-gcc"
+            cxx: "arm-none-linux-gnueabihf-g++"
+            extra_make_flags: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xz-utils make
+
+      - name: Cache Toolchain
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: toolchain/${{ matrix.toolchain_dir }}
+          key: ${{ runner.os }}-toolchain-${{ matrix.arch }}-gcc-arm-11.2
+
+      - name: Download Toolchain
+        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p toolchain
+          wget -O toolchain.tar.xz "${{ matrix.toolchain_url }}"
+          xz -d toolchain.tar.xz
+          tar -xf toolchain.tar -C toolchain/
+          rm -f toolchain.tar
+
+      - name: Download static curl and cacert
+        run: |
+          mkdir -p bin
+          latest_version=$(wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | grep -oE "[0-9.]*" | head -1)
+          download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${{ matrix.curl_arch }}-${latest_version}.tar.xz"
+          echo "Downloading ${download_link}"
+          wget -O curl.tar.xz "${download_link}"
+          tar -xJf curl.tar.xz -C bin curl
+          chmod +x bin/curl
+          rm -f curl.tar.xz
+          wget -O bin/cacert.pem https://curl.se/ca/cacert.pem
+
+      - name: Build ZeroTierOne
+        run: |
+          export PATH="$PWD/toolchain/${{ matrix.toolchain_dir }}/bin:${PATH}"
+          git clone https://github.com/zerotier/ZeroTierOne.git --depth=1 -b ${{ needs.prepare.outputs.version }}
+          cd ZeroTierOne
+          make -j $(nproc) ZT_STATIC=1 ZT_DEBUG=0 ${{ matrix.extra_make_flags }} CC=${{ matrix.cc }} CXX=${{ matrix.cxx }} LDFLAGS="-s"
+          cp -rf zerotier-one ../zerotier-one
+          cd ..
+
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.arch }}
+          path: |
+            zerotier-one
+            bin/curl
+            bin/cacert.pem
+          retention-days: 1
 
   package:
     name: Package and Release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [prepare, build]
     env:
-      MODULE_VERSION: ${{ needs.build.outputs.MODULE_VERSION }}
-      VERSION: ${{ needs.build.outputs.VERSION }}
+      MODULE_VERSION: ${{ needs.prepare.outputs.module_version }}
+      VERSION: ${{ needs.prepare.outputs.version }}
       COMMIT: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
 
-      - name: Download build artifacts
+      - name: Download webroot
         uses: actions/download-artifact@v4
         with:
-          name: build-files
-          path: .
+          name: webroot
+          path: webroot
 
-      - name: Generate module for arm64/arm
+      - name: Download arm64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-arm64
+          path: build-arm64
+
+      - name: Download arm binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-arm
+          path: build-arm
+
+      - name: Generate module for arm64
         run: |
-          mv zerotier-one-arm64 zerotier-one
-          ls -la
-          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >>module.prop
-          echo 'arch=arm64' >>module.prop
+          cp build-arm64/zerotier-one ./zerotier-one
+          chmod +x ./zerotier-one
+          mkdir -p bin
+          cp build-arm64/bin/curl bin/curl
+          cp build-arm64/bin/cacert.pem bin/cacert.pem
+          chmod +x bin/curl
+
+          echo 'id=ZeroTierForKSU' > module.prop
+          echo 'name=ZeroTier For KernelSU' >> module.prop
+          echo "version=${VERSION}(${MODULE_VERSION})" >> module.prop
+          echo "versionCode=${MODULE_VERSION}" >> module.prop
+          echo 'author=powerAn2020' >> module.prop
+          echo "description=ZeroTier(${VERSION}) with UI interface (DEV)" >> module.prop
+          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm64_dev.json' >> module.prop
+          echo 'arch=arm64' >> module.prop
+
           bash build.sh ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
-          mv -f zerotier-one-arm zerotier-one
-          mv -f curl bin/curl || true
-          sed -i "s/update_arm64/update_arm/g" module.prop
-          sed -i "s/arm64/arm/g" module.prop
+
+      - name: Generate module for arm
+        run: |
+          cp build-arm/zerotier-one ./zerotier-one
+          chmod +x ./zerotier-one
+          mkdir -p bin
+          cp build-arm/bin/curl bin/curl
+          cp build-arm/bin/cacert.pem bin/cacert.pem
+          chmod +x bin/curl
+
+          echo 'id=ZeroTierForKSU' > module.prop
+          echo 'name=ZeroTier For KernelSU' >> module.prop
+          echo "version=${VERSION}(${MODULE_VERSION})" >> module.prop
+          echo "versionCode=${MODULE_VERSION}" >> module.prop
+          echo 'author=powerAn2020' >> module.prop
+          echo "description=ZeroTier(${VERSION}) with UI interface (DEV)" >> module.prop
+          echo 'updateJson=https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/update_arm_dev.json' >> module.prop
+          echo 'arch=arm' >> module.prop
+
           bash build.sh ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
           unzip -d ZeroTierForKSU-arm-${{ env.MODULE_VERSION }} ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
 
-      - name: Upload artifact
+      - name: Upload artifact (arm64)
         id: arm64-zip
         uses: actions/upload-artifact@v4
         with:
@@ -188,7 +231,7 @@ jobs:
           path: ./ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}/*
           retention-days: 7
 
-      - name: Upload artifact
+      - name: Upload artifact (arm)
         id: arm-zip
         uses: actions/upload-artifact@v4
         with:
@@ -196,22 +239,22 @@ jobs:
           path: ./ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}/*
           retention-days: 7
 
-      - name: 输出 Artifact 下载地址
+      - name: 输出 Artifact 下载地址并更新配置
         run: |
-          echo "Artifact1 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
-          echo "Artifact2 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
-          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"'${{ steps.arm64-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm64_dev.json
-          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{env.MODULE_VERSION}}',"zipUrl":"'${{ steps.arm-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' >update_arm_dev.json
+          echo "Artifact arm 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
+          echo "Artifact arm64 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
+          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{ env.MODULE_VERSION }}',"zipUrl":"'${{ steps.arm64-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' > update_arm64_dev.json
+          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{ env.MODULE_VERSION }}',"zipUrl":"'${{ steps.arm-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' > update_arm_dev.json
 
-      - name: update json
+      - name: Update json & changelog
         run: |
           git config --global user.email "action@example.com"
           git config --global user.name "github action"
           MESSAGE=$(git log -1 --pretty=%B)
           echo "commit MESSAGE: $MESSAGE"
-          echo $MESSAGE > changelog_dev.md
+          echo "$MESSAGE" > changelog_dev.md
           git add update_arm64_dev.json update_arm_dev.json changelog_dev.md 
-          git commit -m "update Zerotier version:${{env.VERSION}}" && echo "COMMIT=1" >> $GITHUB_ENV || echo "No changes to commit"
+          git commit -m "update Zerotier version:${{ env.VERSION }}" && echo "COMMIT=1" >> $GITHUB_ENV || echo "No changes to commit"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
