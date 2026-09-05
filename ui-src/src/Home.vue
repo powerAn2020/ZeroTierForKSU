@@ -182,9 +182,9 @@ const changeStatus = (index) => {
     status.enable = 'true';
     //点击启用
     joinApi(status)
-    let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
+    let leaveNetwork = JSON.parse(localStorage.getItem('ZeroTierForKSU.leaveNetwork'));
     const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id)
-    localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
+    localStorage.setItem("ZeroTierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
   }
 }
 const delNode = (index) => {
@@ -196,13 +196,13 @@ const delNode = (index) => {
     title: t('home.leave_confirm'),
   })
     .then(() => {
-      let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
+      let leaveNetwork = JSON.parse(localStorage.getItem('ZeroTierForKSU.leaveNetwork'));
       let status = items[index];
       items.splice(index, 1)
       leaveApi(status)
       if (leaveNetwork.length > 0) {
         const nleaveNetwork = leaveNetwork.filter(item => item.id !== status.id);
-        localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
+        localStorage.setItem("ZeroTierForKSU.leaveNetwork", JSON.stringify(nleaveNetwork));
       }
       return true;
     })
@@ -240,11 +240,11 @@ const leaveApi = (info) => {
   }
   execCmd(`sh ${MODDIR}/api.sh local network leave ${info.id}`).then(v => {
     try {
-      let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
+      let leaveNetwork = JSON.parse(localStorage.getItem('ZeroTierForKSU.leaveNetwork'));
       const statusObj = JSON.parse(v);
       console.info(statusObj);
       leaveNetwork.push(info)
-      localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
+      localStorage.setItem("ZeroTierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
       // showToast('完成,即将重载列表');
       // setTimeout(() => {
       //   window.location.reload();
@@ -270,7 +270,7 @@ const getList = () => {
     if (v !== "") {
       const statusObj = JSON.parse(v);
       if (statusObj.length > 0) {
-        let leaveNetwork = JSON.parse(localStorage.getItem('ZerotierForKSU.leaveNetwork'));
+        let leaveNetwork = JSON.parse(localStorage.getItem('ZeroTierForKSU.leaveNetwork'));
         if (leaveNetwork) {
           items.push(...leaveNetwork)
         }
@@ -303,10 +303,10 @@ const init = () => {
     forbidClick: true,
     loadingType: 'spinner',
   });
-  let leaveNetwork = localStorage.getItem("ZerotierForKSU.leaveNetwork");
+  let leaveNetwork = localStorage.getItem("ZeroTierForKSU.leaveNetwork");
   if (typeof leaveNetwork == "undefined" || leaveNetwork == null) {
     leaveNetwork = [];
-    localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
+    localStorage.setItem("ZeroTierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
   } else {
     leaveNetwork = JSON.parse(leaveNetwork);
   }
@@ -330,7 +330,7 @@ init()
 
 //加载路由并配置防火墙
 // const loadRouter=()=>{
-//   const defaultRoterMode=localStorage.getItem('ZerotierForKSU.defaultRoterMode')
+//   const defaultRoterMode=localStorage.getItem('ZeroTierForKSU.defaultRoterMode')
 //   execCmd(`sh ${MODDIR}/api.sh local router ${defaultRoterMode} `).then(v => {
 //   })
 // }

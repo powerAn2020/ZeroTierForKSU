@@ -81,7 +81,7 @@ const switchLocale = (language) => {
   // locale.value = language;
   locale.value = language.value
   // Cookie
-  localStorage.setItem('ZerotierForKSU.locale', language.value)
+  localStorage.setItem('ZeroTierForKSU.locale', language.value)
   localeShow.value = false;
 }
 const initTheme = () => {
@@ -94,17 +94,17 @@ const initTheme = () => {
     } else {
       theme.value = false;
     }
-    localStorage.setItem('ZerotierForKSU.theme', theme.value)
+    localStorage.setItem('ZeroTierForKSU.theme', theme.value)
   });
-  const cacheTheme = localStorage.getItem('ZerotierForKSU.theme');
+  const cacheTheme = localStorage.getItem('ZeroTierForKSU.theme');
   if (!isEmpty(cacheTheme)) {
     theme.value = JSON.parse(cacheTheme);
   } else {
-    localStorage.setItem('ZerotierForKSU.theme', false)
+    localStorage.setItem('ZeroTierForKSU.theme', false)
   }
 }
 const initI18n = () => {
-  const cacheLocale = localStorage.getItem('ZerotierForKSU.locale')
+  const cacheLocale = localStorage.getItem('ZeroTierForKSU.locale')
   if (!isEmpty(cacheLocale)) {
     i18n.global.locale = cacheLocale
     return
@@ -121,12 +121,12 @@ const initI18n = () => {
       locale = 'zh-CN'
   }
   i18n.global.locale = locale
-  localStorage.setItem('ZerotierForKSU.locale', locale)
+  localStorage.setItem('ZeroTierForKSU.locale', locale)
 }
 
 const switchTheme = () => {
   theme.value = !theme.value;
-  localStorage.setItem('ZerotierForKSU.theme', theme.value)
+  localStorage.setItem('ZeroTierForKSU.theme', theme.value)
 };
 const newAdd = (index) => {
   routerViewRef.value.newAdd(index);

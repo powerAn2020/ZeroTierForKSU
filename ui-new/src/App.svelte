@@ -1,13 +1,14 @@
-<script context="module">
+<script context="module" lang="ts">
+  import { STORAGE_KEYS, getStorageItem } from "@/lib/utils";
+
   // Theme initialization logic
   function initTheme() {
-    const savedTheme = localStorage.getItem("theme") as
+    const savedTheme = (getStorageItem(STORAGE_KEYS.THEME, "ZerotierForKSU.theme") || "system") as
       | "light"
       | "dark"
       | "system";
 
-    // Default to system if no theme saved, or apply saved
-    const theme = savedTheme || "system";
+    const theme = savedTheme;
 
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -38,13 +39,13 @@
   onMount(() => {
     initTheme();
     // Initialize store with saved value if needed
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = getStorageItem(STORAGE_KEYS.THEME, "ZerotierForKSU.theme");
     if (savedTheme) {
       appStore.setTheme(savedTheme as any);
     }
 
     // Initialize Debug Mode
-    const savedDebug = localStorage.getItem("debugMode") === "true";
+    const savedDebug = getStorageItem(STORAGE_KEYS.DEBUG_MODE, "ZerotierForKSU.debugMode") === "true";
     if (savedDebug) {
       KsuApi.setDebug(true);
     }

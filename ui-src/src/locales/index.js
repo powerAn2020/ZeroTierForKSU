@@ -30,8 +30,8 @@ function vantLocales(lang) {
 }
 // 获取浏览器的语言
 const lang = (navigator.language || 'en').toLocaleLowerCase()
-const language = localStorage.getItem('ZerotierForKSU.locale') || lang.split('-')[0] || 'zh';
-localStorage.setItem('ZerotierForKSU.locale', language)
+const language = localStorage.getItem('ZeroTierForKSU.locale') || lang.split('-')[0] || 'zh';
+localStorage.setItem('ZeroTierForKSU.locale', language)
 const i18n = createI18n({
   //Not available in legacy mode 解决报错问题的配置项！！！
   legacy: false,

@@ -99,10 +99,10 @@ const init = () => {
     forbidClick: true,
     loadingType: 'spinner',
   });
-  let leaveNetwork = localStorage.getItem("ZerotierForKSU.leaveNetwork");
+  let leaveNetwork = localStorage.getItem("ZeroTierForKSU.leaveNetwork");
   if (typeof leaveNetwork == "undefined" || leaveNetwork == null) {
     leaveNetwork = [];
-    localStorage.setItem("ZerotierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
+    localStorage.setItem("ZeroTierForKSU.leaveNetwork", JSON.stringify(leaveNetwork));
   } else {
     leaveNetwork = JSON.parse(leaveNetwork);
   }

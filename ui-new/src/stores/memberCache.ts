@@ -1,12 +1,13 @@
 import { writable } from "svelte/store";
+import { STORAGE_KEYS, getStorageItem } from "@/lib/utils";
 
-const CACHE_KEY = "zt_member_names";
+const CACHE_KEY = STORAGE_KEYS.MEMBER_NAMES;
 
 function createMemberCache() {
   // Read initial cache from localStorage
   let initialData: Record<string, string> = {};
   if (typeof localStorage !== "undefined") {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = getStorageItem(CACHE_KEY, "ZerotierForKSU.member_names", "zt_member_names");
     if (raw) {
       try {
         initialData = JSON.parse(raw);

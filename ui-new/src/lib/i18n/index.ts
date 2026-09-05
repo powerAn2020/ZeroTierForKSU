@@ -1,10 +1,11 @@
 import { register, init, getLocaleFromNavigator } from 'svelte-i18n';
+import { STORAGE_KEYS, getStorageItem } from '@/lib/utils';
 
 register('en', () => import('./locales/en.json'));
 register('zh', () => import('./locales/zh.json'));
 
 function getInitialLocale() {
-  const saved = localStorage.getItem('locale');
+  const saved = getStorageItem(STORAGE_KEYS.LOCALE, 'ZerotierForKSU.locale');
   if (saved) return saved;
 
   const browserLocale = getLocaleFromNavigator();

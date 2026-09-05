@@ -111,7 +111,7 @@ const onSelect = (action) => {
       console.info(v)
     })
   }
-  localStorage.setItem('defaultRoterMode', action.value)
+  localStorage.setItem('ZeroTierForKSU.defaultRoterMode', action.value)
 }
 const hideKey = (key) => {
   if (key.length == 0) {
@@ -137,7 +137,7 @@ const init = () => {
       autoStart.value = statusObj.autoStart;
       apiToken.value = statusObj.apiToken;
       uninstallKeep.value = statusObj.uninstallKeep;
-      localStorage.setItem('ZerotierForKSU.defaultRoterMode', statusObj.routerRuleNew)
+      localStorage.setItem('ZeroTierForKSU.defaultRoterMode', statusObj.routerRuleNew)
       defaultRoterMode.value = actions[parseInt(statusObj.routerRuleNew)].text;
       const cliStatus = statusObj.cliStatus;
       if (typeof (cliStatus) != 'undefined' && cliStatus != '') {

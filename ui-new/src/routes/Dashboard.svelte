@@ -154,7 +154,7 @@
     >
       <NetworkStatusCard
         title={$t("dashboard.cards.nodeId")}
-        value={$appStore.nodeId || "Unknown"}
+        value={$appStore.nodeId || $t("common.unknown")}
         icon={ShieldCheck}
       />
     </div>

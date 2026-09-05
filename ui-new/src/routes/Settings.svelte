@@ -15,7 +15,7 @@
   import Label from "@/lib/components/ui/label/Label.svelte";
   import Input from "@/lib/components/ui/input/Input.svelte";
   import { appStore } from "@/stores/app";
-  import { cn } from "@/lib/utils";
+  import { cn, STORAGE_KEYS, getStorageItem } from "@/lib/utils";
   import { KsuApi } from "@/api/ksu";
   import { toast } from "@/stores/toast";
   import { t, locale } from "svelte-i18n";
@@ -35,7 +35,7 @@
 
   function setLanguage(lang: string) {
     locale.set(lang);
-    localStorage.setItem("locale", lang);
+    localStorage.setItem(STORAGE_KEYS.LOCALE, lang);
   }
 
   function setTheme(theme: "light" | "dark" | "system") {
@@ -51,7 +51,7 @@
         document.documentElement.classList.remove("dark");
       }
     }
-    localStorage.setItem("theme", theme);
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
   }
 
   let debugMode = KsuApi.getDebug();
@@ -59,7 +59,7 @@
   async function toggleDebug(v: boolean) {
     debugMode = v;
     KsuApi.setDebug(v);
-    localStorage.setItem("debugMode", String(v));
+    localStorage.setItem(STORAGE_KEYS.DEBUG_MODE, String(v));
     toast.success(
       $t(v ? "settings.toasts.debugEnabled" : "settings.toasts.debugDisabled"),
     );
@@ -70,7 +70,7 @@
     try {
       // Load debug mode
       // Debug mode is now initialized globally in App.svelte, but we sync local state here
-      const savedDebug = localStorage.getItem("debugMode") === "true";
+      const savedDebug = getStorageItem(STORAGE_KEYS.DEBUG_MODE, "debugMode") === "true";
       if (savedDebug) {
         debugMode = true;
       }
