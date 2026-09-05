@@ -16,6 +16,11 @@ on:
         options:
           - ui-src
           - ui-new
+      manual_release:
+        description: "发布 Release / Publish Release"
+        required: false
+        type: boolean
+        default: false
   # push:
   #   branches:
   #     - dev
@@ -265,7 +270,7 @@ jobs:
 
       - name: Manual Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.manual_release
         with:
           prerelease: true
           generate_release_notes: true
