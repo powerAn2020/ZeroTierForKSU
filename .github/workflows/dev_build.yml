@@ -11,7 +11,7 @@ on:
       ui_path:
         description: "UI Path"
         required: true
-        default: "ui-src"
+        default: "ui-new"
         type: choice
         options:
           - ui-src
@@ -248,8 +248,17 @@ jobs:
         run: |
           echo "Artifact arm 下载地址: ${{ steps.arm-zip.outputs.artifact-url }}"
           echo "Artifact arm64 下载地址: ${{ steps.arm64-zip.outputs.artifact-url }}"
-          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{ env.MODULE_VERSION }}',"zipUrl":"'${{ steps.arm64-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' > update_arm64_dev.json
-          echo '{"version":"'${{ env.VERSION }}'","versionCode":'${{ env.MODULE_VERSION }}',"zipUrl":"'${{ steps.arm-zip.outputs.artifact-url }}'","changelog":"https://raw.githubusercontent.com/powerAn2020/ZeroTierOneForKSU/dev/changelog_dev.md"}' > update_arm_dev.json
+          if [ "${{ inputs.manual_release }}" = "true" ]; then
+            ARM64_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.MODULE_VERSION }}/ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip"
+            ARM_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.MODULE_VERSION }}/ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip"
+            CHANGELOG_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.MODULE_VERSION }}/changelog_dev.md"
+          else
+            ARM64_URL="${{ steps.arm64-zip.outputs.artifact-url }}"
+            ARM_URL="${{ steps.arm-zip.outputs.artifact-url }}"
+            CHANGELOG_URL="https://raw.githubusercontent.com/${{ github.repository }}/dev/changelog_dev.md"
+          fi
+          echo "{\"version\":\"${{ env.VERSION }}\",\"versionCode\":${{ env.MODULE_VERSION }},\"zipUrl\":\"${ARM64_URL}\",\"changelog\":\"${CHANGELOG_URL}\"}" > update_arm64_dev.json
+          echo "{\"version\":\"${{ env.VERSION }}\",\"versionCode\":${{ env.MODULE_VERSION }},\"zipUrl\":\"${ARM_URL}\",\"changelog\":\"${CHANGELOG_URL}\"}" > update_arm_dev.json
 
       - name: Update json & changelog
         run: |
@@ -274,8 +283,12 @@ jobs:
         with:
           prerelease: true
           generate_release_notes: true
+          body_path: changelog_dev.md
           tag_name: ${{ env.MODULE_VERSION }}
           name: ZeroTierForKSU-dev-${{ env.MODULE_VERSION }}
           files: |
             ZeroTierForKSU-arm64-${{ env.MODULE_VERSION }}.zip
             ZeroTierForKSU-arm-${{ env.MODULE_VERSION }}.zip
+            update_arm64_dev.json
+            update_arm_dev.json
+            changelog_dev.md
