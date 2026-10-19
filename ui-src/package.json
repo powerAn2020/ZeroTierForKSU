@@ -14,7 +14,7 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "kernelsu": "^3.0.2",
-    "pinia": "^3.0.1",
+    "pinia": "^4.1.0",
     "vant": "^4.9.7",
     "vue": "^3.5.10",
     "vue-i18n": "^11.0.1",
